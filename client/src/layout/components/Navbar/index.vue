@@ -13,7 +13,7 @@
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
-          <a target="_blank" href="https://github.com/PanJiaChen/vue-element-admin/">
+          <a target="_blank" href="https://github.com/wenqiyun/nest-admin/">
             <el-dropdown-item>Github</el-dropdown-item>
           </a>
           <el-dropdown-item>
