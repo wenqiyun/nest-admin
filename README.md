@@ -2,7 +2,7 @@
 前端使用 [vue-element-admin](https://github.com/PanJiaChen/vue-element-admin) 模板， 后端使用 nestjs typeorm 等开发
 
 #### 项目特点
-1. k-admin权限管理系统，是基于nodejs打造出的一站式RBAC管理平台
+1. nest-admin权限管理系统，是基于nodejs打造出的一站式RBAC管理平台
 2. 使用技术 [nestjs](https://nestjs.com/)、[typeorm](https://typeorm.io/)、[vue](https://cn.vuejs.org/index.html)、[ElementUI](https://element.eleme.cn) 开发
 3. 优秀的菜单功能权限，前端可灵活控制页面及按钮展示，后端可对未授权的请求进行拦截
 4. 当前已有功能：用户管理，角色管理，部门管理，菜单管理，文件管理
