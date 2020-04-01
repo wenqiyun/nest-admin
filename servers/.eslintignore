@@ -1,7 +1,2 @@
-/build/
-/config/
-/dist/
-/*.js
-/test/
-/public/
-kapok.sql
+node_modules/
+dist/

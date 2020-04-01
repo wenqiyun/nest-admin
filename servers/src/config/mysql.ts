@@ -13,5 +13,5 @@ export default registerAs('database', () => ({
   synchronize: true,
   // dateStrings: true,
   logging: true,
-  logger: process.env.DB_LOGGER,
+  logger: process.env.DB_LOGGER
 }))

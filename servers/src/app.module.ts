@@ -1,8 +1,10 @@
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Module } from '@nestjs/common'
+import { RedisModule } from 'nestjs-redis'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { WinstonModule } from 'nest-winston'
+
 import appConfig from './config/index'
+
 import { UserModule } from './system/user/user.module'
 import { DeptModule } from './system/dept/dept.module'
 import { MenuModule } from './system/menu/menu.module'
@@ -22,21 +24,7 @@ import { OssModule } from './system/oss/oss.module'
     // 配置模块
     ConfigModule.forRoot({
       load: appConfig,
-      isGlobal: true,
-    }),
-    // 系统日志模块
-    WinstonModule.forRoot({
-      // evel: 'info',
-      // format: winston.format.json(),
-      // defaultMeta: { service: 'kapok-service' },
-      // transports: [
-      //   //
-      //   // - Write all logs with level `error` and below to `error.log`
-      //   // - Write all logs with level `info` and below to `combined.log`
-      //   //
-      //   // new winston.transports.File({ filename: 'error.log', level: 'error' }),
-      //   // new winston.transports.File({ filename: 'combined.log' }),
-      // ],
+      isGlobal: true
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -53,16 +41,22 @@ import { OssModule } from './system/oss/oss.module'
         entities: ['dist/**/*.entity{.ts,.js}'],
         synchronize: config.get('database.synchronize'),
         logging: config.get('database.logging'),
-        logger: config.get('database.logger'),
+        logger: config.get('database.logger')
       }),
-      inject: [ConfigService],
+      inject: [ConfigService]
+    }),
+    // redis
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => configService.get('redis'),
+      inject:[ConfigService]
     }),
     UserModule,
     DeptModule,
     MenuModule,
     RoleModule,
     PermModule,
-    OssModule,
-  ],
+    OssModule
+  ]
 })
 export class ApplicationModule {}

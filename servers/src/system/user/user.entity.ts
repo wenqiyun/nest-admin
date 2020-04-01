@@ -38,16 +38,12 @@ export class UserEntity {
   @Column({ name: 'dept_id' })
   public deptId!: number
 
-  @OneToOne(type => DeptEntity)
+  @OneToOne((type) => DeptEntity)
   @JoinColumn({ name: 'dept_id' })
   public dept: DeptEntity
 
   // 角色关系
-  @OneToMany(
-    type => UserRoleEntity,
-    userRoles => userRoles.users,
-    { cascade: ['insert', 'remove'], nullable: false },
-  )
+  @OneToMany((type) => UserRoleEntity, (userRoles) => userRoles.users, { cascade: ['insert', 'remove'], nullable: false })
   public userRoles!: UserRoleEntity[]
 
   @CreateDateColumn({ type: 'timestamp', name: 'create_date', comment: '创建时间' })

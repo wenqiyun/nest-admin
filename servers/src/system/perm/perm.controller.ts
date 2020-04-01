@@ -1,9 +1,9 @@
 import { Controller, Request, Get, UseGuards } from '@nestjs/common'
 import { PermService } from './perm.service'
 import { ApiOperation, ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { Permissions } from '../../commin/decorators/permissions.decorator'
+import { Permissions } from '../../common/decorators/permissions.decorator'
 import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../commin/guards/roles.guard'
+import { RolesGuard } from '../../common/guards/roles.guard'
 
 @ApiBearerAuth()
 @ApiTags('基础')
@@ -21,7 +21,7 @@ export class PermController {
       statusCode: 200,
       message: '查询权限成功',
       data: {
-        dynamicMenu: perms.map(v => {
+        dynamicMenu: perms.map((v) => {
           return { type: v['m_type'], code: v['m_code'] }
         }),
         avatar: req['user'].avatar,

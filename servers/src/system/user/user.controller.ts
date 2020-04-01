@@ -1,11 +1,11 @@
 import { Controller, UseGuards, Get, Post, Body, Put, Param, Query, Delete, Request } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../commin/guards/roles.guard'
+import { RolesGuard } from '../../common/guards/roles.guard'
 import { UserService } from './user.service'
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateUserRoleDto } from '../relationalEntities/userRole/dto/create-userRole.dto'
-import { Permissions } from '../../commin/decorators/permissions.decorator'
+import { Permissions } from '../../common/decorators/permissions.decorator'
 import { UpdatePwDto } from './dto/update-pw-dto'
 
 @ApiBearerAuth()

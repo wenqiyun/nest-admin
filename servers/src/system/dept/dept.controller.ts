@@ -1,11 +1,11 @@
 import { Controller, UseGuards, Post, Body, Get, Put, Delete, Param } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../commin/guards/roles.guard'
+import { RolesGuard } from '../../common/guards/roles.guard'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { DeptService } from './dept.service'
 import { CreateDeptDto } from './dto/create-dept.dto'
 import { UpdateDeptDto } from './dto/update-dept.dto'
-import { Permissions } from '../../commin/decorators/permissions.decorator'
+import { Permissions } from '../../common/decorators/permissions.decorator'
 
 @ApiBearerAuth()
 @ApiTags('部门管理')

@@ -3,8 +3,8 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import { OssService } from './oss.service'
 import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../commin/guards/roles.guard'
-import { Permissions } from '../../commin/decorators/permissions.decorator'
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
 
 @ApiBearerAuth()
 @ApiTags('文件管理')

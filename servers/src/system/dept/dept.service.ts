@@ -2,7 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common'
 import { Repository } from 'typeorm'
 import { DeptEntity } from './dept.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ResponseData } from 'src/commin/interfaces/result.interface'
+import { ResponseData } from 'src/common/interfaces/result.interface'
 import { CreateDeptDto } from './dto/create-dept.dto'
 import { UpdateDeptDto } from './dto/update-dept.dto'
 

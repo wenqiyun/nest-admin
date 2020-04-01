@@ -2,8 +2,6 @@
 /dist
 /node_modules
 
-package-lock.json
-
 # Logs
 logs
 *.log
@@ -18,9 +16,6 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
-
-# 文件上传
-/upload
 
 # IDEs and editors
 /.idea

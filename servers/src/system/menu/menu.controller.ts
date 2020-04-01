@@ -3,9 +3,9 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { MenuService } from './menu.service'
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto } from './dto/update-menu.dto'
-import { Permissions } from '../../commin/decorators/permissions.decorator'
+import { Permissions } from '../../common/decorators/permissions.decorator'
 import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../commin/guards/roles.guard'
+import { RolesGuard } from '../../common/guards/roles.guard'
 
 @ApiBearerAuth()
 @ApiTags('菜单管理')

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Repository, Like } from 'typeorm'
 import { OssEntity } from './oss.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ResponseData } from 'src/commin/interfaces/result.interface'
+import { ResponseData } from 'src/common/interfaces/result.interface'
 import { CreateOssDto } from './dto/create-oss.dto'
 import * as fs from 'fs'
 import { ConfigService } from '@nestjs/config'
@@ -21,7 +21,7 @@ export class OssService {
       // 重命名， multer 上传的文件没有后缀名，在这重命名加上后缀名
       const originalnameArr = file.originalname.split('.')
       fs.renameSync(file.path, `${file.path}.${originalnameArr[originalnameArr.length - 1]}`)
-      const url = `${this.config.get('uploadConfig.www')}/${file.filename}.${originalnameArr[originalnameArr.length - 1]}`
+      const url = `${this.config.get('upload.www')}/${file.filename}.${originalnameArr[originalnameArr.length - 1]}`
       return new CreateOssDto(url, file.mimetype, `${file.path}.${originalnameArr[originalnameArr.length - 1]}`, file.size, file.originalname)
     })
     const result = await this.ossRepository.save(ossList)
@@ -51,7 +51,7 @@ export class OssService {
       .where(where)
       .orderBy({
         'oss.id': 'DESC',
-        'oss.create_date': 'DESC',
+        'oss.create_date': 'DESC'
       })
       .skip(pageSize * (pageNum - 1))
       .take(pageSize)

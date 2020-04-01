@@ -1,6 +1,7 @@
-import mysqlConfig from './mysql'
-import jwtConfig from './jwt'
+import mysql from './mysql'
+import jwt from './jwt'
 import uploadConfig from './upload'
-const appConfig = [mysqlConfig, jwtConfig, uploadConfig]
+import redisConfig from './redis'
+const appConfig = [mysql, redisConfig, jwt, uploadConfig]
 
 export default appConfig

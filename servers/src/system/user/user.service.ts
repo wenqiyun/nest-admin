@@ -3,9 +3,9 @@ import { Repository, Like } from 'typeorm'
 import { UserEntity } from './user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
-import { CryptoUtil } from 'src/commin/utils/crypto.util'
+import { CryptoUtil } from 'src/common/utils/crypto.util'
 import { CreateUserDto } from './dto/create-user.dto'
-import { ResponseData } from 'src/commin/interfaces/result.interface'
+import { ResponseData } from 'src/common/interfaces/result.interface'
 import { LoginUserDto } from './dto/login-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { classToPlain } from 'class-transformer'
@@ -86,7 +86,7 @@ export class UserService {
           'user.createDate': 'DESC',
           'user.id': 'DESC',
           'user.account': 'ASC',
-          'user.nickname': 'ASC',
+          'user.nickname': 'ASC'
         })
         .skip(pageSize * (pageNum - 1))
         .take(pageSize)
@@ -99,7 +99,7 @@ export class UserService {
           'user.createDate': 'DESC',
           'user.id': 'DESC',
           'user.account': 'ASC',
-          'user.nickname': 'ASC',
+          'user.nickname': 'ASC'
         })
         .skip(pageSize * (pageNum - 1))
         .take(pageSize)
@@ -107,7 +107,7 @@ export class UserService {
     } else {
       const where = {
         ...(status ? { status } : null),
-        ...(nickname ? { nickname: Like(`%${nickname}%`) } : null),
+        ...(nickname ? { nickname: Like(`%${nickname}%`) } : null)
       }
       users = await this.userRepository
         .createQueryBuilder('user')
@@ -118,7 +118,7 @@ export class UserService {
           'user.createDate': 'DESC',
           'user.id': 'DESC',
           'user.account': 'ASC',
-          'user.nickname': 'ASC',
+          'user.nickname': 'ASC'
         })
         .skip(pageSize * (pageNum - 1))
         .take(pageSize)
@@ -135,18 +135,13 @@ export class UserService {
       .createQueryBuilder('u')
       .select(['u.id', 'u.nickname'])
       .where('u.status = 1')
-      .andWhere(qb => {
-        const subQuery = qb
-          .subQuery()
-          .select('DISTINCT ur.user_id')
-          .from('sys_user_role', 'ur')
-          .where('ur.role_id =:roleId', { roleId })
-          .getQuery()
+      .andWhere((qb) => {
+        const subQuery = qb.subQuery().select('DISTINCT ur.user_id').from('sys_user_role', 'ur').where('ur.role_id =:roleId', { roleId }).getQuery()
         return 'u.id <> ALL ' + subQuery
       })
       .orderBy({
         'u.id': 'DESC',
-        'u.nickname': 'ASC',
+        'u.nickname': 'ASC'
       })
       .skip(pageSize * (pageNum - 1))
       .take(pageSize)
@@ -164,7 +159,7 @@ export class UserService {
     if (!existing) throw new HttpException(`更新失败，ID 为 ${dto.id} 的用户不存在`, 404)
     // 删除该用户原有关联角色
     await this.cancelUserRoleRelation(dto.id)
-    const user: UserEntity = <UserEntity>Object.assign(existing, dto)
+    const user: UserEntity = Object.assign(existing, dto) as UserEntity
     const result = await this.userRepository.save(user)
     if (!result) return { statusCode: 200, message: '用户信息修改失败' }
     return { statusCode: 200, message: '用户信息修改成功' }
