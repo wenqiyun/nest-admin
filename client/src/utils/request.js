@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { MessageBox } from 'element-ui'
-import { getToken, removeToken } from '@/utils/auth.js'
+import { getToken, removeToken, getRefreshToken, setToken } from '@/utils/auth.js'
 
 const pendingReqs = []
 const FAST_CLICK_MSG = '数据请求中，请稍后'
@@ -28,7 +28,10 @@ service.interceptors.request.use(config => {
   config.cancelToken = new CancelToken(c => {
     removePendingReq(config, c)
   })
-  if (getToken()) config.headers['Authorization'] = getToken()
+  if (getToken()) {
+	config.headers['Authorization'] = getToken()
+	config.headers['refreshToken'] = getRefreshToken()
+  }
 
   return config
 }, error => {
@@ -39,6 +42,10 @@ service.interceptors.request.use(config => {
 // response interceptor
 service.interceptors.response.use(response => {
   removePendingReq(response.config)
+  if (response.header['Authorization']) {
+	  const { Authorization, refreshToken } = response.header
+	  setToken(Authorization, refreshToken)
+  }
   return response.data
 }, error => {
   const res = error.response.data

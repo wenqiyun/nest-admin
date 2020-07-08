@@ -1,16 +1,18 @@
 import { Controller, Get, Query, Body, Param, Delete, Put, Post, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
+
 import { RoleService } from './role.service'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Permissions } from '../../common/decorators/permissions.decorator'
+import { JwtAuthGuard } from '../auth/auth.guard'
 
 @ApiBearerAuth()
 @ApiTags('角色管理')
 @Controller('role')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 

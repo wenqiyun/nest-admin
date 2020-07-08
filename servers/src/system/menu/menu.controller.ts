@@ -4,13 +4,13 @@ import { MenuService } from './menu.service'
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto } from './dto/update-menu.dto'
 import { Permissions } from '../../common/decorators/permissions.decorator'
-import { AuthGuard } from '@nestjs/passport'
 import { RolesGuard } from '../../common/guards/roles.guard'
+import { JwtAuthGuard } from '../auth/auth.guard'
 
 @ApiBearerAuth()
 @ApiTags('菜单管理')
 @Controller('menu')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 

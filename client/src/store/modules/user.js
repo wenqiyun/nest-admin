@@ -36,7 +36,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       login(userInfo).then(res => {
         if (res.statusCode === 200) {
-          setToken(res.data)
+          setToken(res.data.accessToken, res.data.refreshToken)
           resolve()
         } else {
           reject(res.message)

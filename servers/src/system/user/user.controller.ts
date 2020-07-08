@@ -1,17 +1,19 @@
 import { Controller, UseGuards, Get, Post, Body, Put, Param, Query, Delete, Request } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { UserService } from './user.service'
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
+
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
+
+import { JwtAuthGuard } from '../auth/auth.guard'
+import { UserService } from './user.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateUserRoleDto } from '../relationalEntities/userRole/dto/create-userRole.dto'
-import { Permissions } from '../../common/decorators/permissions.decorator'
 import { UpdatePwDto } from './dto/update-pw-dto'
 
 @ApiBearerAuth()
 @ApiTags('用户管理')
 @Controller('user')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

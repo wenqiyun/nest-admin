@@ -1,15 +1,17 @@
 import { Controller, Post, UploadedFile, UploadedFiles, UseInterceptors, Get, Query, Param, Delete, HttpCode, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
-import { OssService } from './oss.service'
-import { AuthGuard } from '@nestjs/passport'
+
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Permissions } from '../../common/decorators/permissions.decorator'
+
+import { OssService } from './oss.service'
+import { JwtAuthGuard } from '../auth/auth.guard'
 
 @ApiBearerAuth()
 @ApiTags('文件管理')
 @Controller('oss')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OssController {
   constructor(private readonly ossService: OssService) {}
 

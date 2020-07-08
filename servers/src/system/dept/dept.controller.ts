@@ -1,16 +1,16 @@
 import { Controller, UseGuards, Post, Body, Get, Put, Delete, Param } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { DeptService } from './dept.service'
 import { CreateDeptDto } from './dto/create-dept.dto'
 import { UpdateDeptDto } from './dto/update-dept.dto'
 import { Permissions } from '../../common/decorators/permissions.decorator'
+import { JwtAuthGuard } from '../auth/auth.guard'
 
 @ApiBearerAuth()
 @ApiTags('部门管理')
 @Controller('dept')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class DeptController {
   constructor(private readonly deptService: DeptService) {}
 

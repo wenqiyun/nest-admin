@@ -1,14 +1,17 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common'
 import { Repository, Like } from 'typeorm'
-import { UserEntity } from './user.entity'
+import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
-import { CryptoUtil } from 'src/common/utils/crypto.util'
+import { classToPlain } from 'class-transformer'
+
+import { CryptoUtil } from '../../common/utils/crypto.util'
+import { ResponseData } from '../../common/interfaces/result.interface'
+
+import { UserEntity } from './user.entity'
 import { CreateUserDto } from './dto/create-user.dto'
-import { ResponseData } from 'src/common/interfaces/result.interface'
 import { LoginUserDto } from './dto/login-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { classToPlain } from 'class-transformer'
 import { UserRoleEntity } from '../relationalEntities/userRole/userRole.entity'
 import { CreateUserRoleDto } from '../relationalEntities/userRole/dto/create-userRole.dto'
 import { UpdatePwDto } from './dto/update-pw-dto'
@@ -22,6 +25,7 @@ export class UserService {
     private readonly userRoleRepository: Repository<UserRoleEntity>,
     private readonly cryptoUtil: CryptoUtil,
     private readonly jwtService: JwtService,
+    private readonly config: ConfigService
   ) {}
 
   // 根据用户名查询用户信息
@@ -60,9 +64,9 @@ export class UserService {
     // 是否被禁用
     if (!user.status) throw new HttpException('该账号已被禁用，请切换账号登录', HttpStatus.FORBIDDEN)
     // 生成 token
-    const token = await this.createToken({ id: user.id })
+    const tokens = await this.createToken({ id: user.id })
     // 返回生成的 token
-    return { statusCode: 200, message: '登录成功', data: token }
+    return { statusCode: 200, message: '登录成功', data: tokens }
   }
 
   // 根据 ID 查询用户详细信息
@@ -209,7 +213,26 @@ export class UserService {
     return { statusCode: 200, message: '关联用户成功' }
   }
 
-  private async createToken(payload: { id: number }): Promise<string> {
-    return this.jwtService.sign(payload)
+ /**
+   * 生成 token
+   * @param payload { id: string } 
+   */
+  async createToken(payload: { id: number }): Promise<Record<string, unknown>> {
+    const accessToken = `Bearer ${this.jwtService.sign(payload)}`
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('JWT.refreshExpiresIn') })
+    return { accessToken, refreshToken }
+  }
+
+  async refreshToken (id: number): Promise<Record <string, unknown>> {
+    return this.createToken({ id })
+  }
+
+  async verifyToken (token: string): Promise<number> {
+    try {
+      const { id } = this.jwtService.verify(token)
+      return id
+    } catch (error) {
+      return 0
+    }
   }
 }

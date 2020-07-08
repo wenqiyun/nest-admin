@@ -1,14 +1,16 @@
 import { Controller, Request, Get, UseGuards } from '@nestjs/common'
-import { PermService } from './perm.service'
 import { ApiOperation, ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+
 import { Permissions } from '../../common/decorators/permissions.decorator'
-import { AuthGuard } from '@nestjs/passport'
 import { RolesGuard } from '../../common/guards/roles.guard'
+
+import { PermService } from './perm.service'
+import { JwtAuthGuard } from '../auth/auth.guard'
 
 @ApiBearerAuth()
 @ApiTags('基础')
 @Controller('perm')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class PermController {
   constructor(private readonly permService: PermService) {}
 

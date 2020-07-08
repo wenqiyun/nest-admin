@@ -1,15 +1,19 @@
-import * as rateLimit from 'express-rate-limit'
-import * as helmet from 'helmet'
-// import * as csurf from 'csurf'
+import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
+
+import * as express from 'express'
 
 import { NestFactory } from '@nestjs/core'
 import { ApplicationModule } from './app.module'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
-import { Logger, ValidationPipe } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 
 import { logger } from './common/middleware/logger.middleware'
+import { TransformInterceptor } from './common/interceptors/transform.interceptor'
+import { AllExceptionsFilter } from './common/exception/any-exceptions.filter'
+import { HttpExceptionsFilter } from './common/exception/http-exceptions.filer'
 
-const port = process.env.PORT
+const port = process.env.PORT || 8080
 
 async function bootstrap() {
   // Logger.log('--------- 服务启动 -------------')
@@ -39,19 +43,20 @@ async function bootstrap() {
   // app.use(csurf())
 
   // web 漏洞, 
-  app.use(helmet(), logger)
+  app.use(helmet())
 
-  // 自动验证（以后等系统完善后可自定义）
-  // 注册并配置全局验证管道
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      skipMissingProperties: false,
-      forbidUnknownValues: true
-    }),
-  )
+
+   // 日志
+   app.use(express.json()) // For parsing application/json
+   app.use(express.urlencoded({ extended: true })) // // For parsing application/x-www-form-urlencoded
+   app.use(logger)
+ 
+   // 使用全局拦截器打印出参
+   app.useGlobalInterceptors(new TransformInterceptor())
+   // 所有异常
+   app.useGlobalFilters(new AllExceptionsFilter())
+   // http 异常
+   app.useGlobalFilters(new HttpExceptionsFilter())
 
   // 启动程序，监听端口
   await app.listen(port)

@@ -9,6 +9,7 @@ export default registerAs('database', () => ({
   password: process.env.DB_PASSWORD,
   charset: process.env.DB_CHARSER,
   multipleStatements: true,
+  entities: ['dist/**/*.entity{.ts,.js}'],
   dropSchema: false,
   synchronize: true,
   // dateStrings: true,

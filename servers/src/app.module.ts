@@ -1,6 +1,6 @@
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Module } from '@nestjs/common'
-import { RedisModule } from 'nestjs-redis'
+import { RedisModule, RedisModuleOptions } from 'nestjs-redis'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
 import appConfig from './config/index'
@@ -26,30 +26,17 @@ import { OssModule } from './system/oss/oss.module'
       load: appConfig,
       isGlobal: true
     }),
+    // 数据库
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        type: config.get('database.type'),
-        host: config.get('database.host'),
-        port: config.get('database.port'),
-        username: config.get('database.username'),
-        password: config.get('database.password'),
-        database: config.get('database.database'),
-        charset: config.get('database.charset'),
-        multipleStatements: config.get('datebase.multipleStatements'),
-        // dateStrings: config.get('database.dateStrings'),
-        entities: ['dist/**/*.entity{.ts,.js}'],
-        synchronize: config.get('database.synchronize'),
-        logging: config.get('database.logging'),
-        logger: config.get('database.logger')
-      }),
+      useFactory: (config: ConfigService) => config.get('database'),
       inject: [ConfigService]
     }),
     // redis
     RedisModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => configService.get('redis'),
-      inject:[ConfigService]
+      useFactory: async (config: ConfigService) => config.get<RedisModuleOptions>('redis'),
+      inject: [ConfigService]
     }),
     UserModule,
     DeptModule,
