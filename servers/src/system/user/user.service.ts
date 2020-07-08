@@ -213,7 +213,7 @@ export class UserService {
     return { statusCode: 200, message: '关联用户成功' }
   }
 
- /**
+  /**
    * 生成 token
    * @param payload { id: string } 
    */
@@ -234,5 +234,5 @@ export class UserService {
     } catch (error) {
       return 0
     }
-  }
+  } 
 }
