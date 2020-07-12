@@ -1,8 +1,3 @@
-/**
- * 使用方法 
- * 1. model 文件 providers 导入 RedisUtil
- * 2. service 构造器引入
- */
 import { Injectable } from '@nestjs/common'
 import { RedisService } from 'nestjs-redis'
 import * as Redis from 'ioredis'
@@ -11,10 +6,10 @@ import * as Redis from 'ioredis'
 export class RedisUtil {
   private client: Redis.Redis
   constructor(private redisService: RedisService) {
-    this.getClient()
+    this.initClient()
   }
 
-  async getClient () {
+  async initClient (): Promise<void> {
     this.client = await this.redisService.getClient()
   }
 
@@ -25,7 +20,7 @@ export class RedisUtil {
    * @param val 对应 key 的 value
    * @param seconds 可选值， 过期时间 单位：秒
    */
-  async set(key: string, val: string,  seconds?: number) {
+  async set(key: string, val: string,  seconds?: number): Promise<void> {
     if (!seconds) {
       await this.client.set(key, val)
     } else {
@@ -37,7 +32,7 @@ export class RedisUtil {
    * 返回 key 对应的 value
    * @param key 
    */
-  async get(key: string): Promise<any> {
+  async get(key: string): Promise<string> {
     if (!key || key === '*') return
     return await this.client.get(key)
   }
@@ -46,7 +41,7 @@ export class RedisUtil {
    * 函数返回删除 key 的个数
    * @param keys key del(key1, key2, key3...)  
    */
-  async del(keys: string | string[]) {
+  async del(keys: string | string[]): Promise<number> {
     if (!keys) return 0
     return await this.client.del(...keys)
   }
@@ -68,7 +63,7 @@ export class RedisUtil {
    * @param field 属性
    * @param value 值
    */
-  async hset(key: string, field: string, value: string) {
+  async hset(key: string, field: string, value: string): Promise<number> {
     if (!key || !field) return 0
     return await this.client.hset(key, field, value)
   }
@@ -78,7 +73,7 @@ export class RedisUtil {
    * @param key 
    * @param data 
    */
-  async hmset(key: string, data: object | Map<string, string>) {
+  async hmset(key: string, data: any): Promise<number | any> {
     if (!key || !data) return 0
     return await this.client.hmset(key, data)
   }
@@ -88,7 +83,7 @@ export class RedisUtil {
    * @param key 
    * @param field 
    */
-  async hget(key: string, field: string) {
+  async hget(key: string, field: string): Promise<number | string | null> {
     if (!key || !field) return 0
     return await this.client.hget(key, field)
   }
@@ -97,7 +92,7 @@ export class RedisUtil {
    * hash 获取 key 下所有field 的 value 
    * @param key 
    */
-  async hvals(key: string) {
+  async hvals(key: string): Promise<string[]> {
     if (!key) return []
     return await this.client.hvals(key)
   }
@@ -107,7 +102,7 @@ export class RedisUtil {
    * @param key 
    * @param fields 
    */
-  async hdel(key: string, fields: string | string[]) {
+  async hdel(key: string, fields: string | string[]): Promise<string[] | number> {
     if (!key || fields.length === 0) return 0
     return await this.client.hdel(key, ...fields)
   }
@@ -116,7 +111,7 @@ export class RedisUtil {
    * hash 删除 key 下所有 fields value
    * @param key 
    */
-  async hdelAll(key: string) {
+  async hdelAll(key: string): Promise<string[] | number>  {
     if (!key) return 0
     const fields = await this.client.hkeys(key)
     if (fields.length === 0) return 0
