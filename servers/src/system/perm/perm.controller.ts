@@ -3,6 +3,7 @@ import { ApiOperation, ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
 import { Permissions } from '../../common/decorators/permissions.decorator'
 import { RolesGuard } from '../../common/guards/roles.guard'
+import { ResponseData } from '../../common/interfaces/result.interface'
 
 import { PermService } from './perm.service'
 import { JwtAuthGuard } from '../auth/auth.guard'
@@ -17,7 +18,7 @@ export class PermController {
   @Get('')
   @ApiOperation({ summary: '登录之后，查询用户所有菜单按钮权限' })
   @Permissions('')
-  async getFrontEndPerm(@Request() req) {
+  async getFrontEndPerm(@Request() req): Promise<ResponseData>  {
     const perms = await this.permService.findUserPerms(req['user'].id)
     return {
       statusCode: 200,
@@ -27,8 +28,8 @@ export class PermController {
           return { type: v['m_type'], code: v['m_code'] }
         }),
         avatar: req['user'].avatar,
-        nickname: req['user'].nickname,
-      },
+        nickname: req['user'].nickname
+      }
     }
   }
 }
