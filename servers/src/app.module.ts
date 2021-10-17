@@ -1,49 +1,69 @@
-import { TypeOrmModule } from '@nestjs/typeorm'
 import { Module } from '@nestjs/common'
-import { RedisModule, RedisModuleOptions } from 'nestjs-redis'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
+import { RedisModuleOptions } from 'nestjs-redis'
+import { APP_GUARD } from '@nestjs/core'
 
-import appConfig from './config/index'
+import configuration from './config/index'
+
+import { RedisUtilModule } from './common/libs/redis/redis.module'
 
 import { UserModule } from './system/user/user.module'
-import { DeptModule } from './system/dept/dept.module'
+import { AuthModule } from './system/auth/auth.module'
 import { MenuModule } from './system/menu/menu.module'
-import { RoleModule } from './system/roles/role.module'
+import { RoleModule } from './system/role/role.module'
 import { PermModule } from './system/perm/perm.module'
-import { OssModule } from './system/oss/oss.module'
-
-// import { ServeStaticModule } from '@nestjs/serve-static'
-// import { join } from 'path'
+import { RolesGuard } from './common/guards/roles.guard'
 
 @Module({
   imports: [
-    // 静态服务，可用于文件服务，生产环境最好使用 nginx 做静态服务
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(__dirname, '../../', 'upload'),
-    // }),
     // 配置模块
     ConfigModule.forRoot({
-      load: appConfig,
-      isGlobal: true
+      cache: true,
+      load: [configuration],
+      isGlobal: true,
     }),
     // 数据库
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => config.get('database'),
-      inject: [ConfigService]
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        return {
+          type: 'mysql',
+          entities: ['dist/**/*.entity{.ts,.js}'],
+          keepConnectionAlive: true,
+          ...config.get('db.mysql'),
+          // cache: {
+          //   type: 'ioredis',
+          //   ...config.get('redis'),
+          //   alwaysEnabled: true,
+          //   duration: 3 * 1000, // 缓存3s
+          // },
+        } as TypeOrmModuleOptions
+      },
     }),
-    // redis
-    RedisModule.forRootAsync({
+    // libs redis
+    RedisUtilModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => config.get<RedisModuleOptions>('redis'),
-      inject: [ConfigService]
+      useFactory: async (config: ConfigService) => {
+        return config.get<RedisModuleOptions>('redis')
+      },
+      inject: [ConfigService],
     }),
+    // 系统基础模块
     UserModule,
-    DeptModule,
+    AuthModule,
     MenuModule,
     RoleModule,
     PermModule,
-    OssModule
-  ]
+    // 业务功能模块
+  ],
+  // 全局守卫
+  // providers: [
+  //   {
+  //     provide: APP_GUARD,
+  //     useClass: RolesGuard,
+  //   },
+  // ],
 })
-export class ApplicationModule {}
+export class AppModule {}

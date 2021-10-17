@@ -1,64 +1,54 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <hamburger id="hamburger-container" class="hamburger-container" :is-active="sidebar.opened" @toggle-click="toggleSideBar"></hamburger>
 
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
 
     <div class="right-menu">
-      <el-dropdown class="avatar-container right-menu-item hover-effect" size="medium">
+      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <el-avatar :src="avatar"></el-avatar>
-          <span style="margin-left: 5px;">{{ username }}</span>
-          <!-- <img :src="avatar" class="user-avatar"> -->
+          <el-avatar icon="el-icon-user-solid" src="https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80" fit="fill" class="user-avatar" shape="square"></el-avatar>
           <i class="el-icon-caret-bottom" />
         </div>
-        <el-dropdown-menu slot="dropdown">
-          <a target="_blank" href="https://github.com/wenqiyun/nest-admin/">
-            <el-dropdown-item>Github</el-dropdown-item>
-          </a>
-          <el-dropdown-item>
-            <span style="display: block;" @click="updatePw" >修改密码</span>
-          </el-dropdown-item>
-          <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">退出</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <router-link to="/">
+              <el-dropdown-item>首页</el-dropdown-item>
+            </router-link>
+            <a target="_blank" href="https://github.com/wenqiyun/nest-admin">
+              <el-dropdown-item>Github</el-dropdown-item>
+            </a>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
     </div>
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
+<script lang="ts">
+import { computed, defineComponent } from 'vue'
+import { useStore } from '@/store'
+import Hamburger from '_c/Hamburger/index.vue'
+import Breadcrumb from '_c/Breadcrumb/index.vue'
 
-export default {
-  components: {
-    Breadcrumb,
-    Hamburger
-  },
-  computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar',
-      'username',
-      'device'
-    ])
-  },
-  methods: {
-    updatePw () {
+export default defineComponent({
+  name: 'Navbar',
+  components: { Hamburger, Breadcrumb },
+  setup () {
+    const store = useStore()
 
-    },
-    toggleSideBar () {
-      this.$store.dispatch('app/toggleSideBar')
-    },
-    async logout () {
-      await this.$store.dispatch('user/logout')
-      location.reload()
+    const sidebar = computed(() => store.state.app.sidebar)
+
+    const toggleSideBar = () => {
+      store.dispatch('app/toggleSideBar')
+    }
+
+    return {
+      sidebar,
+      toggleSideBar
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>
@@ -86,12 +76,7 @@ export default {
     float: left;
   }
 
-  .errLog-container {
-    display: inline-block;
-    vertical-align: top;
-  }
-
-  .right-menu {
+  :deep(.right-menu) {
     float: right;
     height: 100%;
     line-height: 50px;
@@ -122,19 +107,19 @@ export default {
       margin-right: 30px;
 
       .avatar-wrapper {
-        display: flex;
-        align-items: center;
+        margin-top: 5px;
+        position: relative;
+
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
           border-radius: 10px;
         }
+
         .el-icon-caret-bottom {
           cursor: pointer;
           position: absolute;
-          right: -10px;
-          top: 30px;
+          right: -20px;
+          top: 25px;
           font-size: 12px;
         }
       }

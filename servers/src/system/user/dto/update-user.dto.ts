@@ -1,50 +1,43 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsNotEmpty, IsString, MinLength, IsEmail, IsBoolean, IsArray } from 'class-validator'
-import { CreateUserRoleDto } from '../../relationalEntities/userRole/dto/create-userRole.dto'
+import { IsEmail, IsMobilePhone, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, IsIn } from 'class-validator'
 
-export class UpdateUserDto {
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty({ message: '用户ID不能为空' })
+export class  UpdateUserDto {
+  @ApiProperty({ description: '用户编码' })
+  @IsNumber({}, { message: 'id 类型错误，正确类型 number' })
+  @IsNotEmpty({ message: 'id 不能为空' })
   readonly id: number
 
-  @ApiProperty()
-  @IsString({ message: '不是有效的数据' })
-  @IsNotEmpty({ message: '昵称不能为空' })
-  @MinLength(2, { message: '昵称至少需要两位' })
-  readonly nickname: string
+  @ApiProperty({ description: '密码', required: false })
+  @IsString({ message: 'password 类型错误，正确类型 string' })
+  @IsOptional()
+  password?: string
 
-  @ApiProperty()
-  @IsString({ message: '不是有效的数据' })
-  @IsNotEmpty({ message: '用户名不能为空' })
-  @MinLength(3, { message: '用户名至少需要三位' })
-  readonly account: string
+  @ApiProperty({ description: '所属状态: 1-有效，0-禁用', required: false })
+  @IsNumber({}, { message: 'status 类型错误，正确类型 number' })
+  @IsOptional()
+  @IsIn([0, 1], { message: 'status 可选值0/1，分别表示有效禁用' })
+  readonly status?: 1 | 0
 
-  @ApiProperty()
-  @IsNotEmpty({ message: '邮箱不能为空' })
+  @ApiProperty({ description: '手机号', required: false })
+  @IsString({ message: 'phoneNum 类型错误，正确类型 string' })
+  @IsMobilePhone('zh-CN', { strictMode: false }, { message: '请输入正确的手机号' })
+  // @IsPhoneNumber('CH', { message: '请输入正确的手机号' })
+  @IsOptional()
+  readonly phoneNum?: string
+
+  @ApiProperty({ description: '邮箱', required: false })
+  @IsString({ message: 'email 类型错误，正确类型 string' })
   @IsEmail()
-  readonly email: string
+  @IsOptional()
+  readonly email?: string
 
-  @ApiProperty()
-  @IsString({ message: '不是有效的数据' })
-  @IsNotEmpty({ message: '手机号码不能为空' })
-  readonly phoneNum: string
+  @ApiProperty({ description: '确认密码', required: false })
+  @IsString({ message: ' confirmPassword 类型错误，正确类型 string' })
+  @IsOptional()
+  readonly confirmPassword?: string
 
-  @ApiProperty()
-  @IsString({ message: '不是有效的数据' })
-  @IsNotEmpty({ message: '头像地址不能为空' })
-  readonly avatar: string
-
-  @ApiProperty()
-  @IsNumber()
-  readonly deptId: number
-
-  @ApiProperty()
-  @IsBoolean({ message: '必须为布尔值类型' })
-  @IsNotEmpty({ message: '用户状态不能为空' })
-  readonly status: boolean
-
-  @ApiProperty()
-  @IsArray()
-  readonly userRoles: CreateUserRoleDto[]
+  @ApiProperty({ description: '头像', required: false })
+  @IsString({ message: 'avatar 类型错误，正确类型 string' })
+  @IsOptional()
+  readonly avatar?: string
 }

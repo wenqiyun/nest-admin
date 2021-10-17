@@ -1,238 +1,229 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common'
-import { Repository, Like } from 'typeorm'
+import { HttpStatus, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
-import { classToPlain } from 'class-transformer'
+import { Like, Repository, getManager, getConnection } from 'typeorm'
+import { classToPlain, plainToClass } from 'class-transformer'
+import { genSalt, hash, compare } from 'bcrypt'
 
-import { CryptoUtil } from '../../common/utils/crypto.util'
-import { ResponseData } from '../../common/interfaces/result.interface'
+import { ResultData } from '../../common/utils/result'
+import { getRedisKey } from '../../common/utils/utils'
+import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
+import { RedisUtilService } from '../../common/libs/redis/redis.service'
 
 import { UserEntity } from './user.entity'
+import { UserRoleEntity } from './user-role.entity'
+
 import { CreateUserDto } from './dto/create-user.dto'
-import { LoginUserDto } from './dto/login-user.dto'
+import { FindUserListDto } from './dto/find-user-list.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { UserRoleEntity } from '../relationalEntities/userRole/userRole.entity'
-import { CreateUserRoleDto } from '../relationalEntities/userRole/dto/create-userRole.dto'
-import { UpdatePwDto } from './dto/update-pw-dto'
+import { CreateOrUpdateUserRolesDto } from './dto/create-user-roles.dto'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(UserRoleEntity)
-    private readonly userRoleRepository: Repository<UserRoleEntity>,
-    private readonly cryptoUtil: CryptoUtil,
+    private readonly userRoleRepo: Repository<UserRoleEntity>,
+    private readonly config: ConfigService,
     private readonly jwtService: JwtService,
-    private readonly config: ConfigService
+    private readonly redisUtilService: RedisUtilService,
   ) {}
 
-  // 根据用户名查询用户信息
-  async findOneByAccount(account: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ account })
-  }
-
-  // 根据用户id查询用户信息, 只查用户表，
   async findOneById(id: number): Promise<UserEntity> {
-    return await this.userRepository.findOne(id)
+    const redisKey = getRedisKey(RedisKeyPrefix.USER_INFO, id)
+    const result = await this.redisUtilService.hGetAll(redisKey)
+    // plainToClass 去除 password slat
+    let user = plainToClass(UserEntity, result, { enableImplicitConversion: true })
+    if (!user?.id) {
+      user = await this.userRepo.findOne(id)
+      user = plainToClass(UserEntity, { ...user }, { enableImplicitConversion: true })
+      await this.redisUtilService.hmset(redisKey, classToPlain(user))
+    }
+    user.password = ''
+    user.salt = ''
+    return user
   }
 
-  // 新用户注册
-  async create(dto: CreateUserDto): Promise<ResponseData> {
-    // 检查用户名是否存在
+  async findOneByAccount(account: string): Promise<UserEntity> {
+    return await this.userRepo.findOne({ account })
+  }
+
+  /** 创建用户 */
+  async create(dto: CreateUserDto): Promise<ResultData> {
     const existing = await this.findOneByAccount(dto.account)
-    if (existing) throw new HttpException('账号已存在', HttpStatus.BAD_REQUEST)
-    // 判断密码是否相等
-    if (dto.password !== dto.confirmPassword) throw new HttpException('两次输入密码不一致，请重试', HttpStatus.BAD_REQUEST)
-    // 密码加密
-    dto.password = this.cryptoUtil.encryptPassword(dto.password)
-    // 通过验证， 插入数据
-    let findOneByname = new UserEntity()
-    findOneByname = { ...dto, ...findOneByname }
-    const result = await this.userRepository.save(findOneByname)
-    return { statusCode: 200, message: '注册成功', data: result }
+    if (existing) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '账号已存在，请调整后重新注册！')
+    if (dto.password !== dto.confirmPassword) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '两次输入密码不一致，请重试')
+    const salt = await genSalt()
+    dto.password = await hash(dto.password, salt)
+    // plainToClass  忽略转换 @Exclude 装饰器
+    const user = plainToClass(UserEntity, { salt, ...dto }, { ignoreDecorators: true })
+    const result = await getManager().transaction(async (transactionalEntityManager) => {
+      return await transactionalEntityManager.save<UserEntity>(user)
+    })
+    return ResultData.ok(classToPlain(result))
   }
 
-  // 登录逻辑
-  async login(dto: LoginUserDto): Promise<ResponseData> {
-    // 查询用户
-    const user = await this.findOneByAccount(dto.account)
-    if (!user) throw new HttpException('账号或密码错误', HttpStatus.BAD_REQUEST)
-    // 判断密码是否相等
-    if (!this.cryptoUtil.checkPassword(dto.password, user.password)) throw new HttpException('账号或密码错误', HttpStatus.BAD_REQUEST)
-    // 是否被禁用
-    if (!user.status) throw new HttpException('该账号已被禁用，请切换账号登录', HttpStatus.FORBIDDEN)
+  /** 更新用户信息 */
+  async login(account: string, password: string): Promise<ResultData> {
+    const user = await this.findOneByAccount(account)
+    if (!user) return ResultData.fail(HttpStatus.NOT_FOUND, '账号或密码错误')
+    const checkPassword = await compare(password, user.password)
+    if (!checkPassword) return ResultData.fail(HttpStatus.NOT_FOUND, '账号或密码错误')
     // 生成 token
-    const tokens = await this.createToken({ id: user.id })
-    // 返回生成的 token
-    return { statusCode: 200, message: '登录成功', data: tokens }
+    const data = this.genToken({ id: user.id })
+    return ResultData.ok(data)
   }
 
-  // 根据 ID 查询用户详细信息
-  async findOne(id: number): Promise<ResponseData> {
-    const user = await this.userRepository.findOne(id, { relations: ['dept', 'userRoles'] })
-    if (!user) throw new HttpException('该用户不存在或已删除', HttpStatus.BAD_REQUEST)
-    return { statusCode: 200, message: '查询成功', data: classToPlain(user) }
+  /** 更新用户信息 */
+  async update(dto: UpdateUserDto): Promise<ResultData> {
+    const existing = await this.findOneById(dto.id)
+    if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前用户不存在或已删除')
+    // 如果有更新密码
+    if (dto.password) {
+      if (dto.password !== dto.confirmPassword) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '两次输入密码不一致，请重试')
+      dto.password = await hash(dto.password, existing.salt)
+    }
+    const user = plainToClass(UserEntity, dto)
+    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+      return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, user)
+    })
+    if (!affected) ResultData.fail(HttpStatus.NOT_FOUND, '更新失败，请稍后重试')
+    await this.redisUtilService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), dto)
+    // redis 更新用户信息
+    return ResultData.ok()
   }
 
-  // 查询列表
-  async findList({ pageSize = 10, pageNum = 1, deptId, roleId, nickname, status }): Promise<ResponseData> {
-    // !!nickname ? { nickname: Like(nickname) } : {}
-    let users
+  /** 创建 or 更新用户-角色 */
+  async createOrUpdateUserRole(dto: CreateOrUpdateUserRolesDto): Promise<ResultData> {
+    const userRoleList = plainToClass(
+      UserRoleEntity,
+      dto.roleIds.map((roleId) => {
+        return { roleId, userId: dto.userId }
+      }),
+    )
+    const res = await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.delete(UserRoleEntity, { userId: dto.userId })
+      const result = await transactionalEntityManager.save<UserRoleEntity>(userRoleList)
+      return result
+    })
+    if (!res) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '用户更新角色失败')
+    await this.redisUtilService.set(getRedisKey(RedisKeyPrefix.USER_ROLE, dto.userId), JSON.stringify(dto.roleIds))
+    return ResultData.ok()
+  }
+
+  /** 查询用户列表 */
+  async findList(dto: FindUserListDto): Promise<ResultData> {
+    const { page, size, account, status, roleId, hasCurrRole = 0 } = dto
     if (roleId) {
-      users = await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = user.id')
-        .leftJoinAndSelect('user.dept', 'dept')
-        .where('user.status = 1 and ur.role_id =:roleId', { roleId })
-        .orderBy({
-          'user.createDate': 'DESC',
-          'user.id': 'DESC',
-          'user.account': 'ASC',
-          'user.nickname': 'ASC'
-        })
-        .skip(pageSize * (pageNum - 1))
-        .take(pageSize)
-        .getManyAndCount()
-    } else if (deptId) {
-      users = await this.userRepository
-        .createQueryBuilder('user')
-        .where('user.dept_id =:deptId', { deptId })
-        .orderBy({
-          'user.createDate': 'DESC',
-          'user.id': 'DESC',
-          'user.account': 'ASC',
-          'user.nickname': 'ASC'
-        })
-        .skip(pageSize * (pageNum - 1))
-        .take(pageSize)
+      console.log(hasCurrRole, 90)
+      const result = await this.findUserByRoleId(roleId, page, size, !!Number(hasCurrRole))
+      return result
+    }
+    const where = {
+      ...(status ? { status } : null),
+      ...(account ? { account: Like(`%${account}%`) } : null),
+    }
+    const users = await this.userRepo.findAndCount({ where, order: { id: 'DESC' }, skip: size * (page - 1), take: size })
+    return ResultData.ok({ list: classToPlain(users[0]), total: users[1] })
+  }
+
+  /** 查询单个用户 */
+  async findOne(id: number): Promise<ResultData> {
+    const user = await this.findOneById(id)
+    if (!user) return ResultData.fail(HttpStatus.NOT_FOUND, '该用户不存在或已删除')
+    return ResultData.ok(classToPlain(user))
+  }
+
+  /** 查询单个用户所拥有的角色 id */
+  async findUserRole(id: number): Promise<ResultData> {
+    const roleIds = await this.findUserRoleByUserId(id)
+    return ResultData.ok(roleIds)
+  }
+
+  /** 生成用户角色关系, 单个角色， 多个用户 */
+  async createOrCancelUserRole(userIds: number[], roleId: number, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
+    const res = await getManager().transaction(async (transactionalEntityManager) => {
+      if (createOrCancel === 'create') {
+        const dto = plainToClass(
+          UserRoleEntity,
+          userIds.map((userId) => {
+            return { roleId, userId }
+          }),
+        )
+        return await transactionalEntityManager.save<UserRoleEntity>(dto)
+      } else {
+        return await transactionalEntityManager.delete(UserRoleEntity, { roleId, userId: userIds })
+      }
+    })
+    if (res) return ResultData.ok()
+    else return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, `${createOrCancel === 'create' ? '添加' : '取消'}用户关联失败`)
+  }
+
+  /**
+   * @param roleId 角色 id
+   * @param isCorrelation 是否相关联， true 查询拥有当前 角色的用户， false 查询无当前角色的用户
+   */
+  private async findUserByRoleId(roleId: number, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
+    let res
+    if (isCorrelation) {
+      res = await getConnection()
+        .createQueryBuilder('sys_user', 'su')
+        .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = su.id')
+        .where('ur.role_id = :roleId', { roleId })
+        .skip(size * (page - 1))
+        .take(size)
         .getManyAndCount()
     } else {
-      const where = {
-        ...(status ? { status } : null),
-        ...(nickname ? { nickname: Like(`%${nickname}%`) } : null)
-      }
-      users = await this.userRepository
-        .createQueryBuilder('user')
-        // 'user.nickname like :name', { name: `%${nickname}%` }
-        .leftJoinAndSelect('user.dept', 'dept')
-        .where(where)
-        .orderBy({
-          'user.createDate': 'DESC',
-          'user.id': 'DESC',
-          'user.account': 'ASC',
-          'user.nickname': 'ASC'
+      // 查询需要优化
+      res = await getConnection()
+        .createQueryBuilder('sys_user', 'su')
+        .where((qb: any) => {
+          const subQuery = qb.subQuery().select(['sur.user_id']).from('sys_user_role', 'sur').where('sur.role_id = :roleId', { roleId }).getQuery()
+          console.log(subQuery)
+          return 'su.id not in ' + subQuery
         })
-        .skip(pageSize * (pageNum - 1))
-        .take(pageSize)
+        .skip(size * (page - 1))
+        .take(size)
         .getManyAndCount()
     }
-
-    return { statusCode: 200, message: '查询用户列表成功', data: { list: classToPlain(users[0]), total: users[1] } }
+    return ResultData.ok({ list: classToPlain(res[0]), total: res[1] })
   }
 
-  // 根据roleId 查询未绑定该 role 的用户
-  // SELECT u.id, u.nickname FROM sys_user u WHERE u.id  <> ALL (select DISTINCT ur.user_id from sys_user_role ur where ur.role_id = 11)
-  async findUserListNotInRoleId({ roleId, pageSize = 10, pageNum = 1 }): Promise<ResponseData> {
-    const users = await this.userRepository
-      .createQueryBuilder('u')
-      .select(['u.id', 'u.nickname'])
-      .where('u.status = 1')
-      .andWhere((qb) => {
-        const subQuery = qb.subQuery().select('DISTINCT ur.user_id').from('sys_user_role', 'ur').where('ur.role_id =:roleId', { roleId }).getQuery()
-        return 'u.id <> ALL ' + subQuery
-      })
-      .orderBy({
-        'u.id': 'DESC',
-        'u.nickname': 'ASC'
-      })
-      .skip(pageSize * (pageNum - 1))
-      .take(pageSize)
-      .getManyAndCount()
-    return { statusCode: 200, message: '查询用户列表成功', data: { list: classToPlain(users[0]), total: users[1] } }
+  /** 根据用户id 查询角色 id 集合 */
+  async findUserRoleByUserId(id: number): Promise<number[]> {
+    const userRoleKey = getRedisKey(RedisKeyPrefix.USER_ROLE, id)
+    const result = await this.redisUtilService.get(userRoleKey)
+    if (result) return JSON.parse(result)
+    else {
+      const roles = await this.userRoleRepo.find({ select: ['roleId'], where: { userId: id } })
+      const roleIds = roles.map((v) => v.roleId)
+      await this.redisUtilService.set(userRoleKey, JSON.stringify(roleIds))
+      return roleIds
+    }
   }
 
-  /**
-   * 更新用户信息
-   * @param id 用户id
-   * @parm updataInput updateInput
-   */
-  async update(dto: UpdateUserDto): Promise<ResponseData> {
-    const existing = await this.userRepository.findOne(dto.id)
-    if (!existing) throw new HttpException(`更新失败，ID 为 ${dto.id} 的用户不存在`, 404)
-    // 删除该用户原有关联角色
-    await this.cancelUserRoleRelation(dto.id)
-    const user: UserEntity = Object.assign(existing, dto) as UserEntity
-    const result = await this.userRepository.save(user)
-    if (!result) return { statusCode: 200, message: '用户信息修改失败' }
-    return { statusCode: 200, message: '用户信息修改成功' }
-  }
-
-  // 修改用户自身密码
-  async updatePw(dto: UpdatePwDto): Promise<ResponseData> {
-    // 判断密码确认密码是否相等
-    if (dto.newPassword !== dto.confirmPassword) return { statusCode: 500, message: '确认密码与新密码不一致' }
-    // 查找用户，判断密码
-    const user = await this.findOneById(dto.id)
-    // 判断密码是否相等
-    if (!this.cryptoUtil.checkPassword(dto.newPassword, user.password)) return { statusCode: 501, message: '密码错误' }
-    return { statusCode: 200, message: '修改密码成功' }
-  }
-
-  /**
-   * 管理员重置某个账户的密码
-   * 重置后的密码，先写死 123456 后写入配置文件
-   */
-  async resetPossword(id: number): Promise<ResponseData> {
-    await this.userRepository.update(id, { password: this.cryptoUtil.encryptPassword('123456') })
-    return { statusCode: 200, message: '重置密码成功' }
-  }
-  /**
-   * 删除用户， 不物理删除，只做禁用
-   * @param id 用户id
-   */
-  async updateStatus(id: number, status: string): Promise<ResponseData> {
-    const existing = await this.userRepository.findOne(id)
-    if (!existing) throw new HttpException(`${status ? '启用' : '禁用'} ID 为 ${id} 的用户不存在`, 404)
-    await this.userRepository.update(id, { status: status ? !!parseInt(status) : false })
-    return { statusCode: 200, message: '删除成功' }
-  }
-
-  // 删除用户与角色关联关系
-  async cancelUserRoleRelation(userId: number): Promise<ResponseData> {
-    const result = await this.userRoleRepository.delete({ userId })
-    if (!result) return { statusCode: 500, message: '当前关联用户已取消关联或不存在' }
-    return { statusCode: 200, message: '已取消关联' }
-  }
-
-  // 创建用户与角色关联
-  async createUserRoleRelation(dtos: CreateUserRoleDto[]): Promise<ResponseData> {
-    const result = await this.userRoleRepository.save(dtos)
-    if (!result) return { statusCode: 500, message: '关联用户失败，请重新关联' }
-    return { statusCode: 200, message: '关联用户成功' }
-  }
-
-  /**
-   * 生成 token
-   * @param payload { id: string } 
-   */
-  async createToken(payload: { id: number }): Promise<Record<string, unknown>> {
+  /** 生成 token */
+  genToken(payload: { id: number }): Record<string, unknown> {
     const accessToken = `Bearer ${this.jwtService.sign(payload)}`
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('JWT.refreshExpiresIn') })
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('jwt.refreshExpiresIn') })
     return { accessToken, refreshToken }
   }
 
-  async refreshToken (id: number): Promise<Record <string, unknown>> {
-    return this.createToken({ id })
+  /** 刷新 token */
+  refreshToken(id: number): string {
+    return this.jwtService.sign({ id })
   }
 
-  async verifyToken (token: string): Promise<number> {
+  /** 校验 token */
+  verifyToken(token: string): number {
     try {
-      const { id } = this.jwtService.verify(token)
+      if (!token) return 0
+      const id = this.jwtService.verify(token.replace('Bearer ', ''))
       return id
     } catch (error) {
       return 0
     }
-  } 
+  }
 }

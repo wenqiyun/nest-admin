@@ -1,6 +1,6 @@
 <template>
-  <div class="has-logo">
-    <logo :collapse="isCollapse" />
+  <div class="sidebar-container">
+    <Logo :collapse="isCollapse"></Logo>
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -11,41 +11,45 @@
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"
-      >
-        <sidebar-item v-for="route in permissionRoutes" :key="route.path" :item="route" :base-path="route.path" />
+        >
+        <sidebar-item v-for="route in permRoutes" :key="route.path" :item="route" :base-path="route.path"></sidebar-item>
       </el-menu>
     </el-scrollbar>
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
-import Logo from './Logo'
-import SidebarItem from './SidebarItem'
-import variables from '@/styles/variables.scss'
+<script lang="ts">
+import { useStore } from '@/store'
+import { computed, defineComponent } from 'vue'
+import { useRoute } from 'vue-router'
+import Logo from './Logo.vue'
+import SidebarItem from './SidebarItem.vue'
+import * as _variables from '@/styles/variables.scss'
 
-export default {
-  components: { SidebarItem, Logo },
-  computed: {
-    ...mapGetters([
-      'permissionRoutes',
-      'sidebar'
-    ]),
-    activeMenu () {
-      const route = this.$route
+export default defineComponent({
+  name: 'Sidebar',
+  components: { Logo, SidebarItem },
+  setup () {
+    const store = useStore()
+    const permRoutes = computed(() => store.state.permission.routes)
+
+    const activeMenu = computed(() => {
+      const route = useRoute()
       const { meta, path } = route
-      // if set path, the sidebar will highlight the path you set
-      if (meta.activeMenu) {
-        return meta.activeMenu
-      }
+      if (meta.activeMenu) return meta.activeMenu
       return path
-    },
-    variables () {
-      return variables
-    },
-    isCollapse () {
-      return !this.sidebar.opened
+    })
+
+    const isCollapse = computed(() => !store.state.app.sidebar.opened)
+
+    const variables: any = computed(() => _variables)
+
+    return {
+      permRoutes,
+      activeMenu,
+      isCollapse,
+      variables
     }
   }
-}
+})
 </script>

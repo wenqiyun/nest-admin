@@ -1,9 +1,9 @@
 <template>
-  <div class="sidebar-logo-container" :class="{'collapse':collapse}">
+  <div class="sidebar-logo-container" :class="{ 'collapse': collapse }">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 v-else class="sidebar-title">{{ title }} </h1>
+        <h1 v-else class="sidebar-title">{{ title }}</h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo">
@@ -13,8 +13,10 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'SidebarLogo',
   props: {
     collapse: {
@@ -24,11 +26,11 @@ export default {
   },
   data () {
     return {
-      title: 'nest-admin',
+      title: 'Vue ElementPlus Admin',
       logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>
@@ -46,18 +48,11 @@ export default {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: #2f3f54;
+  background: #304156;
+  border-bottom: 1px solid rgb(81, 95, 113);
   text-align: center;
   overflow: hidden;
-  &::after {
-    height: 1px;
-    content: " ";
-    width: 100%;
-    display: block;
-    position: absolute;
-    bottom: 0;
-    background: #4c5a6b;
-  }
+
   & .sidebar-logo-link {
     height: 100%;
     width: 100%;

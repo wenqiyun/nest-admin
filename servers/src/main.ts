@@ -1,67 +1,77 @@
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 
-import * as express from 'express'
+import express from 'express'
 
 import { NestFactory } from '@nestjs/core'
-import { ApplicationModule } from './app.module'
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
-import { Logger } from '@nestjs/common'
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { ConfigService } from '@nestjs/config'
 
-import { logger } from './common/middleware/logger.middleware'
-import { TransformInterceptor } from './common/interceptors/transform.interceptor'
-import { AllExceptionsFilter } from './common/exception/any-exceptions.filter'
-import { HttpExceptionsFilter } from './common/exception/http-exceptions.filer'
+import { AppModule } from './app.module'
 
-const port = process.env.PORT || 8080
+import { logger } from './common/libs/log4js/logger.middleware'
+import { Logger } from './common/libs/log4js/log4j.util';
+import { TransformInterceptor } from './common/libs/log4js/transform.interceptor';
+import { HttpExceptionsFilter } from './common/libs/log4js/http-exceptions-filter';
+import { ExceptionsFilter } from './common/libs/log4js/exceptions-filter';
 
 async function bootstrap() {
-  // Logger.log('--------- 服务启动 -------------')
-  // 设置 cors 允许跨域访问
-  const app = await NestFactory.create(ApplicationModule, { cors: true })
+  const app = await NestFactory.create(AppModule)
 
-  // 设置角色验证器
-  // 访问频率限制
+  // 设置访问频率
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000, // 15分钟
-      max: 1000 // 限制15分钟内最多只能访问1000次
+      max: 1000, // 限制15分钟内最多只能访问1000次
     }),
   )
 
-  // 设置所有 api 访问前缀
-  app.setGlobalPrefix('/api')
+  const config = app.get(ConfigService)
 
-  // 接口文档 swagger 参数
-  const options = new DocumentBuilder().setTitle('Kapok 工作流 app').setDescription('Kapok API 文档').setVersion('1.1.0').addBearerAuth().build()
-  const document = SwaggerModule.createDocument(app, options)
-  // 设置 swagger 网址
-  SwaggerModule.setup('docs', app, document)
+  // 设置 api 访问前缀
+  const prefix = config.get<string>('app.prefix')
+  app.setGlobalPrefix(prefix)
+
+  // web 安全，防常见漏洞
+  app.use(helmet())
+
+
+  // sagger 配置 获取是否显示 swagger 文档
+  if (config.get<boolean>('app.swagger')) {
+    const swaggerOptions = new DocumentBuilder().setTitle('nest-admin App').setDescription('nest-admin App 接口文档').setVersion('2.0.0').addBearerAuth().build()
+    const document = SwaggerModule.createDocument(app, swaggerOptions)
+    SwaggerModule.setup('/api/docs', app, document)
+  }
 
   // 防止跨站请求伪造
   // 设置 csrf 保存 csrfToken
   // app.use(csurf())
 
-  // web 漏洞, 
-  app.use(helmet())
+  // 全局验证
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  )
 
+  // 日志
+  app.use(express.json())
+  app.use(express.urlencoded({ extended: true }))
+  app.use(logger)
+  // 使用全局拦截器打印出参
+  app.useGlobalInterceptors(new TransformInterceptor())
+  // 所有异常
+  app.useGlobalFilters(new ExceptionsFilter())
+  app.useGlobalFilters(new HttpExceptionsFilter())
+  // 获取配置端口
+  const port = config.get<number>('app.port') || 8080
 
-   // 日志
-   app.use(express.json()) // For parsing application/json
-   app.use(express.urlencoded({ extended: true })) // // For parsing application/x-www-form-urlencoded
-   app.use(logger)
- 
-   // 使用全局拦截器打印出参
-   app.useGlobalInterceptors(new TransformInterceptor())
-   // 所有异常
-   app.useGlobalFilters(new AllExceptionsFilter())
-   // http 异常
-   app.useGlobalFilters(new HttpExceptionsFilter())
-
-  // 启动程序，监听端口
   await app.listen(port)
 
-  Logger.log(`http://localhost:${port}`, '服务启动成功')
+  const appLocalPath = await app.getUrl()
+
+  Logger.log(appLocalPath, '服务启动成功')
 }
 
 bootstrap()

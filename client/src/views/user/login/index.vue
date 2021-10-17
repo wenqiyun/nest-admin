@@ -1,128 +1,134 @@
 <template>
   <div class="user-layout-wrapper">
     <div class="login-container">
-      <div class="top">
-        <span>nest-admin 权限管理系统</span>
-      </div>
-      <div class="main">
-        <el-form ref="loginForm" :model="loginForm" :rules="rules">
-          <el-form-item prop="account">
-            <el-input placeholder="账号" prefix-icon="el-icon-user-solid" v-model.trim="loginForm.account"></el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input placeholder="密码" type="password" prefix-icon="el-icon-lock" v-model="loginForm.password" @keyup.enter.native="confirmLoginEvent"></el-input>
-          </el-form-item>
-        </el-form>
-        <el-button type="primary" :loading="loading" @click="confirmLoginEvent" style="width: 100%;margin-top: 24px;">登&nbsp;&nbsp;录</el-button>
-      </div>
-      <div class="footer">
-        <span>©2020</span>
-        <span>&nbsp;|&nbsp;</span>
-        <a href="http://beian.miit.gov.cn" target="_blank">赣ICP备17000521号-1</a>
+      <div class="login-container__content">
+        <div class="login-form-wrapper">
+          <header class="system_label">
+            <svg-icon icon-class="logo-small"></svg-icon>
+            <h1>Nest Admin</h1>
+          </header>
+          <el-form ref="loginFormRef" :model="formData" :rules="loginFormRules" class="login-form">
+            <el-form-item prop="account">
+              <el-input v-model.trim="formData.account" placeholder="帐号/邮箱/手机号"></el-input>
+            </el-form-item>
+            <el-form-item  prop="password">
+              <el-input type="password" v-model="formData.password" placeholder="密码"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <div style="display: flex; justify-content: space-between;">
+                <el-checkbox v-model="autoLogin">自动登录</el-checkbox>
+                <el-button type="text">忘记密码</el-button>
+              </div>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" style="width: 100%;" @click="loginEvent">登&nbsp;&nbsp;&nbsp;录</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="right-img"></div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { UserLogin } from '@/api/user'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
-  data () {
+  setup () {
+    const formData = ref<UserLogin>({ account: '', password: '' })
+    const autoLogin = ref<boolean>(false)
+
+    const loginFormRules = ref({
+      account: [
+        { required: true, message: '请输入帐号/邮箱/手机号', trigger: 'blur' }
+      ],
+      password: [
+        { required: true, message: '请输入密码', trigger: 'blur' }
+      ]
+    })
+
+    const router = useRouter()
+    const loginFormRef = ref()
+    // 登录事件
+    const loginEvent = () => {
+      if (loginFormRef.value) {
+        loginFormRef.value.validate((valid: boolean) => {
+          if (valid) router.replace('/')
+          else {
+            return false
+          }
+        })
+      }
+    }
+
     return {
-      loading: false,
-      loginForm: {
-        account: '',
-        password: ''
-      },
-      rules: {
-        account: [
-          { required: true, message: '请输入账号', trigger: 'blur' },
-          { min: 3, message: '用户名至少需要三位', trigger: 'blur' }
-        ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ]
-      },
-      otherQuery: {},
-      redirect: ''
-    }
-  },
-  watch: {
-    $route: {
-      handler: function (route) {
-        // const query = route.query
-        // if (query) {
-        //   this.redirect = query.redirect
-        //   this.otherQuery = this.getOtherQuery(query)
-        // }
-      },
-      immediate: true
-    }
-  },
-  methods: {
-    confirmLoginEvent () {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.loading = false
-              this.$router.push({ path: '/' })
-              // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-            })
-            .catch(msg => {
-              this.$message.error(msg)
-              this.loading = false
-            })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
-    getOtherQuery (query) {
-      return Object.keys(query).reduce((acc, cur) => {
-        if (cur !== 'redirect') {
-          acc[cur] = query[cur]
-        }
-        return acc
-      }, {})
+      autoLogin,
+      formData,
+      loginFormRef,
+      loginFormRules,
+      loginEvent
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.user-layout-wrapper{
-  height: 100vh;
+.user-layout-wrapper {
+  position: relative;
+  height: 100%;
+  background: url(~@/assets/login-bg.png) no-repeat;
+  background-size: 100% 100%;
+
   .login-container {
-    width: 100%;
-    min-height: 100%;
-    background: #f0f2f5 url(/static/img/login-bg.png) no-repeat 50%;
-    background-size: 100%;
-    padding: 220px 0 144px;
-    position: relative;
-  }
-  .top {
-    text-align: center;
-    height: 77px;
-    font-size: 33px;
-    font-weight: 600;
-    color: rgba(0,0,0,.85);
-  }
-  .main {
-    vertical-align: middle;
-    min-width: 260px;
-    width: 368px;
+    height: 100%;
+    max-width: 1500px;
+    min-width: 1300px;
     margin: 0 auto;
+
+    .login-container__content {
+      display: flex;
+      height: 100%;
+      padding: 0 30px;
+      align-items: center;
+      justify-content: space-between;
+      .right-img {
+        width: 800px;
+        height: 700px;
+        margin-top: 60px;
+        background: url(~@/assets/slack-login.png);
+        background-size: 100% 100%;
+      }
+    }
   }
-  .footer {
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 14px;
+}
+.login-form-wrapper {
+  height: 400px;
+  width: 400px;
+  padding: 60px 0 40px 0;
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+  .system_label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+
+    h1 {
+      margin-left: 16px;
+      margin-bottom: 0;
+      font-size: 24px;
+      text-align: center;
+    }
+  }
+
+  .login-form {
+    width: 350px;
+    margin: 30px auto 0;
   }
 }
 </style>

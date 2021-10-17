@@ -1,0 +1,28 @@
+.k-lazy {
+  &-enter {
+    opacity: 0;
+  }
+
+  &-enter-to {
+    opacity: 1;
+  }
+
+  &-enter-active {
+    transition: opacity 0.3s 0.2s;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  &-leave {
+    opacity: 1;
+  }
+
+  &-leave-to {
+    opacity: 0;
+  }
+
+  &-leave-active {
+    transition: opacity 0.3s;
+  }
+}

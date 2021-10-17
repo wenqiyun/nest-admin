@@ -1,30 +1,64 @@
-import { CanActivate, ExecutionContext, Injectable, Inject } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { ConfigService } from '@nestjs/config'
+import { pathToRegexp } from 'path-to-regexp'
+
+import { CanActivate, Inject, ExecutionContext, Injectable } from '@nestjs/common'
 import { PermService } from '../../system/perm/perm.service'
-import { ForbiddenException } from '../exception/forbiddenException'
+import { IPermDecorator } from '../decorators/perm-decorator.interface';
+
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector, @Inject('PermService') private readonly permSerivce: PermService) {}
+  private globalWhiteList = []
+  constructor(
+    private readonly reflector: Reflector,
+    @Inject('PermService')
+    private readonly permService: PermService,
+    private readonly config: ConfigService,
+  ) {
+    this.globalWhiteList = [].concat(this.config.get<string[] | string>('perm.router.whitelist') || [])
+  }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request = context.switchToHttp().getRequest()
-    const user = req['user']
-    if (!user) return false
-    // 当前请求所需权限
-    const currentPerm = this.reflector.get<string>('permissions', context.getHandler())
-    // 空， 标识不需要权限
-    if (!currentPerm) return true
-    // 根据用户id 查询所拥有的权限
-    const permList = await this.permSerivce.findUserPerms(user.id)
-    const perms: string[] = []
-    for (let i = 0, len = permList.length; i < len; i++) {
-      permList[i]['m_perms'].indexOf(',') > -1 ? perms.push(...permList[i]['m_perms'].split(',')) : perms.push(permList[i]['m_perms'])
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const currPerm = this.reflector.get<boolean>('perm', ctx.getHandler())
+    console.log(currPerm, 90909)
+    // 设置 @Perm 且 传递的值 为 false 或 IPermDecorator 对象时 isWhite 为 true
+    // 或 IPermDecorator isPerm 为 false 的时候 直接忽略 权限设置 return true
+    // !currPerm 使用会包含 undefind 的情况
+    if ((typeof currPerm === 'boolean' && currPerm === false) ||
+        (currPerm as IPermDecorator)?.isWhite
+        || (currPerm as IPermDecorator)?.isPerm === false) {
+      return true
     }
-    // currentPerm 有值，则需对比该用户所有权限
-    // return perms.includes(currentPerm)
-    // nestjs 原生 ForbiddenException 英文，不符合，所以抛出自定义异常
-    if (perms.includes(currentPerm)) return true
-    throw new ForbiddenException()
+
+    // 全局配置，
+    const req = ctx.switchToHttp().getRequest()
+    const isGlobal = this.config.get<string>('perm.model') === 'global'
+    if (isGlobal) {
+      const i = this.globalWhiteList.findIndex(route => {
+        // 请求方法类型相同
+        if (req.method.toUpperCase() === route.method.toUpperCase()) {
+          // 对比 url
+          return !!pathToRegexp(route.path).exec(req.url)
+        }
+        return false
+      })
+      // 在白名单内 则 进行下一步
+      if (i > -1) return true
+    }
+    // 需要比对 该用户所拥有的 接口权限
+    const user = req.user
+    // 没有挈带 token 直接返回 false
+    if (!user) return false
+    const userPermApi = await this.permService.findAppAllRoutesBySwaggerApi()
+    const index = userPermApi.findIndex(route => {
+      // 请求方法类型相同
+      if (req.method.toUpperCase() === route.method.toUpperCase()) {
+        // 对比 url
+        return !!pathToRegexp(route.path).exec(req.url)
+      }
+      return false
+    })
+    return index > -1
   }
 }
