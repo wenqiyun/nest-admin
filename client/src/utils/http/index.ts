@@ -35,10 +35,10 @@ class HttpService {
 
     this.instance.interceptors.response.use((response: AxiosResponse<any>) => {
       const res = response?.data
-      if (response.config?.responseType === 'blob' || res.code === 200) {
+      if (res || response.config?.responseType === 'blob') {
         return res
       }
-      return response
+      return null
     }, (error: AxiosError<any>) => {
       console.log(error)
     })
@@ -53,6 +53,7 @@ class HttpService {
     return (res as unknown) as Promise<T>
   }
 }
+
 const service = new HttpService({
   baseURL: process.env.VUE_APP_BASE_API_URL as string | '/api',
   timeout: 60 * 1000

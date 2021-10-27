@@ -11,6 +11,7 @@
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"
+        class="nest-menu"
         >
         <sidebar-item v-for="route in permRoutes" :key="route.path" :item="route" :base-path="route.path"></sidebar-item>
       </el-menu>
@@ -24,7 +25,7 @@ import { computed, defineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import Logo from './Logo.vue'
 import SidebarItem from './SidebarItem.vue'
-import * as _variables from '@/styles/variables.scss'
+// import _variables from '../../../styles/variables.scss'
 
 export default defineComponent({
   name: 'Sidebar',
@@ -42,13 +43,19 @@ export default defineComponent({
 
     const isCollapse = computed(() => !store.state.app.sidebar.opened)
 
-    const variables: any = computed(() => _variables)
+    // const variables: any = computed(() => _variables)
+
+    // console.log(variables, 878)
 
     return {
       permRoutes,
       activeMenu,
       isCollapse,
-      variables
+      variables: {
+        menuBg: '#304156',
+        menuText: '#bfcbd9',
+        menuActiveText: '#409EFF'
+      }
     }
   }
 })

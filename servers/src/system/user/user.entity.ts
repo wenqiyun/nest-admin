@@ -46,5 +46,5 @@ export class UserEntity {
 
   @ApiProperty({ type: Date, description: '更新时间' })
   @UpdateDateColumn({ type: 'timestamp', name: 'update_date', comment: '更新时间' })
-  updateData: Date
+  updateDate: Date
 }

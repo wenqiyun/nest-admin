@@ -1,0 +1,46 @@
+app:
+  prefix: '/api'
+  port: 8081
+  swagger: true
+  logger:
+    dir: 'D:\programWork\kapok\nest-admin\logs\'
+
+# 数据库配置
+db:
+  mysql:
+    host: 'localhost'
+    username: 'root'
+    password: 'root'
+    database: 'kapok'
+    port: 3306
+    charser: 'utf8mb4'
+    logger: 'advanced-console'
+    logging: true
+    multipleStatements: true
+    dropSchema: false
+    synchronize: true
+
+# redis 配置
+redis:
+  host: 'localhost'
+  port: 6379
+  db: 0
+  keyPrefix: 'nest:'
+
+# jwt 配置
+jwt:
+  secretkey: 'zANDwNQVFzxlfG9myPxVWAkq4iXJEPhI'
+  expiresin: '2h'
+  refreshExpiresIn: '24h'
+
+# 权限， model 权限模式 global/manual
+# model global 配置了 才走白名单，否则只看函数头配置
+perm:
+  model: global
+  router:
+    whitelist: ['/api/register']
+
+# 用户相关
+# 初始密码， 重置密码
+user:
+  initialPassword: 'Q123456'

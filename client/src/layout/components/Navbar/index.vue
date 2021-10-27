@@ -18,6 +18,7 @@
             <a target="_blank" href="https://github.com/wenqiyun/nest-admin">
               <el-dropdown-item>Github</el-dropdown-item>
             </a>
+            <el-dropdown-item @click="loginout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -30,6 +31,8 @@ import { computed, defineComponent } from 'vue'
 import { useStore } from '@/store'
 import Hamburger from '_c/Hamburger/index.vue'
 import Breadcrumb from '_c/Breadcrumb/index.vue'
+import { clearToken } from '../../../utils/storage'
+import { ElMessageBox } from 'element-plus'
 
 export default defineComponent({
   name: 'Navbar',
@@ -43,9 +46,21 @@ export default defineComponent({
       store.dispatch('app/toggleSideBar')
     }
 
+    const loginout = () => {
+      ElMessageBox.confirm('是否确认退出当前登录', '提示', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        clearToken()
+        window.location.reload()
+      })
+    }
+
     return {
       sidebar,
-      toggleSideBar
+      toggleSideBar,
+      loginout
     }
   }
 })

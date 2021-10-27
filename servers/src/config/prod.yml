@@ -39,3 +39,8 @@ perm:
   model: global
   router:
     whitelist: ['/api/register']
+
+# 用户相关
+# 初始密码， 重置密码
+user:
+  initialPassword: 'Q123456'

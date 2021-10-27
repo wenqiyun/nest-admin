@@ -1,40 +1,38 @@
 <template>
-  <div class="user-layout-wrapper">
-    <div class="login-container">
-      <div class="login-container__content">
-        <div class="login-form-wrapper">
-          <header class="system_label">
-            <svg-icon icon-class="logo-small"></svg-icon>
-            <h1>Nest Admin</h1>
-          </header>
-          <el-form ref="loginFormRef" :model="formData" :rules="loginFormRules" class="login-form">
-            <el-form-item prop="account">
-              <el-input v-model.trim="formData.account" placeholder="帐号/邮箱/手机号"></el-input>
-            </el-form-item>
-            <el-form-item  prop="password">
-              <el-input type="password" v-model="formData.password" placeholder="密码"></el-input>
-            </el-form-item>
-            <el-form-item>
-              <div style="display: flex; justify-content: space-between;">
-                <el-checkbox v-model="autoLogin">自动登录</el-checkbox>
-                <el-button type="text">忘记密码</el-button>
-              </div>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" style="width: 100%;" @click="loginEvent">登&nbsp;&nbsp;&nbsp;录</el-button>
-            </el-form-item>
-          </el-form>
-        </div>
-        <div class="right-img"></div>
+  <div class="login-container">
+    <div class="login-wrapper">
+      <div class="form-wrapper">
+        <h3 class="form-title">登 录</h3>
+        <el-form ref="loginFormRef" style="width: 100%;" :model="formData" :rules="loginFormRules" >
+          <el-form-item prop="account">
+            <el-input v-model.trim="formData.account" placeholder="帐号/邮箱/手机号"></el-input>
+          </el-form-item>
+          <el-form-item  prop="password">
+            <el-input type="password" v-model="formData.password" placeholder="密码"  @keyup.enter="loginEvent"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <div class="action-wrapper">
+              <el-checkbox v-model="autoLogin">自动登录</el-checkbox>
+              <el-button type="text">忘记密码</el-button>
+            </div>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" style="width: 100%;" @click="loginEvent" :loading="loading">登&nbsp;&nbsp;&nbsp;录</el-button>
+          </el-form-item>
+        </el-form>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { UserLogin } from '@/api/user'
+import { UserLogin, login as loginApi, LoginResult } from '@/api/user'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ResultData } from '@/common/types/apiResult.type'
+
+import { setRefreshToken, setToken } from '../../../utils/storage'
+import { ElMessage } from 'element-plus'
 
 export default {
   setup () {
@@ -51,14 +49,22 @@ export default {
     })
 
     const router = useRouter()
+    const route = useRoute()
     const loginFormRef = ref()
     // 登录事件
     const loginEvent = () => {
       if (loginFormRef.value) {
-        loginFormRef.value.validate((valid: boolean) => {
-          if (valid) router.replace('/')
-          else {
-            return false
+        loginFormRef.value.validate(async (valid: boolean) => {
+          if (valid) {
+            const res: ResultData<LoginResult> = await loginApi(formData.value)
+            if (res?.code === 200) {
+              const data = res.data as LoginResult
+              setToken(data.accessToken)
+              setRefreshToken(data.refreshToken)
+              router.replace((route.query?.redirect || '/') as string)
+            } else {
+              ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
+            }
           }
         })
       }
@@ -76,59 +82,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.user-layout-wrapper {
+.login-container {
+  width: 100%;
+  height: 100vh;
   position: relative;
-  height: 100%;
-  background: url(~@/assets/login-bg.png) no-repeat;
-  background-size: 100% 100%;
 
-  .login-container {
-    height: 100%;
-    max-width: 1500px;
-    min-width: 1300px;
-    margin: 0 auto;
-
-    .login-container__content {
-      display: flex;
-      height: 100%;
-      padding: 0 30px;
-      align-items: center;
-      justify-content: space-between;
-      .right-img {
-        width: 800px;
-        height: 700px;
-        margin-top: 60px;
-        background: url(~@/assets/slack-login.png);
-        background-size: 100% 100%;
-      }
-    }
+  .login-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   }
-}
-.login-form-wrapper {
-  height: 400px;
-  width: 400px;
-  padding: 60px 0 40px 0;
-  background: #fff;
-  border-radius: 5px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
-  .system_label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-
-    h1 {
-      margin-left: 16px;
-      margin-bottom: 0;
-      font-size: 24px;
+  .form-wrapper {
+    .form-title {
+      font-size: 30px;
+      line-height: 36px;
+      margin: 30px 0;
       text-align: center;
     }
-  }
-
-  .login-form {
-    width: 350px;
-    margin: 30px auto 0;
+    .action-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
   }
 }
 </style>

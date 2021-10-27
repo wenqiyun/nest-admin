@@ -7,7 +7,7 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     path: '/login',
     name: 'login',
     hidden: true,
-    component: () => import(/* webpackChunkName: "login" */ '@/views/user/login/index.vue'),
+    component: () => import('@/views/user/login/index.vue'),
     meta: { title: '登录' }
   },
   {
@@ -18,7 +18,7 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
       {
         path: '/dashboard',
         name: 'dashboard',
-        component: () => import(/* webpackChunkName: "dashboard" */ '@/views/dashboard/index.vue'),
+        component: () => import('@/views/dashboard/index.vue'),
         meta: { title: '首页', icon: 'home' }
       }
     ]
@@ -29,8 +29,8 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     meta: { title: '权限管理', icon: 'permission' },
     redirect: '/perm/users',
     children: [
-      { path: 'users', component: () => import(/* webpackChunkName: "perm_users" */ '@/views/permission/users/index.vue'), name: 'perm_users', meta: { title: '用户管理' } },
-      { path: 'roles', component: () => import(/* webpackChunkName: "perm_roles" */ '@/views/permission/roles/index.vue'), name: 'perm_roles', meta: { title: '角色管理' } }
+      { path: 'users', component: () => import('@/views/permission/users/index.vue'), name: 'perm_users', meta: { title: '用户管理' } },
+      { path: 'roles', component: () => import('@/views/permission/roles/index.vue'), name: 'perm_roles', meta: { title: '角色管理' } }
     ]
   },
   {
@@ -39,8 +39,8 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     meta: { title: '系统设置', icon: 'system' },
     redirect: '/system/menus',
     children: [
-      { path: 'menus', component: () => import(/* webpackChunkName: "system_menus" */ '@/views/system/menus/index.vue'), name: 'system_menus', meta: { title: '资源管理' } },
-      { path: 'oss', component: () => import(/* webpackChunkName: "system_oss" */ '@/views/system/oss/index.vue'), name: 'system_oss', meta: { title: '文件上传' } }
+      { path: 'menus', component: () => import('@/views/system/menus/index.vue'), name: 'system_menus', meta: { title: '资源管理' } },
+      { path: 'oss', component: () => import('@/views/system/oss/index.vue'), name: 'system_oss', meta: { title: '文件上传' } }
     ]
   }
 ]

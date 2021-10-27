@@ -9,16 +9,9 @@ const CompressionWebpackPlugin = require('compression-webpack-plugin') // 开启
 
 const Zopfli = require('@gfx/zopfli') // zipfli 压缩
 
-const HardSourceWebpackPlugin = require('hard-source-webpack-plugin') // 打包性能优化
-
 const resolve = (dir) => path.resolve(__dirname, dir)
 
-const Components = require('unplugin-vue-components/webpack')
-const { ElementPlusResolver } = require('unplugin-vue-components/resolvers')
-
 const plugins = process.env.NODE_ENV === 'development' ? [] : [
-  new HardSourceWebpackPlugin(),
-  new HardSourceWebpackPlugin.ExcludeModulePlugin([]),
 
   new CompressionWebpackPlugin({
     filename: '[path][base].gz',
@@ -49,11 +42,13 @@ module.exports = {
   publicPath: '/',
   assetsDir: 'static',
   productionSourceMap: false,
+  transpileDependencies: true,
   devServer: {
-    // port: 9540,
+    host: '0.0.0.0',
+    port: 9540,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         ws: true,
         changeOrigin: true
       }
@@ -63,27 +58,40 @@ module.exports = {
     resolve: {
       alias: {
         '@': resolve('src'),
-        _c: resolve('src/components')
+        _c: resolve('src/components'),
+        // 如果确认不需要node polyfill，设置resolve.alias设置为false
+        crypto: false
       },
-      extensions: ['.js', '.vue', '.json', '.ts', '.tsx']
+      // extensions: ['.js', '.vue', '.json', '.ts', '.tsx'],
+      fallback: {
+        crypto: require.resolve('crypto-browserify'),
+        path: require.resolve('path-browserify')
+      }
     },
-    plugins
+    plugins,
+    cache: {
+      // 将缓存类型设置为文件系统
+      type: 'filesystem',
+      buildDependencies: {
+        // 更改配置文件时，重新缓存
+        config: [__filename]
+      }
+    }
   },
   chainWebpack: config => {
     // it can improve the speed of the first screen, it is recommended to turn on preload
-    config.plugin('preload').tap(() => [
-      {
-        rel: 'preload',
-        // to ignore runtime.js
-        // https://github.com/vuejs/vue-cli/blob/dev/packages/@vue/cli-service/lib/config/app.js#L171
-        fileBlacklist: [/\.map$/, /hot-update\.js$/, /runtime\..*\.js$/],
-        include: 'initial'
-      }
-    ])
+    // config.plugin('preload').tap(() => [
+    //   {
+    //     rel: 'preload',
+    //     // to ignore runtime.js
+    //     // https://github.com/vuejs/vue-cli/blob/dev/packages/@vue/cli-service/lib/config/app.js#L171
+    //     fileBlacklist: [/\.map$/, /hot-update\.js$/, /runtime\..*\.js$/],
+    //     include: 'initial'
+    //   }
+    // ])
 
     // when there are many pages, it will cause too many meaningless requests
-    config.plugins.delete('prefetch')
-
+    // config.plugins.delete('prefetch')
     // set svg-sprite-loader
     config.module
       .rule('svg')
@@ -101,6 +109,12 @@ module.exports = {
       })
       .end()
 
+    // 开发环境
+    config.when(process.env.NODE_ENV === 'development', config => {
+      config.optimization.moduleIds = 'named'
+      config.optimization.chunkIds = 'named'
+    })
+    // 非开发环境。打包后
     config.when(process.env.NODE_ENV !== 'development', config => {
       // 去掉注释， console.log 等
       config.optimization.minimizer('terser').tap(options => {
@@ -121,6 +135,11 @@ module.exports = {
 
       config.optimization.splitChunks({
         chunks: 'all',
+        minRemainingSize: 0, // webpack5 新特性 防止0尺寸的 chunk
+        minChunks: 1, // 被提取的模块必须被引用1次
+        maxAsyncRequests: 30, // 异步加载代码时同时进行的最大请求数不得超过30个
+        maxInitialRequests: 30, //
+        enforceSizeThreshold: 50000,
         cacheGroups: {
           libs: {
             name: 'chunk-libs',
@@ -142,7 +161,10 @@ module.exports = {
           }
         }
       })
-      // https:// webpack.js.org/configuration/optimization/#optimizationruntimechunk
+      // 此设置保证有新增的入口文件时,原有缓存的chunk文件仍然可用
+      config.optimization.moduleIds = 'deterministic'
+      config.optimization.chunkIds = 'deterministic'
+      // 值为"single"会创建一个在所有生成chunk之间共享的运行时文件
       config.optimization.runtimeChunk('single')
     })
   }

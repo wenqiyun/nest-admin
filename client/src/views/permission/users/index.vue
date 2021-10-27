@@ -26,11 +26,12 @@
       <template  #actions="{ row }">
         <el-button type="primary" plain @click="showUserEditEvent(row)">编辑</el-button>
         <el-button type="danger" plain>禁用</el-button>
+        <el-button type="warning" plain @click="resetPasswordEvent(row)">重置密码</el-button>
       </template>
     </k-table>
 
     <!-- 编辑用户 -->
-    <edit-user v-model="showUserEdit" :curr-user="currUser" @change="updateUserSuccess"></edit-user>
+    <edit-user v-model="showUserEdit" :curr-id="currId" @change="updateUserSuccess"></edit-user>
   </div>
 </template>
 
@@ -39,8 +40,8 @@ import StatusBadge from '_c/StatusBadge/index.vue'
 // import KTable from '_c/Table/index.vue'
 import EditUser from './components/Edit.vue'
 import { defineComponent, ref } from 'vue'
-import { getUserList, ICreateOrUpdateUser, QueryUserList, updateUser, UserApiResult } from '@/api/user'
-import { ElMessage } from 'element-plus'
+import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateUser, UserApiResult } from '@/api/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { jsonTimeFormat } from '@/utils/index'
 import { ListResultData, Pagination } from '../../../common/types/apiResult.type'
 import { IKTableProps } from '../../../plugins/k-ui/packages/table/src/Table.type'
@@ -60,7 +61,7 @@ export default defineComponent({
         { label: '邮箱', prop: 'email' },
         { label: '状态', prop: 'status', type: 'slot', width: '90' },
         { label: '注册时间', prop: 'createDate', width: '90' },
-        { label: '操作', prop: 'actions', type: 'slot', width: '200' }
+        { label: '操作', prop: 'actions', type: 'slot', width: '300' }
       ],
       index: true
     })
@@ -92,9 +93,9 @@ export default defineComponent({
 
     // 编辑用户相关
     const showUserEdit = ref<boolean>(false)
-    const currUser = ref<ICreateOrUpdateUser>({})
+    const currId = ref<number>()
     const showUserEditEvent = (row: ICreateOrUpdateUser) => {
-      currUser.value = row
+      currId.value = row.id
       showUserEdit.value = true
     }
 
@@ -117,6 +118,22 @@ export default defineComponent({
       updateUserSuccess({ page: 1, size: 10 })
     }
 
+    const resetPasswordEvent = async (row: UserApiResult) => {
+      try {
+        await ElMessageBox.confirm(`是否确认重置用户【${row.account}】密码`, '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        const res = await resetPassword(row.id as number)
+        if (res?.code === 200) {
+          ElMessage({ type: 'success', message: `重置用户【${row.account}】密码成功` })
+        } else {
+          ElMessage({ type: 'error', message: res?.msg || '重置密码失败，请稍后尝试！' })
+        }
+      } catch (error) {}
+    }
+
     return {
       loading,
       searchReq,
@@ -124,11 +141,12 @@ export default defineComponent({
       searchEvent,
       getUserListFn,
       // 编辑用户相关
-      currUser,
+      currId,
       showUserEdit,
       showUserEditEvent,
       userTableRef,
-      updateUserSuccess
+      updateUserSuccess,
+      resetPasswordEvent
     }
   }
 })

@@ -18,7 +18,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
       const atUserId = this.userService.verifyToken(accessToken)
       if (atUserId) return this.activate(ctx)
-      console.log(req.user)
       const refreshToken = req.get('RefreshToken')
       const rtUserId = this.userService.verifyToken(refreshToken)
       if (!rtUserId) throw new UnauthorizedException('当前登录已过期，请重新登录')

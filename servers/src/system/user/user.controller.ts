@@ -47,4 +47,10 @@ export class UserController {
   async update(@Body() dto: UpdateUserDto): Promise<ResultData> {
     return await this.userService.update(dto)
   }
+
+  @Put('/password/reset/:userId')
+  @ApiOperation({ summary: '重置用户密码' })
+  async resetPassword (@Param('userId') userId: number): Promise<ResultData> {
+    return await this.userService.updatePassword(userId, '', true)
+  }
 }

@@ -29,8 +29,13 @@ export interface UserLogin {
   password: string
 }
 
-export function login (loginData: UserLogin): Promise<ResultData<string>> {
-  return http.request<ResultData<string>>({
+export interface LoginResult {
+  accessToken: string
+  refreshToken: string
+}
+
+export function login (loginData: UserLogin): Promise<ResultData<LoginResult>> {
+  return http.request<ResultData<LoginResult>>({
     url: '/login',
     method: ApiMethodContants.POST,
     data: loginData
@@ -57,5 +62,12 @@ export function updateUser (data: ICreateOrUpdateUser): Promise<ResultData<null>
     url: '/user',
     method: ApiMethodContants.PUT,
     data
+  })
+}
+
+export function resetPassword (userId: number): Promise<ResultData<null>> {
+  return http.request<ResultData<null>>({
+    url: `/user/password/reset/${userId}`,
+    method: ApiMethodContants.PUT
   })
 }

@@ -86,7 +86,7 @@ export default defineComponent({
   padding-left: 16px;
   font-size: 14px;
   font-weight: 700;
-  background: #eef2f5;
+  border-bottom: 1px solid #eee;
 
   .tip-action {
     margin-right: 16px;

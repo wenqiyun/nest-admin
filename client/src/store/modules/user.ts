@@ -79,7 +79,6 @@ type AugmentedActionContext = {
 } & Omit<ActionContext<UserState, RootState>, 'commit' | 'state'>
 
 interface UserAction {
-  login({ commit }: AugmentedActionContext, loginData: UserLogin): Promise<ResultData<string>>
   getCurrUserApiPerms({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>>
   // getUserInfoPerm({ commit }: AugmentedActionContext): Promise<ResultData<UserApiResult>>
   // logout({ commit }: AugmentedActionContext): void
@@ -87,13 +86,6 @@ interface UserAction {
 }
 
 const actions: ActionTree<UserState, RootState> & UserAction = {
-  login: async ({ commit }: AugmentedActionContext, loginData: UserLogin): Promise<ResultData<string>> => {
-    const res = await login(loginData)
-    if (res.code === 200) {
-      sessionStorage.setItem('token-key', res.data as string)
-    }
-    return res
-  },
   // getUserInfoPerm: async ({ commit }: AugmentedActionContext): Promise<ResultData<UserApiResult>> => {
   //   const res = await getUserInfo()
   //   if (res.code === 200) {

@@ -95,6 +95,22 @@ export class UserService {
     return ResultData.ok()
   }
 
+  /**
+   * 更新或重置用户密码
+   * @reset 是否重置, false 则使用传入的 password 更新
+   */
+  async updatePassword (userId: number, password: string, reset: boolean): Promise<ResultData> {
+    const existing = await this.userRepo.findOne(userId)
+    if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, `用户不存在或已删除，${reset ? '重置' : '更新'}失败`)
+    const newPassword = reset ? this.config.get<string>('user.initialPassword') : password
+    const user = { id: userId, password: await hash(newPassword, existing.salt) }
+    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+      return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, plainToClass(UserEntity, { ...existing , ...user }))
+    })
+    if (!affected) ResultData.fail(HttpStatus.NOT_FOUND, `${reset ? '重置' : '更新'}失败，请稍后重试`)
+    return ResultData.ok()
+  }
+
   /** 创建 or 更新用户-角色 */
   async createOrUpdateUserRole(dto: CreateOrUpdateUserRolesDto): Promise<ResultData> {
     const userRoleList = plainToClass(
