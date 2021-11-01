@@ -7,22 +7,24 @@
           <el-button size="mini" @click="addRoleEvent">新增</el-button>
         </span>
       </h3>
-      <ul>
-        <li
-          class="roles-item"
-          :class="{ 'role-item': true, 'is-active': currRole.id === role.id }"
-          v-for="role in roleData.list"
-          :key="role.id"
-          @click="roleClickEvent(role)"
-          >
-          {{ role.name }}
-        </li>
-      </ul>
+      <el-scrollbar wrap-class="scrollbar-list" v-loading="loading">
+        <ul>
+          <li
+            class="roles-item"
+            :class="{ 'role-item': true, 'is-active': currRole.id === role.id }"
+            v-for="role in roleData"
+            :key="role.id"
+            @click="roleClickEvent(role)"
+            >
+            {{ role.name }}
+          </li>
+        </ul>
+      </el-scrollbar>
     </div>
     <!-- 右侧 -->
     <div class="role-content">
       <role-info ref="roleInfoRef" :curr-role="currRole"></role-info>
-      <role-user-list></role-user-list>
+      <role-user-list :curr-id="currRole.id"></role-user-list>
     </div>
   </div>
 </template>
@@ -32,25 +34,29 @@ import { getRoleList, QueryRoleList, RoleApiResult } from '@/api/role'
 import { ListResultData } from '@/common/types/apiResult.type'
 import { defineComponent, ref } from 'vue'
 import RoleInfo from './components/RoleInfo.vue'
-import RoleUserList from './components/RoleUserList.vue'
+import RoleUserList from './components/roleUserList/index.vue'
 
 export default defineComponent({
   components: { RoleInfo, RoleUserList },
   setup () {
-    const roleData = ref<ListResultData<RoleApiResult>>({ list: [], total: 0 })
-    const currRole = ref<RoleApiResult>()
-    const getRoleListFn = async (req: QueryRoleList) => {
-      const res = await getRoleList(req)
-      if (res.code === 200) {
-        roleData.value = res.data as ListResultData<RoleApiResult>
-        if (req.page === 1 && roleData.value.list?.length > 0) {
-          currRole.value = roleData.value.list[0]
-        }
-      }
-    }
+    const loading = ref<boolean>(false)
+    const roleData = ref<Array<RoleApiResult>>([])
+    const currRole = ref<RoleApiResult>({ name: '', remark: '' })
 
     const roleClickEvent = (role: RoleApiResult) => {
       currRole.value = role
+    }
+
+    const getRoleListFn = async (req: QueryRoleList) => {
+      loading.value = true
+      const res = await getRoleList(req)
+      loading.value = false
+      if (res.code === 200) {
+        roleData.value = res.data as RoleApiResult[]
+        if (req.page === 1 && roleData.value?.length > 0) {
+          roleClickEvent(roleData.value[0])
+        }
+      }
     }
 
     getRoleListFn({ size: 10, page: 1 })
@@ -62,6 +68,7 @@ export default defineComponent({
     }
 
     return {
+      loading,
       roleInfoRef,
       roleData,
       currRole,
@@ -100,6 +107,10 @@ export default defineComponent({
   background: #fff;
   overflow: hidden;
 
+  .scrollbar-list {
+    height: calc(100% - 51px);
+  }
+
   .roles-item {
     padding: 7px 16px;
     line-height: 1.5;
@@ -107,11 +118,11 @@ export default defineComponent({
     cursor: pointer;
 
     &:hover {
-      background-color: #F5F7FA;
+      background-color: #c6e2ff;
     }
 
     &.is-active {
-      background-color: #f0f7ff;
+      background-color: #d9ecff;
       color: #008fe4;
     }
   }

@@ -1,6 +1,6 @@
 <template>
-  <el-dialog v-if="visible" title="用户信息编辑" v-model="visible" top="10vh" width="500px" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form ref="userFormRef" :model="userForm" label-width="80px" :rules="userFormRules">
+  <el-dialog  title="用户信息编辑" v-model="visible" top="10vh" width="500px" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
+    <el-form ref="userFormRef" :model="userForm" label-width="80px" :rules="userFormRules" v-loading="loading">
       <el-form-item label="帐号" prop="">
         <el-input v-model="userForm.account" :disabled="true"></el-input>
       </el-form-item>
@@ -16,15 +16,17 @@
     </el-form>
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary">确认</el-button>
+      <el-button type="primary" @click="updateOrCreate">确认</el-button>
     </template>
   </el-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+
 import { UPDATE_MODEL_EVENT } from '@/common/contants'
-import { ICreateOrUpdateUser, getUserInfo as getUserInfoApi } from '@/api/user'
+import { ICreateOrUpdateUser, getUserInfo as getUserInfoApi, updateUser } from '@/api/user'
 import { validPhone, validEmail } from '../../../../utils/validate'
 
 export default defineComponent({
@@ -45,16 +47,7 @@ export default defineComponent({
   setup (props, { emit }) {
     const userFormRef = ref()
 
-    // dialog
-    const visible = ref<boolean>(false)
-    watch(() => props.modelValue, (val) => {
-      visible.value = val
-    })
-
-    const handleClose = () => {
-      emit(UPDATE_MODEL_EVENT, false)
-    }
-
+    const loading = ref(false)
     // 表单
     const userForm = ref<ICreateOrUpdateUser>({
       account: '',
@@ -62,6 +55,24 @@ export default defineComponent({
       email: '',
       avatar: ''
     })
+
+    // dialog
+    const visible = ref<boolean>(false)
+    watch(() => props.modelValue, (val) => {
+      visible.value = val
+      if (val) {
+        userForm.value = {
+          account: '',
+          phoneNum: '',
+          email: '',
+          avatar: ''
+        }
+      }
+    })
+
+    const handleClose = () => {
+      emit(UPDATE_MODEL_EVENT, false)
+    }
 
     const validPhoneNum = (rule: any, value: string, callback: any) => {
       if (validPhone(value)) {
@@ -91,10 +102,29 @@ export default defineComponent({
     }
 
     const getUserInfo = async (currId: number) => {
+      loading.value = true
       const res = await getUserInfoApi(currId)
+      loading.value = false
       if (res?.code === 200) {
         userForm.value = res.data as ICreateOrUpdateUser
       }
+    }
+
+    const updateOrCreate = async () => {
+      userFormRef.value.validate(async (valid: boolean) => {
+        if (valid) {
+          loading.value = true
+          const res = await updateUser(userForm.value)
+          loading.value = false
+          if (res?.code === 200) {
+            ElMessage({ type: 'success', message: '更新成功' })
+            emit('change')
+            handleClose()
+          } else {
+            ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试！' })
+          }
+        }
+      })
     }
 
     watch(() => props.modelValue, (val: boolean) => {
@@ -102,11 +132,13 @@ export default defineComponent({
     })
 
     return {
+      loading,
       visible,
       handleClose,
       userForm,
       userFormRef,
-      userFormRules
+      userFormRules,
+      updateOrCreate
     }
   }
 })

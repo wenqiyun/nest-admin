@@ -23,8 +23,8 @@ export interface ICreateOrUpdateRole {
   menuIds?: number[]
 }
 
-export function getRoleList (params: QueryRoleList): Promise<ResultData<RoleApiResult>> {
-  return http.request<ResultData<RoleApiResult>>({
+export function getRoleList (params: QueryRoleList): Promise<ResultData<RoleApiResult[]>> {
+  return http.request<ResultData<RoleApiResult[]>>({
     url: '/role/list',
     method: ApiMethodContants.GET,
     params

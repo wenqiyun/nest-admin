@@ -40,7 +40,7 @@ class HttpService {
       }
       return null
     }, (error: AxiosError<any>) => {
-      console.log(error)
+      return error.response?.data || null
     })
   }
 

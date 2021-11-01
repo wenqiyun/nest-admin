@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
+import { ElLoading } from 'element-plus'
 
-export function jsonTimeFormat (jsonTime: string): string {
-  return dayjs(jsonTime).format('YYYY-MM-DD HH:mm:ss')
+export function jsonTimeFormat (jsonTime: string, format?: string): string {
+  return dayjs(jsonTime).format(format || 'YYYY-MM-DD HH:mm:ss')
 }
 
 /**
@@ -22,4 +23,13 @@ export function arrToTree (source: any[], { root = 0, pidKey = 'pid', idKey = 'i
     return node
   }
   return getNode(root)
+}
+
+export function showLoading () {
+  return ElLoading.service({
+    lock: true,
+    text: 'Loading',
+    spinner: 'el-icon-loading',
+    background: 'rgba(0, 0, 0, 0.7)'
+  })
 }

@@ -69,10 +69,15 @@ export class RedisUtilService {
    * hash 设置 key 下多个 field value
    * @param key
    * @param data
+   * @params expire 单位 秒
    */
-  async hmset(key: string, data: any): Promise<number | any> {
+  async hmset(key: string, data: any, expire?: number): Promise<number | any> {
     if (!key || !data) return 0
-    return await this.client.hmset(key, data)
+    const result = await this.client.hmset(key, data)
+    if (expire) {
+      await this.client.expire(key, expire)
+    }
+    return result
   }
 
   /**

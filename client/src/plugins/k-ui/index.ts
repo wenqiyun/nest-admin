@@ -1,5 +1,5 @@
 // import Detail from './packages/detail/index.js'
-// import Badge from './packages/badge/index.js'
+import Badge from './packages/badge/index'
 // import Lazy from './packages/lazy/index.js'
 import Table from './packages/table/index'
 import type { App } from 'vue'
@@ -8,7 +8,7 @@ import type { App } from 'vue'
 
 const components = [
   // Detail,
-  // Badge,
+  Badge,
   // Lazy,
   Table
   // Form
@@ -24,7 +24,7 @@ export default {
   version: '0.2.0',
   install,
   // Detail,
-  // Badge,
+  Badge,
   // Lazy,
   Table
   // Form

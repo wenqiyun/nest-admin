@@ -30,8 +30,8 @@ redis:
 # jwt 配置
 jwt:
   secretkey: 'zANDwNQVFzxlfG9myPxVWAkq4iXJEPhI'
-  expiresin: '2h'
-  refreshExpiresIn: '24h'
+  expiresin: '1h'
+  refreshExpiresIn: '2h'
 
 # 权限， model 权限模式 global/manual
 # model global 配置了 才走白名单，否则只看函数头配置

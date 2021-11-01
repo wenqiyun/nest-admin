@@ -7,7 +7,7 @@ import { classToPlain, plainToClass } from 'class-transformer'
 import { genSalt, hash, compare } from 'bcrypt'
 
 import { ResultData } from '../../common/utils/result'
-import { getRedisKey } from '../../common/utils/utils'
+import { getRedisKey, formatSecond } from '../../common/utils/utils';
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
 
@@ -18,6 +18,7 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { FindUserListDto } from './dto/find-user-list.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateOrUpdateUserRolesDto } from './dto/create-user-roles.dto'
+import { validPhone, validEmail } from '../../common/utils/validate';
 
 @Injectable()
 export class UserService {
@@ -39,7 +40,7 @@ export class UserService {
     if (!user?.id) {
       user = await this.userRepo.findOne(id)
       user = plainToClass(UserEntity, { ...user }, { enableImplicitConversion: true })
-      await this.redisUtilService.hmset(redisKey, classToPlain(user))
+      await this.redisUtilService.hmset(redisKey, classToPlain(user), formatSecond(this.config.get<string>('jwt.expiresin')))
     }
     user.password = ''
     user.salt = ''
@@ -53,7 +54,7 @@ export class UserService {
   /** 创建用户 */
   async create(dto: CreateUserDto): Promise<ResultData> {
     const existing = await this.findOneByAccount(dto.account)
-    if (existing) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '账号已存在，请调整后重新注册！')
+    if (existing) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '帐号已存在，请调整后重新注册！')
     if (dto.password !== dto.confirmPassword) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '两次输入密码不一致，请重试')
     const salt = await genSalt()
     dto.password = await hash(dto.password, salt)
@@ -65,12 +66,23 @@ export class UserService {
     return ResultData.ok(classToPlain(result))
   }
 
-  /** 更新用户信息 */
+  /**
+   * 登录
+   * account 有可能是 帐号/手机/邮箱
+   */
   async login(account: string, password: string): Promise<ResultData> {
-    const user = await this.findOneByAccount(account)
-    if (!user) return ResultData.fail(HttpStatus.NOT_FOUND, '账号或密码错误')
+    let user = null
+    if (validPhone(account)) { // 手机登录
+      user = await this.userRepo.findOne({ phoneNum: account })
+    } else if (validEmail(account)) { // 邮箱
+      user = await this.userRepo.findOne({ email: account })
+    } else { // 帐号
+      user = await this.findOneByAccount(account)
+    }
+    if (!user) return ResultData.fail(HttpStatus.NOT_FOUND, '帐号或密码错误')
     const checkPassword = await compare(password, user.password)
-    if (!checkPassword) return ResultData.fail(HttpStatus.NOT_FOUND, '账号或密码错误')
+    if (!checkPassword) return ResultData.fail(HttpStatus.NOT_FOUND, '帐号或密码错误')
+    if (user.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '您已被禁用，如需要正常使用请联系管理员')
     // 生成 token
     const data = this.genToken({ id: user.id })
     return ResultData.ok(data)
@@ -80,18 +92,30 @@ export class UserService {
   async update(dto: UpdateUserDto): Promise<ResultData> {
     const existing = await this.findOneById(dto.id)
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前用户不存在或已删除')
-    // 如果有更新密码
-    if (dto.password) {
-      if (dto.password !== dto.confirmPassword) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '两次输入密码不一致，请重试')
-      dto.password = await hash(dto.password, existing.salt)
-    }
-    const user = plainToClass(UserEntity, dto)
+    if (existing.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '当前用户已被禁用，不可更新用户信息')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
-      return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, user)
+      return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, dto)
     })
-    if (!affected) ResultData.fail(HttpStatus.NOT_FOUND, '更新失败，请稍后重试')
+    if (!affected) ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '更新失败，请稍后重试')
     await this.redisUtilService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), dto)
     // redis 更新用户信息
+    return ResultData.ok()
+  }
+
+  /**
+   * 启用 / 禁用 用户
+   * @param userId
+   * @param status
+   * @returns
+   */
+  async updateStatus(userId: number, status: 0 | 1): Promise<ResultData> {
+    const existing = await this.findOneById(userId)
+    if (!existing) ResultData.fail(HttpStatus.NOT_FOUND, '当前用户不存在或已删除')
+    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+      return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, { id: userId, status })
+    })
+    if (!affected) ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '更新失败，请稍后尝试')
+    await this.redisUtilService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, userId), { status })
     return ResultData.ok()
   }
 
@@ -102,10 +126,11 @@ export class UserService {
   async updatePassword (userId: number, password: string, reset: boolean): Promise<ResultData> {
     const existing = await this.userRepo.findOne(userId)
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, `用户不存在或已删除，${reset ? '重置' : '更新'}失败`)
+    if (existing.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '当前用户已被禁用，不可重置用户密码')
     const newPassword = reset ? this.config.get<string>('user.initialPassword') : password
     const user = { id: userId, password: await hash(newPassword, existing.salt) }
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
-      return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, plainToClass(UserEntity, { ...existing , ...user }))
+      return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, user)
     })
     if (!affected) ResultData.fail(HttpStatus.NOT_FOUND, `${reset ? '重置' : '更新'}失败，请稍后重试`)
     return ResultData.ok()
@@ -133,7 +158,6 @@ export class UserService {
   async findList(dto: FindUserListDto): Promise<ResultData> {
     const { page, size, account, status, roleId, hasCurrRole = 0 } = dto
     if (roleId) {
-      console.log(hasCurrRole, 90)
       const result = await this.findUserByRoleId(roleId, page, size, !!Number(hasCurrRole))
       return result
     }
@@ -187,7 +211,7 @@ export class UserService {
       res = await getConnection()
         .createQueryBuilder('sys_user', 'su')
         .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = su.id')
-        .where('ur.role_id = :roleId', { roleId })
+        .where('su.status = 1 and ur.role_id = :roleId', { roleId })
         .skip(size * (page - 1))
         .take(size)
         .getManyAndCount()
@@ -196,9 +220,12 @@ export class UserService {
       res = await getConnection()
         .createQueryBuilder('sys_user', 'su')
         .where((qb: any) => {
-          const subQuery = qb.subQuery().select(['sur.user_id']).from('sys_user_role', 'sur').where('sur.role_id = :roleId', { roleId }).getQuery()
-          console.log(subQuery)
-          return 'su.id not in ' + subQuery
+          const subQuery = qb.subQuery()
+            .select(['sur.user_id'])
+            .from('sys_user_role', 'sur')
+            .where('sur.role_id = :roleId', { roleId })
+            .getQuery()
+          return `su.status = 1 and su.id not in ${subQuery}`
         })
         .skip(size * (page - 1))
         .take(size)

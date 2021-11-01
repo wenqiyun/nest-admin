@@ -20,7 +20,7 @@ export class ExceptionsFilter implements ExceptionFilter {
       `
     Logger.error(logFormat)
     response.status(status).json({
-      statusCode: status,
+      code: status,
       msg: `Service Error: ${exception}`
     })
   }

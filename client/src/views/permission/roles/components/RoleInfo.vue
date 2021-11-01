@@ -1,8 +1,8 @@
 <template>
   <div class="role-info-wrapper">
-    <h3 class="roles__tip">
+    <h3 class="roles__tip clearfix">
       <span>基础信息</span>
-      <span class="fr clearfix role-edit-action">
+      <span class="fr role-edit-action">
         <el-button type="primary" @click="showEditEvent">编辑</el-button>
         <el-button type="danger" @click="delRoleFn">删除</el-button>
       </span>
@@ -61,7 +61,7 @@ export default defineComponent({
 
     const jsonTimeFormatFn = (time: string) => {
       if (time) {
-        return jsonTimeFormat(time)
+        return jsonTimeFormat(time, 'YYYY年MM月DD日 HH:mm:ss')
       }
       return ''
     }
@@ -109,17 +109,17 @@ export default defineComponent({
 
   .role-item {
     padding: 5px 10px;
+    line-height: 1.5;
 
     &__label {
       display: inline-block;
       width: 80px;
-      line-height: 1.5;
       text-align: right;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 14px;
       white-space: nowrap;
     }
     &__content {
-      color: #666;
       line-height: 1.5;
     }
   }

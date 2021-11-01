@@ -1,13 +1,14 @@
 <template>
-  <router-view v-slot="{ Component }" :key="key">
+  <router-view v-slot="{ Component }">
     <section class="app-main">
       <transition name="fade-transform" mode="out-in">
         <keep-alive :include="cachedViews">
-          <component :is="Component" class="app-container" :key="`${key}_component`"/>
+          <component :is="Component" class="app-container" :key="key"/>
         </keep-alive>
       </transition>
     </section>
   </router-view>
+</template>
   <!-- 去除浏览器 router 警告， router-view 不能再 section / keep-alive 标签下 -->
   <!-- <section class="app-main">
     <transition name="fade-transform" mode="out-in">
@@ -16,10 +17,9 @@
       </keep-alive>
     </transition>
   </section> -->
-</template>
 
 <script lang="ts">
-import { computed, defineComponent, getCurrentInstance } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from '@/store'
 

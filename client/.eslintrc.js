@@ -33,6 +33,8 @@ module.exports = {
     // 'comma-dangle': [2, 'never'],
     // 文件末尾强制换行
     'eol-last': 2,
+    // vue 组件名 包含多个单词
+    'vue/multi-word-component-names': 0,
     quotes: [1, 'single'],
     eqeqeq: [2, 'allow-null'],
     indent: [2, 2, {

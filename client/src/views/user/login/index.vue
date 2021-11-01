@@ -2,7 +2,10 @@
   <div class="login-container">
     <div class="login-wrapper">
       <div class="form-wrapper">
-        <h3 class="form-title">登 录</h3>
+        <h3 class="form-title">
+          <span class="nest-logo"></span>
+          <span>登 录</span>
+        </h3>
         <el-form ref="loginFormRef" style="width: 100%;" :model="formData" :rules="loginFormRules" >
           <el-form-item prop="account">
             <el-input v-model.trim="formData.account" placeholder="帐号/邮箱/手机号"></el-input>
@@ -26,13 +29,13 @@
 </template>
 
 <script lang="ts">
-import { UserLogin, login as loginApi, LoginResult } from '@/api/user'
+import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ResultData } from '@/common/types/apiResult.type'
+import { UserLogin, login as loginApi, LoginResult } from '@/api/user'
 
 import { setRefreshToken, setToken } from '../../../utils/storage'
-import { ElMessage } from 'element-plus'
 
 export default {
   setup () {
@@ -102,10 +105,19 @@ export default {
 
   .form-wrapper {
     .form-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 30px;
-      line-height: 36px;
       margin: 30px 0;
-      text-align: center;
+
+      .nest-logo {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+        background: url(~@/assets/imgs/nest-logo.svg) no-repeat center / 100% 100% ;
+      }
     }
     .action-wrapper {
       display: flex;

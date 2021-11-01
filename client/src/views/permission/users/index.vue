@@ -21,12 +21,12 @@
     </div>
     <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading"  border stripe current-row-key="id" style="width: 100%">
       <template #status="{row}">
-        <status-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></status-badge>
+        <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
       </template>
       <template  #actions="{ row }">
-        <el-button type="primary" plain @click="showUserEditEvent(row)">编辑</el-button>
-        <el-button type="danger" plain>禁用</el-button>
-        <el-button type="warning" plain @click="resetPasswordEvent(row)">重置密码</el-button>
+        <el-button type="primary" plain @click="showUserEditEvent(row)" v-if="row.status === 1">编辑</el-button>
+        <el-button :type="row.status ? 'danger' : 'success'" plain @click="forbiddenEvent(row)">{{ row.status ? '禁用' : '启用' }}</el-button>
+        <el-button type="warning" plain @click="resetPasswordEvent(row)" v-if="row.status === 1">重置密码</el-button>
       </template>
     </k-table>
 
@@ -36,18 +36,17 @@
 </template>
 
 <script lang="ts">
-import StatusBadge from '_c/StatusBadge/index.vue'
 // import KTable from '_c/Table/index.vue'
 import EditUser from './components/Edit.vue'
 import { defineComponent, ref } from 'vue'
-import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateUser, UserApiResult } from '@/api/user'
+import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { jsonTimeFormat } from '@/utils/index'
 import { ListResultData, Pagination } from '../../../common/types/apiResult.type'
 import { IKTableProps } from '../../../plugins/k-ui/packages/table/src/Table.type'
 
 export default defineComponent({
-  components: { StatusBadge, EditUser },
+  components: { EditUser },
   setup () {
     const userData = ref<IKTableProps<UserApiResult>>({
       mode: 'config',
@@ -61,7 +60,7 @@ export default defineComponent({
         { label: '邮箱', prop: 'email' },
         { label: '状态', prop: 'status', type: 'slot', width: '90' },
         { label: '注册时间', prop: 'createDate', width: '90' },
-        { label: '操作', prop: 'actions', type: 'slot', width: '300' }
+        { label: '操作', prop: 'actions', type: 'slot', width: '250' }
       ],
       index: true
     })
@@ -99,14 +98,6 @@ export default defineComponent({
       showUserEdit.value = true
     }
 
-    // 更新用户 、 禁用
-    const updateUserFn = async (req: ICreateOrUpdateUser, type: 'disable' | 'update') => {
-      const res = await updateUser(req)
-      if (res.code === 200) {
-        ElMessage({ message: `${type === 'update'} ? '更新' ： '禁用成功'`, type: 'success' })
-      }
-    }
-
     const userTableRef = ref()
     const updateUserSuccess = (newPage = {}) => {
       // 在当前页 重新加载数据
@@ -120,7 +111,7 @@ export default defineComponent({
 
     const resetPasswordEvent = async (row: UserApiResult) => {
       try {
-        await ElMessageBox.confirm(`是否确认重置用户【${row.account}】密码`, '提示', {
+        await ElMessageBox.confirm(`是否确认重置用户【${row.account}】密码？`, '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',
           type: 'warning'
@@ -130,6 +121,25 @@ export default defineComponent({
           ElMessage({ type: 'success', message: `重置用户【${row.account}】密码成功` })
         } else {
           ElMessage({ type: 'error', message: res?.msg || '重置密码失败，请稍后尝试！' })
+        }
+      } catch (error) {}
+    }
+
+    const forbiddenEvent = async (row: UserApiResult) => {
+      try {
+        await ElMessageBox.confirm(`是否确认将用户【${row.account}】${row.status === 1 ? '禁用' : '恢复正常使用'}吗？`, '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        loading.value = true
+        const res = await updateStatus({ id: row.id, status: row.status === 1 ? 0 : 1 })
+        loading.value = false
+        if (res?.code === 200) {
+          ElMessage({ type: 'success', message: `${row.status === 1 ? '禁用' : '启用'}成功` })
+          updateUserSuccess()
+        } else {
+          ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试！' })
         }
       } catch (error) {}
     }
@@ -146,7 +156,8 @@ export default defineComponent({
       showUserEditEvent,
       userTableRef,
       updateUserSuccess,
-      resetPasswordEvent
+      resetPasswordEvent,
+      forbiddenEvent
     }
   }
 })

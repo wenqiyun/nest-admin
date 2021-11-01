@@ -5,7 +5,7 @@
         <el-button @click="addOrEditEvent('add')" :disabled="!currMenu?.id">添加</el-button>
       </div>
     </div>
-    <k-table :data="{ list: btnList }" :is-pager="false" border stripe size="mini">
+    <k-table :data="{ list: btnList }" :is-pager="false" mode="render" border stripe size="mini">
       <el-table-column label="按钮名称" prop="name" align="center"></el-table-column>
       <el-table-column label="唯一编码" prop="code" align="center"></el-table-column>
       <el-table-column label="排序" prop="orderNum" align="center"></el-table-column>
@@ -24,12 +24,11 @@
 <script lang="ts">
 import { delMenu, getOneMenuBtns, MenuApiResult } from '@/api/menu'
 import { defineComponent, ref, watch } from 'vue'
-import KTable from '_c/Table/index.vue'
 import BtnEdit from './BtnEdit.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 export default defineComponent({
-  components: { KTable, BtnEdit },
+  components: { BtnEdit },
   props: {
     currMenu: {
       type: Object,

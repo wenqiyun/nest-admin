@@ -17,6 +17,9 @@
           <TableColumn v-bind="column" v-else ></TableColumn>
         </template>
       </template>
+      <template #empty>
+        <el-empty description="暂无数据"></el-empty>
+      </template>
     </el-table>
 
     <el-pagination

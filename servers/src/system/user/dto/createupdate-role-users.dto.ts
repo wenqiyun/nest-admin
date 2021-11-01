@@ -6,12 +6,12 @@ export class CreateOrUpdateRoleUsersDto {
   @IsNotEmpty({ message: 'userIds 不能为空' })
   userIds: number[]
 
-  @ApiProperty({ description: 'juese id' })
+  @ApiProperty({ description: '角色 roleId' })
   @IsNumber({}, { message: 'roleId 类型错误，正确类型 number' })
   @IsNotEmpty({ message: 'roleId 不能为空' })
   roleId: number
 
-  @ApiProperty({ description: 'juese id' })
+  @ApiProperty({ description: 'create/cancel' })
   @IsString({ message: 'type 类型错误，正确类型 string' })
   @IsIn(['create', 'cancel'], { message: '可选值为 create / cancel' })
   type: 'create' | 'cancel'

@@ -1,5 +1,5 @@
 import http from '@/utils/http/index'
-import { ResultData, BaseResult, Pagination, ApiMethodContants } from '@/common/types/apiResult.type'
+import { ResultData, BaseResult, Pagination, ApiMethodContants, ListResultData } from '@/common/types/apiResult.type'
 
 /** 返回用户类型 */
 export interface UserApiResult extends BaseResult {
@@ -20,8 +20,14 @@ export interface ICreateOrUpdateUser extends UserApiResult {
 }
 
 export interface QueryUserList extends Pagination {
+  /** 帐号，手机号，名称 */
   account?: string
-  status?: number | string
+  /** 用户是否可用 */
+  status?: string | 0 | 1
+  /** 角色id */
+  roleId?: number
+  /** 是否绑定当前角色 0-无， 1-绑定 */
+  hasCurrRole?: 0 | 1
 }
 
 export interface UserLogin {
@@ -32,6 +38,12 @@ export interface UserLogin {
 export interface LoginResult {
   accessToken: string
   refreshToken: string
+}
+
+export interface BindUserData {
+  userIds: number[]
+  roleId: number
+  type: 'create' | 'cancel'
 }
 
 export function login (loginData: UserLogin): Promise<ResultData<LoginResult>> {
@@ -49,8 +61,8 @@ export function getUserInfo (id: number): Promise<ResultData<UserApiResult>> {
   })
 }
 
-export function getUserList (params: QueryUserList): Promise<ResultData<UserApiResult>> {
-  return http.request<ResultData<UserApiResult>>({
+export function getUserList (params: QueryUserList): Promise<ResultData<ListResultData<UserApiResult>>> {
+  return http.request<ResultData<ListResultData<UserApiResult>>>({
     url: '/user/list',
     method: ApiMethodContants.GET,
     params
@@ -69,5 +81,21 @@ export function resetPassword (userId: number): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
     url: `/user/password/reset/${userId}`,
     method: ApiMethodContants.PUT
+  })
+}
+
+export function updateStatus (data: ICreateOrUpdateUser): Promise<ResultData<null>> {
+  return http.request<ResultData<null>>({
+    url: '/user/status/change',
+    method: ApiMethodContants.PUT,
+    data
+  })
+}
+
+export function bindRoleUser (data: BindUserData): Promise<ResultData<null>> {
+  return http.request<ResultData<null>>({
+    url: '/user/role/update',
+    method: ApiMethodContants.POST,
+    data
   })
 }
