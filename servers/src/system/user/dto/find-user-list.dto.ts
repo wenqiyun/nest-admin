@@ -6,8 +6,8 @@ export class FindUserListDto extends ReqListQuery {
   @ApiProperty({ description: '账号模糊搜索', required: false })
   account?: string
 
-  @ApiProperty({ description: '按账号状态查询用户', required: false })
-  status?: number
+  @ApiProperty({ description: '按账号状态查询用户',enum: [0,1], required: false })
+  status?: 0 | 1
 
   @ApiProperty({ description: '拥有角色id', required: false })
   roleId?: number

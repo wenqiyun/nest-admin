@@ -10,21 +10,23 @@
    "dependencies": {
       "async-validator": "^4.0.3",
       "axios": "^0.24.0",
-      "core-js": "^3.19.0",
+      "core-js": "^3.19.1",
+      "countup.js": "^2.0.8",
       "dayjs": "^1.10.7",
+      "echarts": "^5.2.2",
       "element-plus": "^1.1.0-beta.24",
       "intersection-observer": "^0.12.0",
       "path-to-regexp": "^6.2.0",
       "register-service-worker": "^1.7.2",
-      "vue": "^3.2.20",
+      "vue": "^3.2.21",
       "vue-class-component": "^8.0.0-rc.1",
       "vue-router": "^4.0.12",
       "vuex": "^4.0.2"
    },
    "devDependencies": {
       "@gfx/zopfli": "^1.0.15",
-      "@typescript-eslint/eslint-plugin": "^5.2.0",
-      "@typescript-eslint/parser": "^5.2.0",
+      "@typescript-eslint/eslint-plugin": "^5.3.0",
+      "@typescript-eslint/parser": "^5.3.0",
       "@vue/cli-plugin-babel": "~5.0.0-beta.6",
       "@vue/cli-plugin-eslint": "~5.0.0-beta.6",
       "@vue/cli-plugin-pwa": "~5.0.0-beta.6",
@@ -32,9 +34,9 @@
       "@vue/cli-plugin-typescript": "~5.0.0-beta.6",
       "@vue/cli-plugin-vuex": "~5.0.0-beta.6",
       "@vue/cli-service": "~5.0.0-beta.6",
-      "@vue/compiler-sfc": "^3.2.6",
+      "@vue/compiler-sfc": "^3.2.21",
       "@vue/eslint-config-standard": "^6.1.0",
-      "@vue/eslint-config-typescript": "^8.0.0",
+      "@vue/eslint-config-typescript": "^9.0.1",
       "compression-webpack-plugin": "^9.0.0",
       "crypto-browserify": "^3.12.0",
       "eslint": "^8.1.0",
@@ -47,7 +49,7 @@
       "sass-loader": "^12.3.0",
       "script-ext-html-webpack-plugin": "^2.1.5",
       "svg-sprite-loader": "^6.0.11",
-      "svgo": "^2.6.1",
+      "svgo": "^2.8.0",
       "typescript": "^4.4.4"
    }
 }

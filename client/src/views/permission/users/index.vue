@@ -4,10 +4,10 @@
      <div class="filter-item">
         <el-select v-model="searchReq.status" clearable style="width: 100px;" placeholder="请选择">
           <el-option label="使用中" :value="1">
-            <status-badge type="primary" content="使用中"></status-badge>
+            <k-badge type="primary" content="使用中"></k-badge>
           </el-option>
           <el-option label="已禁用" :value="0">
-            <status-badge type="danger" content="已禁用"></status-badge>
+            <k-badge type="danger" content="已禁用"></k-badge>
           </el-option>
         </el-select>
      </div>
@@ -86,7 +86,7 @@ export default defineComponent({
         })
         userData.value.data = data
       } else {
-        ElMessage({ message: res.msg, type: 'error' })
+        ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
       }
     }
 

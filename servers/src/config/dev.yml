@@ -1,10 +1,17 @@
+# 开发环境配置
 app:
   prefix: '/api'
   port: 8081
   swagger: true
   logger:
-    dir: 'D:\programWork\kapok\nest-admin\logs\'
-
+    # 项目日志存储路径，相对路径（相对本项目根目录）或绝对路径
+    dir: '../logs'
+  # 文件相关
+  file:
+    # location 文件上传后存储目录，相对路径（相对本项目根目录）或绝对路径
+    location: '../upload'
+    # 文件服务器地址，开发环境
+    domain: 'http://localhost:8081'
 # 数据库配置
 db:
   mysql:
@@ -36,7 +43,7 @@ jwt:
 # 权限， model 权限模式 global/manual
 # model global 配置了 才走白名单，否则只看函数头配置
 perm:
-  model: global
+  model: 'global'
   router:
     whitelist: ['/api/register']
 

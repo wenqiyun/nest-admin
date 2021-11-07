@@ -2,6 +2,7 @@
 import Badge from './packages/badge/index'
 // import Lazy from './packages/lazy/index.js'
 import Table from './packages/table/index'
+import CountTo from './packages/count-to/index'
 import type { App } from 'vue'
 
 // import Form from './packages/form/index.js'
@@ -10,8 +11,9 @@ const components = [
   // Detail,
   Badge,
   // Lazy,
-  Table
-  // Form
+  Table,
+  // Form,
+  CountTo
 ]
 
 const install = (app: App, opts = {}) => {
@@ -26,6 +28,7 @@ export default {
   // Detail,
   Badge,
   // Lazy,
-  Table
-  // Form
+  Table,
+  // Form,
+  CountTo
 }

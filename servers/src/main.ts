@@ -37,12 +37,13 @@ async function bootstrap() {
   app.use(helmet())
 
 
-  // sagger 配置 获取是否显示 swagger 文档
-  if (config.get<boolean>('app.swagger')) {
-    const swaggerOptions = new DocumentBuilder().setTitle('nest-admin App').setDescription('nest-admin App 接口文档').setVersion('2.0.0').addBearerAuth().build()
-    const document = SwaggerModule.createDocument(app, swaggerOptions)
-    SwaggerModule.setup('/api/docs', app, document)
-  }
+
+  const swaggerOptions = new DocumentBuilder().setTitle('nest-admin App').setDescription('nest-admin App 接口文档').setVersion('2.0.0').addBearerAuth().build()
+  const document = SwaggerModule.createDocument(app, swaggerOptions)
+  // 项目依赖当前文档功能，最好不要改变当前地址
+  // 生产环境使用 nginx 可以将当前文档地址 屏蔽外部访问
+  SwaggerModule.setup('/api/docs', app, document)
+
 
   // 防止跨站请求伪造
   // 设置 csrf 保存 csrfToken

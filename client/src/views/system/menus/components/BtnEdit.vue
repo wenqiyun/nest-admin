@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="按钮编辑" v-model="visible" top="10vh" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
+  <el-dialog title="按钮编辑" v-model="visible" width="500px" top="10vh" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
     <el-form ref="btnFormRef" :model="btnForm" :rules="btnFormRules" label-width="80px">
       <el-form-item label="按钮名称" prop="name">
         <el-input v-model.trim="btnForm.name"></el-input>

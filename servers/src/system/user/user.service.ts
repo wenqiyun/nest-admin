@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
 import { Like, Repository, getManager, getConnection } from 'typeorm'
 import { classToPlain, plainToClass } from 'class-transformer'
-import { genSalt, hash, compare } from 'bcrypt'
+import { genSalt, hash, compare } from 'bcryptjs'
 
 import { ResultData } from '../../common/utils/result'
 import { getRedisKey, formatSecond } from '../../common/utils/utils';

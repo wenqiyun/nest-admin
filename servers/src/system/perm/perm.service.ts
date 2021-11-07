@@ -1,4 +1,6 @@
-import { HttpService, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { HttpService } from '@nestjs/axios'
+import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
 import { Request, Router } from 'express'
 import { getConnection } from 'typeorm'
@@ -52,7 +54,7 @@ export class PermService {
 
   async findAppAllRoutesBySwaggerApi(): Promise<IRoute[]> {
     // 暂时这样
-    const { data } = await this.http.get(`http://localhost:${this.config.get('app.port')}/api/docs-json`).toPromise()
+    const { data } = await lastValueFrom(this.http.get(`http://localhost:${this.config.get('app.port')}/api/docs-json`))
     const routes = []
     if (data?.paths) {
       // 将 swagger 数据转换成需要的数据

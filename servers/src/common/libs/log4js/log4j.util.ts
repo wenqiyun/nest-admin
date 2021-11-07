@@ -1,11 +1,14 @@
-import * as Path from 'path'
+import Path from 'path'
 import * as Log4js from 'log4js'
 import * as Util from 'util'
 import dayjs from 'dayjs' // 处理时间的工具
 import * as StackTrace from 'stacktrace-js'
 import Chalk from 'chalk'
+import config from '../../../config/index'
 
-const baseLogPath = Path.resolve(__dirname, 'D:/programmeWork/kapok/nest-admin/logs') // 日志写入目录
+const appLogDirConfig = config().app.logger.dir
+
+const baseLogPath = Path.normalize(Path.isAbsolute(appLogDirConfig) ? appLogDirConfig : Path.join(process.cwd(), appLogDirConfig))
 
 // 日志级别
 export enum LoggerLevel {
