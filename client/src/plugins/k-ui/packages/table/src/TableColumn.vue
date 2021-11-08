@@ -1,7 +1,7 @@
 <template>
   <el-table-column :label="label" :prop="prop" :align="$attrs.align || 'center'" v-bind="$attrs">
     <template #default="{ row }">
-      <div v-if="children.length === 0">{{ row[prop] || row[column.default] || '' }}</div>
+      <div v-if="children.length === 0">{{ row[prop] || $attrs.default || '' }}</div>
       <TableColumn v-for="(child, i) in children" :key="`${child.label}_${i}`" v-bind="child"></TableColumn>
     </template>
   </el-table-column>

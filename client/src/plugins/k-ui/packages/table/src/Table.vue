@@ -11,7 +11,7 @@
         <template v-for="(column, index) in columns" :key="`${column.label}_${index}`" >
           <el-table-column :align="column.align || 'center'" v-if="column.type === 'slot'" v-bind="column" >
             <template #default="scope">
-              <slot :name="column.prop" v-bind="{ ...scope, $index: indexMethodFn(index) }"  >{{ scope.row[column.prop] || scope.row[column.default] || '' }}</slot>
+              <slot :name="column.prop" v-bind="{ ...scope, $index: indexMethodFn(index) }"  >{{ scope.row[column.prop] || column.default  || '' }}</slot>
             </template>
           </el-table-column>
           <TableColumn v-bind="column" v-else ></TableColumn>

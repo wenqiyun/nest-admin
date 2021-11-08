@@ -56,8 +56,8 @@ export default defineComponent({
       columns: [
         { label: '帐号', prop: 'account' },
         { label: '头像', prop: 'avatar' },
-        { label: '手机号', prop: 'phoneNum' },
-        { label: '邮箱', prop: 'email' },
+        { label: '手机号', prop: 'phoneNum', default: '--' },
+        { label: '邮箱', prop: 'email', default: '--' },
         { label: '状态', prop: 'status', type: 'slot', width: '90' },
         { label: '注册时间', prop: 'createDate', width: '90' },
         { label: '操作', prop: 'actions', type: 'slot', width: '250' }
