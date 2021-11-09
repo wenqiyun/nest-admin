@@ -1,5 +1,6 @@
-import { Controller, Query, Get, Param, Put, Body, Post } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiParam, ApiOkResponse } from '@nestjs/swagger'
+import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiOkResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'
 import { UserEntity } from './user.entity'
@@ -60,5 +61,24 @@ export class UserController {
   @ApiOperation({ summary: '重置用户密码' })
   async resetPassword (@Param('userId') userId: number): Promise<ResultData> {
     return await this.userService.updatePassword(userId, '', true)
+  }
+
+  @Post('/import')
+  @ApiOperation({ summary: 'excel 批量导入用户' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async importUsers (@UploadedFile() file: Express.Multer.File): Promise<ResultData> {
+    return await this.userService.importUsers(file)
   }
 }

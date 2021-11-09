@@ -2,9 +2,10 @@ import { HttpStatus, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
-import { Like, Repository, getManager, getConnection } from 'typeorm'
+import { Like, Repository, getManager, getConnection, In } from 'typeorm'
 import { classToPlain, plainToClass } from 'class-transformer'
-import { genSalt, hash, compare } from 'bcryptjs'
+import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
+import xlsx from 'node-xlsx'
 
 import { ResultData } from '../../common/utils/result'
 import { getRedisKey, formatSecond } from '../../common/utils/utils';
@@ -53,9 +54,13 @@ export class UserService {
 
   /** 创建用户 */
   async create(dto: CreateUserDto): Promise<ResultData> {
-    const existing = await this.findOneByAccount(dto.account)
-    if (existing) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '帐号已存在，请调整后重新注册！')
+    console.log(dto, 890)
     if (dto.password !== dto.confirmPassword) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '两次输入密码不一致，请重试')
+    // 防止重复创建 start
+    if (await this.findOneByAccount(dto.account)) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '帐号已存在，请调整后重新注册！')
+    if (await this.userRepo.findOne({ phoneNum: dto.phoneNum })) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '当前手机号已存在，请调整后重新注册')
+    if (await this.userRepo.findOne({ email: dto.email })) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '当前邮箱已存在，请调整后重新注册')
+    // 防止重复创建 end
     const salt = await genSalt()
     dto.password = await hash(dto.password, salt)
     // plainToClass  忽略转换 @Exclude 装饰器
@@ -86,6 +91,101 @@ export class UserService {
     // 生成 token
     const data = this.genToken({ id: user.id })
     return ResultData.ok(data)
+  }
+
+  /**
+   * 批量导入用户
+   */
+  async importUsers (file: Express.Multer.File): Promise<ResultData> {
+    const workSheet = xlsx.parse(file.buffer)
+    // 需要处理 excel 内帐号 手机号 邮箱 是否有重复的情况
+    if (workSheet[0].data.length === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, 'excel 导入数据为空')
+    const userArr = []
+    const accountMap = new Map()
+    const phoneMap = new Map()
+    const emailMap = new Map()
+    // 从 1 开始是去掉 excel 帐号等文字提示
+    for (let i = 1, len = workSheet[0].data.length; i < len; i++) {
+      const dataArr = workSheet[0].data[i]
+      const [ account, phone, email, avatar ] = dataArr
+      userArr.push({ account, phoneNum: phone, email, avatar})
+      if (account && !accountMap.has(account)) {
+        accountMap.set(account, [])
+      } else if (account) { // 有重复的
+        accountMap.get(account).push(i + 1)
+      } else {
+        return ResultData.fail(HttpStatus.BAD_REQUEST, '上传文件帐号有空数据，请检查后再导入')
+      }
+      if (!phoneMap.has(phone)) {
+        phoneMap.set(phone, [])
+      } else if (phone) {
+        phoneMap.get(phone).push(i + 1)
+      }
+      if (email && !emailMap.has(email)) {
+        emailMap.set(email, [])
+      } else if (email){
+        emailMap.get(email).push(i + 1)
+      }
+    }
+    const accountErrArr = []
+    for (let [key, val] of accountMap) {
+      if (val.length > 0) {
+        accountErrArr.push({ key, val })
+      }
+    }
+    const phoneErrArr = []
+    for (let [key, val] of phoneMap) {
+      if (val.length > 0) {
+        phoneErrArr.push({ key, val })
+      }
+    }
+    const emailErrArr = []
+    for (let [key, val] of emailMap) {
+      if (val.length > 0) {
+        emailErrArr.push({ key, val })
+      }
+    }
+    if (accountErrArr.length > 0 || phoneErrArr.length > 0 || emailErrArr.length > 0) {
+      return ResultData.fail(400500, '导入 excel 内部有数据重复或数据有误，请修改调整后上传导入', { account: accountErrArr, phone: phoneErrArr, email: emailErrArr})
+    }
+    // 若 excel 内部无重复，则需要判断 excel 中数据 是否与 数据库的数据重复
+    const existingAccount = await this.userRepo.find({ select: ['account'],  where: { account: In(userArr.map(v => v.account)) } })
+    if (existingAccount.length > 0) {
+      existingAccount.forEach(v => {
+        // userArr 中的数据 下标 换算成 excel 中的 行号 + 2
+        accountErrArr.push({ key: v.account, val: [userArr.findIndex(m => m.account === v.account) + 2] })
+      })
+    }
+    // 手机号、邮箱非必填，所以查询存在重复的 过滤掉 空数据
+    const existingPhone = await this.userRepo.find({ select: ['phoneNum'],  where: { account: In(userArr.map(v => v.phoneNum).filter(v => !!v)) } })
+    if (existingPhone.length > 0) {
+      existingPhone.forEach(v => {
+        // userArr 中的数据 下标 换算成 excel 中的 行号 + 2
+        phoneErrArr.push({ key: v.phoneNum, val: [userArr.findIndex(m => m.phoneNum === v.phoneNum) + 2]})
+      })
+    }
+    const existingEmail = await this.userRepo.find({ select: ['email'],  where: { account: In(userArr.map(v => v.email).filter(v => !!v)) } })
+    if (existingEmail.length > 0) {
+      existingEmail.forEach(v => {
+        // userArr 中的数据 下标 换算成 excel 中的 行号 + 2
+        emailErrArr.push({ key: v.email, val: [userArr.findIndex(m => m.email === v.email) + 2] })
+      })
+    }
+    if (accountErrArr.length > 0 || phoneErrArr.length > 0 || emailErrArr.length > 0) {
+      return ResultData.fail(400500, '导入 excel 系统中已有重复项，请修改调整后上传导入', { account: accountErrArr, phone: phoneErrArr, email: emailErrArr})
+    }
+    // excel 与数据库无重复，准备入库
+    const password = this.config.get<string>('user.initialPassword')
+    userArr.forEach(v => {
+      const salt = genSaltSync()
+      const encryptPw = hashSync(password, salt)
+      v['password'] = encryptPw
+      v['salt'] = salt
+    })
+    const result =  await getManager().transaction(async (transactionalEntityManager) => {
+      return await transactionalEntityManager.save<UserEntity>(plainToClass(UserEntity, userArr, { ignoreDecorators: true }))
+    })
+    return ResultData.ok(classToPlain(result))
   }
 
   /** 更新用户信息 */
