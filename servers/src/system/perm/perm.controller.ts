@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common'
+import { Controller, Get, Param, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation } from '@nestjs/swagger'
 
 import { PermService } from './perm.service'
@@ -15,5 +15,11 @@ export class PermController {
   @ApiOperation({ summary: '获取app 所有路由' })
   async findAppAllRoutes(): Promise<ResultData> {
     return await this.permService.findAppAllRoutes()
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '用户权限'})
+  async findUser (@Param('id') userId: number): Promise<any> {
+    return await this.permService.findUserMenus(userId)
   }
 }

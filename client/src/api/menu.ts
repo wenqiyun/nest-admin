@@ -39,10 +39,11 @@ export interface ICreateOrUpdateMenu {
   menuPermList?: Array<MenuPermApiResult>
 }
 
-export function getAllMenu (): Promise<ResultData<Array<MenuApiResult>>> {
+export function getAllMenu (hasBtn?: 0 | 1): Promise<ResultData<Array<MenuApiResult>>> {
   return http.request<ResultData<Array<MenuApiResult>>>({
     url: '/menu/all',
-    method: ApiMethodContants.GET
+    method: ApiMethodContants.GET,
+    params: { hasBtn: hasBtn || 0 }
   })
 }
 

@@ -5,7 +5,7 @@ import { Exclude, Expose } from 'class-transformer'
 @Entity('sys_user')
 export class UserEntity {
   @ApiProperty({ type: Number, description: 'id' })
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   public id: number
 
   @Exclude({ toPlainOnly: true }) // 输出屏蔽密码

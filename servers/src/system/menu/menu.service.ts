@@ -22,6 +22,7 @@ export class MenuService {
   ) {}
 
   async create(dto: CreateMenuDto): Promise<ResultData> {
+    console.log(dto, 8890)
     if (dto.parentId !== 0) {
       // 查询当前父级菜单是否存在
       const parentMenu = await this.menuRepo.findOne({ id: dto.parentId })

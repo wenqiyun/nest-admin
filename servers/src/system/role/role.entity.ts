@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger'
 @Entity('sys_role')
 export class RoleEntity {
   @ApiProperty({ description: 'id' })
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number
 
   @ApiProperty({ description: '角色名称' })

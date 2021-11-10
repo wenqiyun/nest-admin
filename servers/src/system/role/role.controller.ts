@@ -41,6 +41,7 @@ export class RoleController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: '删除角色' })
   async delete(@Param('id') id: number): Promise<ResultData> {
     return await this.roleService.delete(id)
   }

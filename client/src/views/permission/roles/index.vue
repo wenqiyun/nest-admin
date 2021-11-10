@@ -31,7 +31,6 @@
 
 <script lang="ts">
 import { getRoleList, QueryRoleList, RoleApiResult } from '@/api/role'
-import { ListResultData } from '@/common/types/apiResult.type'
 import { defineComponent, ref } from 'vue'
 import RoleInfo from './components/RoleInfo.vue'
 import RoleUserList from './components/roleUserList/index.vue'

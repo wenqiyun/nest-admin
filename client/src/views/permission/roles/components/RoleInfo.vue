@@ -74,7 +74,7 @@ export default defineComponent({
     const menuList = ref<Array<MenuApiResult>>([])
 
     const getMenuList = async () => {
-      const res = await getAllMenu()
+      const res = await getAllMenu(1)
       if (res.code === 200) {
         menuList.value = res.data as MenuApiResult[]
       }

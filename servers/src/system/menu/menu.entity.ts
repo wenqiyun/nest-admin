@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 @Entity('sys_menu')
 export class MenuEntity {
   @ApiProperty({ description: 'id' })
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   public id: number
 
   @ApiProperty({ description: '父级菜单id' })

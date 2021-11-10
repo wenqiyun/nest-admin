@@ -1,5 +1,12 @@
 <template>
-  <el-tree ref="roleMenuTreeRef" :data="menuTree" node-key="id" :props="{ label: 'name' }" @check-change="hanldCheckChange" show-checkbox check-strictly></el-tree>
+  <el-tree ref="roleMenuTreeRef" :data="menuTree" node-key="id" :props="{ label: 'name' }" @check-change="hanldCheckChange" show-checkbox check-strictly>
+    <template #default="{ node, data }">
+      <span>
+        <svg-icon :icon-class="data.type === 3 ? 'button' : 'menufold'" class="role-menu-tree__icon"></svg-icon>
+        <span>{{ node.label }}</span>
+      </span>
+    </template>
+  </el-tree>
 </template>
 
 <script lang="ts">
@@ -45,3 +52,12 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss" scoped>
+.role-menu-tree__icon {
+  margin-right: 7px;
+  font-size: 18px;
+  vertical-align: -0.25em;
+  color: #999;
+}
+</style>

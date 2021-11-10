@@ -26,6 +26,7 @@ db:
     multipleStatements: true
     dropSchema: false
     synchronize: true
+    supportBigNumbers: false
 
 # redis 配置
 redis:

@@ -33,7 +33,7 @@ export class MenuController {
 
   @Post()
   @ApiOperation({ summary: '创建菜单' })
-  async create(@Body() dto: CreateMenuDto): Promise<ResultData> {
+  async create(@Body() dto: any): Promise<ResultData> {
     return await this.menuService.create(dto)
   }
 
