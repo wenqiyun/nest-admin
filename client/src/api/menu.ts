@@ -1,4 +1,5 @@
-import http from '@/utils/http/index'
+import http from '@/utils/request'
+import config from '@/config/index'
 import { BaseResult, ResultData, ApiMethodContants } from '@/common/types/apiResult.type'
 
 export enum MenuTypeContants {
@@ -10,7 +11,7 @@ export enum MenuTypeContants {
 /** 接口返回菜单类型 */
 export interface MenuApiResult extends BaseResult {
   /** 父级菜单id, 0 则表示是最上级菜单 */
-  parentId: string | number
+  parentId: string
   /** 菜单名称 */
   name: string
   /** 菜单唯一标识，与前端 路由标识 name 保持一致， 做权限对比用 */
@@ -24,7 +25,7 @@ export interface MenuApiResult extends BaseResult {
 }
 
 export interface MenuPermApiResult extends BaseResult {
-  menuId?: number
+  menuId?: string
   apiMethod: 'GET' | 'POST' | 'PUT' | 'DELETE'
   apiUrl: string
 }
@@ -41,35 +42,36 @@ export interface ICreateOrUpdateMenu {
 
 export function getAllMenu (hasBtn?: 0 | 1): Promise<ResultData<Array<MenuApiResult>>> {
   return http.request<ResultData<Array<MenuApiResult>>>({
-    url: '/menu/all',
+    url: `${config.api.baseUrl}/menu/all`,
     method: ApiMethodContants.GET,
     params: { hasBtn: hasBtn || 0 }
   })
 }
 
-export function getMenuInfo (id: number): Promise<ResultData<MenuApiResult>> {
+export function getMenuInfo (id: string): Promise<ResultData<MenuApiResult>> {
   return http.request<ResultData<MenuApiResult>>({
-    url: `/menu/one/${id}`,
+    url: `${config.api.baseUrl}/menu/one/${id}`,
     method: ApiMethodContants.GET
   })
 }
 
-export function getOneMenuBtns (id: number): Promise<ResultData<Array<MenuApiResult>>> {
+export function getOneMenuBtns (id: string): Promise<ResultData<Array<MenuApiResult>>> {
   return http.request<ResultData<Array<MenuApiResult>>>({
-    url: `/menu/one/${id}/btns`,
+    url: `${config.api.baseUrl}/menu/one/${id}/btns`,
     method: ApiMethodContants.GET
   })
 }
 
-export function getOneMenuPerms (id: number): Promise<ResultData<Array<MenuPermApiResult>>> {
+export function getOneMenuPerms (id: string): Promise<ResultData<Array<MenuPermApiResult>>> {
   return http.request<ResultData<Array<MenuPermApiResult>>>({
-    url: `/menu/one/${id}/menu-perm`
+    url: `${config.api.baseUrl}/menu/one/${id}/menu-perm`,
+    method: ApiMethodContants.GET
   })
 }
 
 export function createMenu (data: ICreateOrUpdateMenu): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: '/menu',
+    url: `${config.api.baseUrl}/menu`,
     method: ApiMethodContants.POST,
     data
   })
@@ -77,15 +79,15 @@ export function createMenu (data: ICreateOrUpdateMenu): Promise<ResultData<null>
 
 export function updateMenu (data: ICreateOrUpdateMenu): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: '/menu',
+    url: `${config.api.baseUrl}/menu`,
     method: ApiMethodContants.PUT,
     data
   })
 }
 
-export function delMenu (id: number): Promise<ResultData<null>> {
+export function delMenu (id: string): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: `/menu/${id}`,
+    url: `${config.api.baseUrl}/menu/${id}`,
     method: ApiMethodContants.DELETE
   })
 }

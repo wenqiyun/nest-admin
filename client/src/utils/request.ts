@@ -1,4 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import appConfig from '@/config/index'
+import { getToken } from './storage'
 
 class HttpService {
   private instance: AxiosInstance
@@ -9,10 +11,7 @@ class HttpService {
   }
 
   private createAxiosInstance (config: AxiosRequestConfig): AxiosInstance {
-    return axios.create({
-      timeout: 3000,
-      ...config
-    })
+    return axios.create(config)
   }
 
   private filterGetRequestParams (config: AxiosRequestConfig): AxiosRequestConfig {
@@ -30,6 +29,10 @@ class HttpService {
   private setupInterceptors () {
     // const axiosCance
     this.instance.interceptors.request.use((config: AxiosRequestConfig) => {
+      const token = getToken()
+      if (token) {
+        config.headers = { ...config.headers, Authorization: token }
+      }
       return config
     }, (err) => { console.log(err) })
 
@@ -55,8 +58,7 @@ class HttpService {
 }
 
 const service = new HttpService({
-  baseURL: process.env.VUE_APP_BASE_API_URL as string | '/api',
-  timeout: 60 * 1000
+  timeout: Number(appConfig.request.timeout || '0')
 })
 
 export default service

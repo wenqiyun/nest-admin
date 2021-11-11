@@ -74,7 +74,6 @@ export class PermService {
         return null
       })
       .filter((v) => !!v)
-    console.log(router.stack, 900090)
     return ResultData.ok(routes)
   }
 

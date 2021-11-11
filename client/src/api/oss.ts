@@ -1,4 +1,5 @@
-import http from '@/utils/http/index'
+import http from '@/utils/request'
+import config from '@/config/index'
 import { BaseResult, Pagination, ResultData, ApiMethodContants } from '../common/types/apiResult.type'
 
 export interface OssApiResult extends BaseResult {
@@ -14,7 +15,7 @@ export interface OssApiResult extends BaseResult {
 
 export function getFileList (params: Pagination): Promise<ResultData<OssApiResult>> {
   return http.request<ResultData<OssApiResult>>({
-    url: '/oss/list',
+    url: `${config.api.baseUrl}/oss/list`,
     method: ApiMethodContants.GET,
     params
   })

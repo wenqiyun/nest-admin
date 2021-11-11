@@ -33,7 +33,7 @@ export class UserService {
     private readonly redisUtilService: RedisUtilService,
   ) {}
 
-  async findOneById(id: number): Promise<UserEntity> {
+  async findOneById(id: string): Promise<UserEntity> {
     const redisKey = getRedisKey(RedisKeyPrefix.USER_INFO, id)
     const result = await this.redisUtilService.hGetAll(redisKey)
     // plainToClass 去除 password slat
@@ -54,7 +54,6 @@ export class UserService {
 
   /** 创建用户 */
   async create(dto: CreateUserDto): Promise<ResultData> {
-    console.log(dto, 890)
     if (dto.password !== dto.confirmPassword) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '两次输入密码不一致，请重试')
     // 防止重复创建 start
     if (await this.findOneByAccount(dto.account)) return ResultData.fail(HttpStatus.NOT_ACCEPTABLE, '帐号已存在，请调整后重新注册！')
@@ -208,7 +207,7 @@ export class UserService {
    * @param status
    * @returns
    */
-  async updateStatus(userId: number, status: 0 | 1): Promise<ResultData> {
+  async updateStatus(userId: string, status: 0 | 1): Promise<ResultData> {
     const existing = await this.findOneById(userId)
     if (!existing) ResultData.fail(HttpStatus.NOT_FOUND, '当前用户不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
@@ -223,7 +222,7 @@ export class UserService {
    * 更新或重置用户密码
    * @reset 是否重置, false 则使用传入的 password 更新
    */
-  async updatePassword (userId: number, password: string, reset: boolean): Promise<ResultData> {
+  async updatePassword (userId: string, password: string, reset: boolean): Promise<ResultData> {
     const existing = await this.userRepo.findOne(userId)
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, `用户不存在或已删除，${reset ? '重置' : '更新'}失败`)
     if (existing.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '当前用户已被禁用，不可重置用户密码')
@@ -270,20 +269,20 @@ export class UserService {
   }
 
   /** 查询单个用户 */
-  async findOne(id: number): Promise<ResultData> {
+  async findOne(id: string): Promise<ResultData> {
     const user = await this.findOneById(id)
     if (!user) return ResultData.fail(HttpStatus.NOT_FOUND, '该用户不存在或已删除')
     return ResultData.ok(classToPlain(user))
   }
 
   /** 查询单个用户所拥有的角色 id */
-  async findUserRole(id: number): Promise<ResultData> {
+  async findUserRole(id: string): Promise<ResultData> {
     const roleIds = await this.findUserRoleByUserId(id)
     return ResultData.ok(roleIds)
   }
 
   /** 生成用户角色关系, 单个角色， 多个用户 */
-  async createOrCancelUserRole(userIds: number[], roleId: number, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
+  async createOrCancelUserRole(userIds: string[], roleId: string, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
     const res = await getManager().transaction(async (transactionalEntityManager) => {
       if (createOrCancel === 'create') {
         const dto = plainToClass(
@@ -305,7 +304,7 @@ export class UserService {
    * @param roleId 角色 id
    * @param isCorrelation 是否相关联， true 查询拥有当前 角色的用户， false 查询无当前角色的用户
    */
-  private async findUserByRoleId(roleId: number, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
+  private async findUserByRoleId(roleId: string, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
     let res
     if (isCorrelation) {
       res = await getConnection()
@@ -335,7 +334,7 @@ export class UserService {
   }
 
   /** 根据用户id 查询角色 id 集合 */
-  async findUserRoleByUserId(id: number): Promise<number[]> {
+  async findUserRoleByUserId(id: string): Promise<number[]> {
     const userRoleKey = getRedisKey(RedisKeyPrefix.USER_ROLE, id)
     const result = await this.redisUtilService.get(userRoleKey)
     if (result) return JSON.parse(result)
@@ -348,25 +347,25 @@ export class UserService {
   }
 
   /** 生成 token */
-  genToken(payload: { id: number }): Record<string, unknown> {
+  genToken(payload: { id: string }): Record<string, unknown> {
     const accessToken = `Bearer ${this.jwtService.sign(payload)}`
     const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('jwt.refreshExpiresIn') })
     return { accessToken, refreshToken }
   }
 
   /** 刷新 token */
-  refreshToken(id: number): string {
+  refreshToken(id: string): string {
     return this.jwtService.sign({ id })
   }
 
   /** 校验 token */
-  verifyToken(token: string): number {
+  verifyToken(token: string): string {
     try {
-      if (!token) return 0
+      if (!token) return null
       const id = this.jwtService.verify(token.replace('Bearer ', ''))
       return id
     } catch (error) {
-      return 0
+      return null
     }
   }
 }

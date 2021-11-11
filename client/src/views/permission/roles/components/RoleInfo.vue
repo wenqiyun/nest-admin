@@ -3,8 +3,8 @@
     <h3 class="roles__tip clearfix">
       <span>基础信息</span>
       <span class="fr role-edit-action">
-        <el-button type="primary" @click="showEditEvent">编辑</el-button>
-        <el-button type="danger" @click="delRoleFn">删除</el-button>
+        <el-button type="primary" :disabled="!currRole.id" @click="showEditEvent">编辑</el-button>
+        <el-button type="danger" :disabled="!currRole.id" @click="delRoleFn">删除</el-button>
       </span>
     </h3>
     <div class="role-info-content">

@@ -3,9 +3,9 @@ import { IsNumber, IsString, Length, IsNotEmpty, IsOptional, IsArray } from 'cla
 
 export class UpdateRoleDto {
   @ApiProperty({ description: 'id' })
-  @IsNumber({}, { message: 'id 类型错误，正确类型 number' })
+  @IsString({ message: 'id 类型错误，正确类型 number' })
   @IsNotEmpty({ message: 'id 不能为空' })
-  id: number
+  id: string
 
   @ApiProperty({ description: '角色名称' })
   @IsString({ message: 'remark 类型错误, 正确类型 string' })
@@ -19,8 +19,8 @@ export class UpdateRoleDto {
   remark?: string
 
   @ApiProperty({ description: '当前角色所拥有的菜单组', required: false })
-  @IsArray({ message: 'menuIds 类型错误，正确类型 number[]' })
-  @IsNumber({}, { each: true, message: '菜单组内类型错误' })
+  @IsArray({ message: 'menuIds 类型错误，正确类型 string[]' })
+  @IsString({ each: true, message: '菜单组内类型错误' })
   @IsNotEmpty({ each: true, message: '菜单id 不能为空' })
   @IsOptional()
   menuIds?: number[]

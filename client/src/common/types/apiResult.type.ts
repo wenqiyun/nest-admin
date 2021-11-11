@@ -11,7 +11,7 @@ export interface ResultData<T> {
 }
 
 export interface BaseResult {
-  id?: number
+  id?: string
   /** 创建时间 */
   createDate?: string | number
   /** 更新时间 */

@@ -22,8 +22,7 @@ export class MenuService {
   ) {}
 
   async create(dto: CreateMenuDto): Promise<ResultData> {
-    console.log(dto, 8890)
-    if (dto.parentId !== 0) {
+    if (dto.parentId !== '0') {
       // 查询当前父级菜单是否存在
       const parentMenu = await this.menuRepo.findOne({ id: dto.parentId })
       if (!parentMenu) return ResultData.fail(HttpStatus.NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
@@ -50,17 +49,17 @@ export class MenuService {
     return ResultData.ok(menuList)
   }
 
-  async findBtnByParentId(parentId: number): Promise<ResultData> {
+  async findBtnByParentId(parentId: string): Promise<ResultData> {
     const btnList = await this.menuRepo.find({ where: { parentId } })
     return ResultData.ok(btnList)
   }
 
-  async findMenuPerms(menuId: number): Promise<ResultData> {
+  async findMenuPerms(menuId: string): Promise<ResultData> {
     const menuPerms = await this.menuPermRepo.find({ where: { menuId } })
     return ResultData.ok(menuPerms)
   }
 
-  async deleteMenu(id: number): Promise<ResultData> {
+  async deleteMenu(id: string): Promise<ResultData> {
     const existing = await this.menuRepo.findOne({ id })
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前菜单不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {

@@ -3,12 +3,12 @@ import { IsNumber, IsNotEmpty, IsString, Length, IsIn, Min, IsArray, IsOptional 
 
 export class UpdateMenuDto {
   @ApiProperty({ description: '菜单id', required: false })
-  @IsNumber({}, { message: 'id 类型错误' })
+  @IsString({ message: 'id 类型错误' })
   @IsNotEmpty()
-  id: number
+  id: string
 
   @ApiProperty({ description: '父级菜单', required: false })
-  @IsNumber({}, { message: 'parentId 类型错误' })
+  @IsString({ message: 'parentId 类型错误' })
   @IsNotEmpty({ message: 'parentId 必须填入值' })
   @IsOptional()
   readonly parentId?: number

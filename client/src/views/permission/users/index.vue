@@ -17,8 +17,19 @@
 
       <div class="filter-action-wrapper filter-item">
         <el-button type="primary" @click="searchEvent">搜索</el-button>
+        <el-button type="text" @click="loadingMoreEvent">{{ loadingMore ? '收起' : '更多' }}</el-button>
       </div>
+
     </div>
+     <div class="filter-container" v-show="loadingMore">
+        <div class="filter-item" >
+          <!-- 不用 upload 的组件是不灵活 -->
+          <!-- <el-upload style="display: inline-block;margin-right: 20px;" v-bind="uploadConfig" :show-file-list="false">
+            <el-button type="primary">批量上传</el-button>
+          </el-upload> -->
+          <el-button @click="downloadEvent">下载模板</el-button>
+        </div>
+     </div>
     <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading"  border stripe current-row-key="id" style="width: 100%">
       <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
@@ -39,11 +50,13 @@
 // import KTable from '_c/Table/index.vue'
 import EditUser from './components/Edit.vue'
 import { defineComponent, ref } from 'vue'
-import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult } from '@/api/user'
+import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult, dowmloadUserTemplate } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { jsonTimeFormat } from '@/utils/index'
-import { ListResultData, Pagination } from '../../../common/types/apiResult.type'
-import { IKTableProps } from '../../../plugins/k-ui/packages/table/src/Table.type'
+import { downLoad, jsonTimeFormat } from '@/utils/index'
+import { ListResultData, Pagination } from '@/common/types/apiResult.type'
+import { IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+import appConfig from '@/config/index'
+import { getToken } from '@/utils/storage'
 
 export default defineComponent({
   components: { EditUser },
@@ -92,7 +105,7 @@ export default defineComponent({
 
     // 编辑用户相关
     const showUserEdit = ref<boolean>(false)
-    const currId = ref<number>()
+    const currId = ref<string>()
     const showUserEditEvent = (row: ICreateOrUpdateUser) => {
       currId.value = row.id
       showUserEdit.value = true
@@ -116,7 +129,7 @@ export default defineComponent({
           cancelButtonText: '取消',
           type: 'warning'
         })
-        const res = await resetPassword(row.id as number)
+        const res = await resetPassword(row.id as string)
         if (res?.code === 200) {
           ElMessage({ type: 'success', message: `重置用户【${row.account}】密码成功` })
         } else {
@@ -144,6 +157,27 @@ export default defineComponent({
       } catch (error) {}
     }
 
+    const loadingMore = ref<boolean>(false)
+
+    const loadingMoreEvent = () => {
+      loadingMore.value = !loadingMore.value
+    }
+
+    const downloadEvent = async () => {
+      loading.value = true
+      const res = await dowmloadUserTemplate()
+      loading.value = false
+      downLoad(res, '用户批量导入模板.xlsx')
+    }
+
+    const uploadConfig = {
+      action: `${appConfig.api.baseUrl}/user/import`,
+      headers: {
+        Authorization: getToken()
+      },
+      accept: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }
+
     return {
       loading,
       searchReq,
@@ -157,7 +191,11 @@ export default defineComponent({
       userTableRef,
       updateUserSuccess,
       resetPasswordEvent,
-      forbiddenEvent
+      forbiddenEvent,
+      loadingMore,
+      loadingMoreEvent,
+      downloadEvent,
+      uploadConfig
     }
   }
 })

@@ -37,7 +37,7 @@ export default defineComponent({
       default: false
     },
     currId: {
-      type: Number,
+      type: String,
       default: () => {
         return null
       }
@@ -101,7 +101,7 @@ export default defineComponent({
       ]
     }
 
-    const getUserInfo = async (currId: number) => {
+    const getUserInfo = async (currId: string) => {
       loading.value = true
       const res = await getUserInfoApi(currId)
       loading.value = false

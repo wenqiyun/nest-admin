@@ -2,14 +2,14 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsNumber, IsNotEmpty, IsString, IsIn } from 'class-validator'
 export class CreateOrUpdateRoleUsersDto {
   @ApiProperty({ description: 'user id 集合' })
-  @IsNumber({}, { each: true, message: 'userIds 集合中有类型错误' })
+  @IsString({ each: true, message: 'userIds 集合中有类型错误' })
   @IsNotEmpty({ message: 'userIds 不能为空' })
-  userIds: number[]
+  userIds: string[]
 
   @ApiProperty({ description: '角色 roleId' })
-  @IsNumber({}, { message: 'roleId 类型错误，正确类型 number' })
+  @IsString({ message: 'roleId 类型错误，正确类型 number' })
   @IsNotEmpty({ message: 'roleId 不能为空' })
-  roleId: number
+  roleId: string
 
   @ApiProperty({ description: 'create/cancel' })
   @IsString({ message: 'type 类型错误，正确类型 string' })

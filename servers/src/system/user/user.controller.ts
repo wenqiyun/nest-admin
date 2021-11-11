@@ -28,14 +28,14 @@ export class UserController {
   @ApiOperation({ summary: '根据id 查询用户信息' })
   @ApiOkResponse({ type: UserEntity })
   @ApiParam({ name: 'id' })
-  async findOne (@Param('id') id: number): Promise<ResultData> {
+  async findOne (@Param('id') id: string): Promise<ResultData> {
     return await this.userService.findOne(id)
   }
 
   @Get(':id/role')
   @ApiOperation({ summary: '查询用户角色id集合' })
   @ApiOkResponse({ type: Number, isArray: true })
-  async findUserRole (@Param('id') id: number): Promise<ResultData> {
+  async findUserRole (@Param('id') id: string): Promise<ResultData> {
     return await this.userService.findUserRole(id)
   }
 
@@ -59,7 +59,7 @@ export class UserController {
 
   @Put('/password/reset/:userId')
   @ApiOperation({ summary: '重置用户密码' })
-  async resetPassword (@Param('userId') userId: number): Promise<ResultData> {
+  async resetPassword (@Param('userId') userId: string): Promise<ResultData> {
     return await this.userService.updatePassword(userId, '', true)
   }
 

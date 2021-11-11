@@ -59,7 +59,7 @@ export default defineComponent({
     }
 
     const currApiPerms = ref<Array<string>>([])
-    const getOneMenuPermsFn = async (id: number) => {
+    const getOneMenuPermsFn = async (id: string) => {
       const res = await getOneMenuPerms(id)
       if (res.code === 200) {
         const permList = res.data as Array<MenuPermApiResult>
@@ -83,7 +83,7 @@ export default defineComponent({
         }
         btnForm.value = props.currBtn || { name: '', code: '', orderNum: '' }
         if (btnForm.value.id) {
-          getOneMenuPermsFn(btnForm.value.id as number)
+          getOneMenuPermsFn(btnForm.value.id as string)
         } else {
           currApiPerms.value = []
         }
@@ -100,7 +100,7 @@ export default defineComponent({
           return { apiMethod: permObjArr[0], apiUrl: permObjArr[1] } as MenuPermApiResult
         })
       }
-      req.parentId = req.parentId || 0
+      req.parentId = req.parentId || '0'
       let res
       if (req.id) {
         res = await updateMenu(req)

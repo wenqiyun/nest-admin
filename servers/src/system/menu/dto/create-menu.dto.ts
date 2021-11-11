@@ -4,9 +4,9 @@ import { MenuPermDto } from './menu-perm.dto'
 
 export class CreateMenuDto {
   @ApiProperty({ description: '父级菜单' })
-  @IsNumber()
+  @IsString({ message: 'parent 类型错误' })
   @IsNotEmpty({ message: 'parentId 必须填入值' })
-  readonly parentId: number
+  readonly parentId: string
 
   @ApiProperty({ description: '菜单名称' })
   @IsString()

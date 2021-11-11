@@ -37,7 +37,7 @@ export default defineComponent({
   },
   setup (props, { emit }) {
     const btnList = ref<Array<MenuApiResult>>([])
-    const getOneMenuBtnsFn = async (id: number) => {
+    const getOneMenuBtnsFn = async (id: string) => {
       const res = await getOneMenuBtns(id)
       if (res.code === 200) {
         btnList.value = res.data as Array<MenuApiResult>
@@ -45,7 +45,7 @@ export default defineComponent({
     }
     watch(() => props.currMenu, (val) => {
       if (val?.id) {
-        getOneMenuBtnsFn(val.id as number)
+        getOneMenuBtnsFn(val.id as string)
       }
     })
 
@@ -56,7 +56,7 @@ export default defineComponent({
           cancelButtonText: '取消',
           type: 'warning'
         })
-        const res = await delMenu(row.id as number)
+        const res = await delMenu(row.id as string)
         if (res.code === 200) {
           ElMessage({ message: `按钮【${row.name}】删除成功`, type: 'success' })
           getOneMenuBtnsFn(props.currMenu.id)
@@ -78,7 +78,7 @@ export default defineComponent({
     }
 
     const addOrEditSuccess = () => {
-      getOneMenuBtnsFn(props.currMenu.id as number)
+      getOneMenuBtnsFn(props.currMenu.id as string)
     }
     return {
       btnList,

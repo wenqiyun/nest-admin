@@ -26,6 +26,7 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
   {
     path: '/perm',
     component: Layout,
+    name: 'perm',
     meta: { title: '权限管理', icon: 'permission' },
     redirect: '/perm/users',
     children: [
@@ -37,6 +38,7 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     path: '/system',
     component: Layout,
     meta: { title: '系统设置', icon: 'system' },
+    name: 'system',
     redirect: '/system/menus',
     children: [
       { path: 'menus', component: () => import('@/views/system/menus/index.vue'), name: 'system_menus', meta: { title: '资源管理' } },

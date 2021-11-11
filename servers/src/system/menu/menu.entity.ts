@@ -5,11 +5,11 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 export class MenuEntity {
   @ApiProperty({ description: 'id' })
   @PrimaryGeneratedColumn({ type: 'bigint' })
-  public id: number
+  public id: string
 
   @ApiProperty({ description: '父级菜单id' })
   @Column({ name: 'parent_id' })
-  public parentId: number
+  public parentId: string
 
   @ApiProperty({ description: '菜单名称' })
   @Column({ type: 'varchar', length: 30, comment: '菜单名称' })

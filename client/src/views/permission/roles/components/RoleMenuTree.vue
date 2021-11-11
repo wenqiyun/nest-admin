@@ -32,7 +32,7 @@ export default defineComponent({
     // 从页面组件中拿取所拥有的菜单
     const menuList = inject<Ref<Array<MenuApiResult>>>('menus', ref([]))
     watch(() => menuList.value, (val) => {
-      menuTree.value = arrToTree(val, { pidKey: 'parentId' }) as MenuApiResult[]
+      menuTree.value = arrToTree(val, { root: '0', pidKey: 'parentId' }) as MenuApiResult[]
     }, { immediate: true })
 
     const roleMenuTreeRef = ref()

@@ -26,7 +26,8 @@ db:
     multipleStatements: true
     dropSchema: false
     synchronize: true
-    supportBigNumbers: false
+    supportBigNumbers: true
+    bigNumberStrings: true
 
 # redis 配置
 redis:
@@ -46,7 +47,7 @@ jwt:
 perm:
   model: 'global'
   router:
-    whitelist: ['/api/register']
+    whitelist: ['/api/register', '/api/login']
 
 # 用户相关
 # 初始密码， 重置密码

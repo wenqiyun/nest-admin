@@ -10,7 +10,7 @@ export class FindUserListDto extends ReqListQuery {
   status?: 0 | 1
 
   @ApiProperty({ description: '拥有角色id', required: false })
-  roleId?: number
+  roleId?: string
 
   @ApiProperty({ description: '当 roleId 不为空时有效，查询用户是否有当前权限 0-无当前角色 1-有当前角色', required: false })
   hasCurrRole?: 0 | 1

@@ -1,4 +1,5 @@
-import http from '@/utils/http/index'
+import http from '@/utils/request'
+import config from '@/config/index'
 import { ResultData, ApiMethodContants } from '@/common/types/apiResult.type'
 
 export interface PermApiResult {
@@ -12,7 +13,7 @@ export interface PermApiResult {
 
 export function getCurrUserPerms (): Promise<ResultData<Array<PermApiResult>>> {
   return http.request<ResultData<Array<PermApiResult>>>({
-    url: '/perm/all',
+    url: `${config.api.baseUrl}/perm/all`,
     method: ApiMethodContants.GET
   })
 }

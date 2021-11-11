@@ -3,7 +3,7 @@
     <h3 class="roles__tip clearfix">
       <span>关联用户</span>
       <span class="fr role-user-add">
-        <el-button @click="bindUserEvent">关联用户</el-button>
+        <el-button @click="bindUserEvent" :disabled="!currId">关联用户</el-button>
       </span>
     </h3>
     <!-- 当前角色关联的用户 -->
@@ -36,7 +36,7 @@ export default defineComponent({
   components: { BindUser },
   props: {
     currId: {
-      type: Number,
+      type: String,
       default: null
     }
   },
@@ -108,7 +108,7 @@ export default defineComponent({
           }
         )
         loading.value = true
-        const req: BindUserData = { roleId: props.currId, userIds: [row.id as number], type: 'cancel' }
+        const req: BindUserData = { roleId: props.currId, userIds: [row.id as string], type: 'cancel' }
         const res = await bindRoleUser(req)
         loading.value = false
         if (res?.code === 200) {

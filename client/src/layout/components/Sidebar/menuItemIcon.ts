@@ -17,7 +17,7 @@ export default defineComponent({
       if (icon.value.includes('el-icon')) {
         vnodes.push(h('i', { class: [icon.value, 'sub-el-icon'] }))
       } else {
-        vnodes.push(h(SvgIcon, { iconClass: icon.value, style: 'font-size: 16px; vertical-align: middle;' }))
+        vnodes.push(h(SvgIcon, { iconClass: icon.value, style: 'font-size: 20px; vertical-align: middle;' }))
       }
     }
     return () => vnodes

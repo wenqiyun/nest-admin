@@ -1,4 +1,5 @@
-import http from '@/utils/http/index'
+import http from '@/utils/request'
+import config from '@/config/index'
 import { ResultData, BaseResult, Pagination, ApiMethodContants, ListResultData } from '@/common/types/apiResult.type'
 
 /** 返回用户类型 */
@@ -25,7 +26,7 @@ export interface QueryUserList extends Pagination {
   /** 用户是否可用 */
   status?: string | 0 | 1
   /** 角色id */
-  roleId?: number
+  roleId?: string
   /** 是否绑定当前角色 0-无， 1-绑定 */
   hasCurrRole?: 0 | 1
 }
@@ -41,29 +42,29 @@ export interface LoginResult {
 }
 
 export interface BindUserData {
-  userIds: number[]
-  roleId: number
+  userIds: string[]
+  roleId: string
   type: 'create' | 'cancel'
 }
 
 export function login (loginData: UserLogin): Promise<ResultData<LoginResult>> {
   return http.request<ResultData<LoginResult>>({
-    url: '/login',
+    url: `${config.api.baseUrl}/login`,
     method: ApiMethodContants.POST,
     data: loginData
   })
 }
 
-export function getUserInfo (id: number): Promise<ResultData<UserApiResult>> {
+export function getUserInfo (id: string): Promise<ResultData<UserApiResult>> {
   return http.request<ResultData<UserApiResult>>({
-    url: `/user/one/${id}`,
+    url: `${config.api.baseUrl}/user/one/${id}`,
     method: ApiMethodContants.GET
   })
 }
 
 export function getUserList (params: QueryUserList): Promise<ResultData<ListResultData<UserApiResult>>> {
   return http.request<ResultData<ListResultData<UserApiResult>>>({
-    url: '/user/list',
+    url: `${config.api.baseUrl}/user/list`,
     method: ApiMethodContants.GET,
     params
   })
@@ -71,22 +72,22 @@ export function getUserList (params: QueryUserList): Promise<ResultData<ListResu
 
 export function updateUser (data: ICreateOrUpdateUser): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: '/user',
+    url: `${config.api.baseUrl}/user`,
     method: ApiMethodContants.PUT,
     data
   })
 }
 
-export function resetPassword (userId: number): Promise<ResultData<null>> {
+export function resetPassword (userId: string): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: `/user/password/reset/${userId}`,
+    url: `${config.api.baseUrl}/user/password/reset/${userId}`,
     method: ApiMethodContants.PUT
   })
 }
 
 export function updateStatus (data: ICreateOrUpdateUser): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: '/user/status/change',
+    url: `${config.api.baseUrl}/user/status/change`,
     method: ApiMethodContants.PUT,
     data
   })
@@ -94,8 +95,16 @@ export function updateStatus (data: ICreateOrUpdateUser): Promise<ResultData<nul
 
 export function bindRoleUser (data: BindUserData): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: '/user/role/update',
+    url: `${config.api.baseUrl}/user/role/update`,
     method: ApiMethodContants.POST,
     data
+  })
+}
+
+export function dowmloadUserTemplate () {
+  return http.request({
+    url: `${config.api.tmplDownloadUrl}/用户导入模板.xlsx`,
+    method: ApiMethodContants.GET,
+    responseType: 'blob'
   })
 }

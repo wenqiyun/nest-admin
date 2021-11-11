@@ -32,10 +32,10 @@ export default defineComponent({
       emit(UPDATE_MODEL_EVENT, false)
     }
     const children = inject<Ref<MenuApiResult>>('menuTree')
-    const menuTree = ref([{ id: 0, name: '顶级菜单（无上级）', children: children }])
+    const menuTree = ref([{ id: '0', name: '顶级菜单（无上级）', children: children }])
     const menuId = ref<number | string>('')
     const checkedParent = (data: MenuApiResult) => {
-      menuId.value = data.id as number
+      menuId.value = data.id as string
     }
 
     const confirmEvent = () => {

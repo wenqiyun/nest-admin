@@ -24,7 +24,7 @@ export class RoleController {
   @Get('one/:id/perms')
   @ApiOperation({ summary: '查询单个角色详情及权限菜单' })
   @ApiOkResponse({ type: RoleEntity })
-  async findOne(@Param('id') id: number): Promise<ResultData> {
+  async findOne(@Param('id') id: string): Promise<ResultData> {
     return await this.roleService.findOnePerm(id)
   }
 
@@ -42,7 +42,7 @@ export class RoleController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除角色' })
-  async delete(@Param('id') id: number): Promise<ResultData> {
+  async delete(@Param('id') id: string): Promise<ResultData> {
     return await this.roleService.delete(id)
   }
 }

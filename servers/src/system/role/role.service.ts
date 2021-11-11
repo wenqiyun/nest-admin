@@ -64,7 +64,7 @@ export class RoleService {
     return ResultData.ok()
   }
 
-  async delete(id: number): Promise<ResultData> {
+  async delete(id: string): Promise<ResultData> {
     const existing = await this.roleRepo.findOne({ id })
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前角色不存在或已被删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
@@ -79,7 +79,7 @@ export class RoleService {
     return ResultData.ok()
   }
 
-  async findOnePerm(id: number): Promise<ResultData> {
+  async findOnePerm(id: string): Promise<ResultData> {
     const roleMenu = await this.roleMenuRepo.find({ select: ['menuId'], where: { roleId: id } })
     return ResultData.ok(roleMenu.map((v) => v.menuId))
   }

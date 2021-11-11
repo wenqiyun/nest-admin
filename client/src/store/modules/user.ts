@@ -34,7 +34,7 @@ export interface UserState {
 }
 
 const state: UserState = {
-  user: { id: 0, account: '', avatar: '' },
+  user: { id: '', account: '', avatar: '' },
   permMenus: [],
   permButton: [],
   permTabs: [],

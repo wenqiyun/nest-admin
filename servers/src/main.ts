@@ -17,7 +17,7 @@ import { HttpExceptionsFilter } from './common/libs/log4js/http-exceptions-filte
 import { ExceptionsFilter } from './common/libs/log4js/exceptions-filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { cors: true })
 
   // 设置访问频率
   app.use(
@@ -53,6 +53,8 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
+      enableDebugMessages: true, // 开发环境
+      disableErrorMessages: false
     }),
   )
 

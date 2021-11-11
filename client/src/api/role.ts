@@ -1,4 +1,5 @@
-import http from '@/utils/http/index'
+import http from '@/utils/request'
+import config from '@/config/index'
 import { BaseResult, Pagination, ResultData, ApiMethodContants } from '@/common/types/apiResult.type'
 
 export interface QueryRoleList extends Pagination {
@@ -14,33 +15,33 @@ export interface RoleApiResult extends BaseResult {
 }
 
 export interface ICreateOrUpdateRole {
-  id?: number
+  id?: string
   // 角色名称
   name?: string
   // 角色备注
   remark?: string
   // 菜单id
-  menuIds?: number[]
+  menuIds?: string[]
 }
 
 export function getRoleList (params: QueryRoleList): Promise<ResultData<RoleApiResult[]>> {
   return http.request<ResultData<RoleApiResult[]>>({
-    url: '/role/list',
+    url: `${config.api.baseUrl}/role/list`,
     method: ApiMethodContants.GET,
     params
   })
 }
 
-export function getRolePerms (id: number): Promise<ResultData<Array<number>>> {
-  return http.request<ResultData<Array<number>>>({
-    url: `/role/one/${id}/perms`,
+export function getRolePerms (id: string): Promise<ResultData<Array<string>>> {
+  return http.request<ResultData<Array<string>>>({
+    url: `${config.api.baseUrl}/role/one/${id}/perms`,
     method: ApiMethodContants.GET
   })
 }
 
 export function createRole (data: ICreateOrUpdateRole): Promise<ResultData<RoleApiResult>> {
   return http.request<ResultData<RoleApiResult>>({
-    url: '/role',
+    url: `${config.api.baseUrl}/role`,
     method: ApiMethodContants.POST,
     data
   })
@@ -48,15 +49,15 @@ export function createRole (data: ICreateOrUpdateRole): Promise<ResultData<RoleA
 
 export function updateRole (data: ICreateOrUpdateRole): Promise<ResultData<RoleApiResult>> {
   return http.request<ResultData<RoleApiResult>>({
-    url: '/role',
+    url: `${config.api.baseUrl}/role`,
     method: ApiMethodContants.PUT,
     data
   })
 }
 
-export function delRoleInfo (id: number): Promise<ResultData<null>> {
+export function delRoleInfo (id: string): Promise<ResultData<null>> {
   return http.request<ResultData<null>>({
-    url: `/role/${id}`,
+    url: `${config.api.baseUrl}/role/${id}`,
     method: ApiMethodContants.DELETE
   })
 }

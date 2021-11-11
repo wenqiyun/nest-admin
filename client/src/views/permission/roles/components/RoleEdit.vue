@@ -43,11 +43,11 @@ export default defineComponent({
   setup (props, { emit }) {
     // dialog
     const visible = ref<boolean>(false)
-    const currRolePermMenus = ref<Array<number>>([])
-    const getRolePermsFn = async (id: number) => {
+    const currRolePermMenus = ref<Array<string>>([])
+    const getRolePermsFn = async (id: string) => {
       const res = await getRolePerms(id)
       if (res.code === 200) {
-        currRolePermMenus.value = res.data as number[]
+        currRolePermMenus.value = res.data as string[]
       }
     }
 

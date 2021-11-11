@@ -33,7 +33,7 @@ export default defineComponent({
       default: false
     },
     currId: {
-      type: Number,
+      type: String,
       default: null
     }
   },
@@ -60,8 +60,8 @@ export default defineComponent({
       }
     }
 
-    const checked = ref<number[]>([])
-    const clickEvent = (userId: number) => {
+    const checked = ref<string[]>([])
+    const clickEvent = (userId: string) => {
       const i = checked.value.findIndex(id => id === userId)
       if (i > -1) checked.value.splice(i, 1)
       else checked.value.push(userId)

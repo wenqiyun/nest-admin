@@ -78,7 +78,7 @@ export default defineComponent({
       })
     })
     const menuPermObj = ref<Record<string, Array<string>>>({})
-    const getOneMenuPermsFn = async (id: number) => {
+    const getOneMenuPermsFn = async (id: string) => {
       const res = await getOneMenuPerms(id)
       if (res.code === 200) {
         const permList = res.data as Array<MenuPermApiResult>
@@ -90,7 +90,7 @@ export default defineComponent({
     // 当前菜单改变
     watch(() => props.currMenu as ICreateOrUpdateMenu, (val: ICreateOrUpdateMenu) => {
       menuForm.value = val
-      getOneMenuPermsFn(val.id as number)
+      getOneMenuPermsFn(val.id as string)
     })
 
     // 表单操作
@@ -123,7 +123,7 @@ export default defineComponent({
           return { apiMethod: permObjArr[0], apiUrl: permObjArr[1] } as MenuPermApiResult
         })
       }
-      req.parentId = req.parentId || 0
+      req.parentId = req.parentId || '0'
       let res
       if (req.id) {
         res = await updateMenu(req)
@@ -146,7 +146,7 @@ export default defineComponent({
           cancelButtonText: '取消',
           type: 'warning'
         })
-        const res = await delMenu(props.currMenu.id as number)
+        const res = await delMenu(props.currMenu.id as string)
         if (res.code === 200) {
           ElMessage({ message: `菜单【${props.currMenu.name}】删除成功`, type: 'success' })
           emit('change')

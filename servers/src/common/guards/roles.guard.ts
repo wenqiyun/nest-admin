@@ -21,7 +21,6 @@ export class RolesGuard implements CanActivate {
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const currPerm = this.reflector.get<boolean>('perm', ctx.getHandler())
-    console.log(currPerm, 90909)
     // 设置 @Perm 且 传递的值 为 false 或 IPermDecorator 对象时 isWhite 为 true
     // 或 IPermDecorator isPerm 为 false 的时候 直接忽略 权限设置 return true
     // !currPerm 使用会包含 undefind 的情况

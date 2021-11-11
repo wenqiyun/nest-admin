@@ -21,13 +21,13 @@ export class MenuController {
 
   @Get('one/:parentId/btns')
   @ApiOperation({ summary: '查询单个菜单下的所有按钮' })
-  async findBtnByParentId(@Param('parentId') parentId: number): Promise<ResultData> {
+  async findBtnByParentId(@Param('parentId') parentId: string): Promise<ResultData> {
     return await this.menuService.findBtnByParentId(parentId)
   }
 
   @Get('one/:id/menu-perm')
   @ApiOperation({ summary: '查询单个菜单权限' })
-  async findMenuPerms(@Param('id') id: number): Promise<ResultData> {
+  async findMenuPerms(@Param('id') id: string): Promise<ResultData> {
     return await this.menuService.findMenuPerms(id)
   }
 
@@ -51,7 +51,7 @@ export class MenuController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除菜单' })
-  async delete(@Param('id') id: number): Promise<ResultData> {
+  async delete(@Param('id') id: string): Promise<ResultData> {
     return await this.menuService.deleteMenu(id)
   }
 }
