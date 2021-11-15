@@ -32,7 +32,6 @@ export default defineComponent({
       if (res.code === 200) {
         allMenu.value = res.data as MenuApiResult[]
         menuTree.value = arrToTree(allMenu.value, { root: '0', pidKey: 'parentId' }) as MenuApiResult[]
-        console.log(res.data, arrToTree(allMenu.value, { pidKey: 'parentId' }))
       }
       loading.value = false
     }

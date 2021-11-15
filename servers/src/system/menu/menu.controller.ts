@@ -13,7 +13,7 @@ import { UpdateMenuPermDto } from './dto/update-menu-perm.dto'
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @Get('all')
+  @Get('/all')
   @ApiOperation({ summary: '得到所有菜单' })
   async findAllMenu(@Query('hasBtn') hasBtn: 0 | 1): Promise<ResultData> {
     return await this.menuService.findAllMenu(!!hasBtn)

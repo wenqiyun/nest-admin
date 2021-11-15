@@ -42,7 +42,7 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     redirect: '/system/menus',
     children: [
       { path: 'menus', component: () => import('@/views/system/menus/index.vue'), name: 'system_menus', meta: { title: '资源管理' } },
-      { path: 'oss', component: () => import('@/views/system/oss/index.vue'), name: 'system_oss', meta: { title: '文件上传' } }
+      { path: 'oss', component: () => import('@/views/system/oss/index.vue'), name: 'system_oss', meta: { title: '文件列表' } }
     ]
   }
 ]

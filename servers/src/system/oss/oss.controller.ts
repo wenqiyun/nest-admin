@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UploadedFile, UseInterceptors, Query } from '@nestjs/common'
+import { Controller, Get, Post, UploadedFile, UseInterceptors, Query, HttpCode } from '@nestjs/common';
 import { FileInterceptor } from "@nestjs/platform-express"
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger'
 
@@ -26,6 +26,7 @@ export class OssController {
       },
     },
   })
+  @HttpCode(200)
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile (@UploadedFile() file: Express.Multer.File): Promise<ResultData> {
     return await this.ossService.create([file])

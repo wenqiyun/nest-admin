@@ -20,9 +20,9 @@ export interface IKTableProps<T> {
   auto?: boolean,
   callack?: ITableCallBack,
   loading?: boolean,
-  data?: {
+  data: {
     list: Array<T>,
-    total: number
+    total?: number
   },
   isPager?: boolean,
   pageNum?: number,

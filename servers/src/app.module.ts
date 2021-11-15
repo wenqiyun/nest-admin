@@ -12,6 +12,7 @@ import { RedisUtilModule } from './common/libs/redis/redis.module'
 import { RolesGuard } from './common/guards/roles.guard'
 
 import { UserModule } from './system/user/user.module'
+import { JwtUtilModule } from './system/jwt/jwt.module'
 import { AuthModule } from './system/auth/auth.module'
 import { MenuModule } from './system/menu/menu.module'
 import { RoleModule } from './system/role/role.module'
@@ -61,6 +62,7 @@ import { OssModule } from './system/oss/oss.module'
     // 系统基础模块
     UserModule,
     AuthModule,
+    JwtUtilModule,
     MenuModule,
     RoleModule,
     PermModule,

@@ -1,24 +1,24 @@
 import { AuthGuard } from '@nestjs/passport'
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
+import { ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 
-import { UserService } from '../user/user.service'
+import { JwtUtilService } from '../jwt/jwt.service'
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly jwtUtilService: JwtUtilService
+  ) {
     super()
   }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest()
-    const res = ctx.switchToHttp().getResponse()
-    try {
-      const accessToken = req.get('Authorization')
-      if (!accessToken) throw new UnauthorizedException('请先登录')
-
-      const atUserId = this.userService.verifyToken(accessToken)
-      if (atUserId) throw new UnauthorizedException('当前登录已过期，请重新登录')
-      return this.activate(ctx)
+    // const res = ctx.switchToHttp().getResponse()
+    const accessToken = req.get('Authorization')
+    if (!accessToken) throw new ForbiddenException('请先登录')
+    const atUserId = this.jwtUtilService.verifyToken(accessToken)
+    if (!atUserId) throw new UnauthorizedException('当前登录已过期，请重新登录')
+    return this.activate(ctx)
 
       // const refreshToken = req.get('RefreshToken')
       // const rtUserId = this.userService.verifyToken(refreshToken)
@@ -39,10 +39,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       // } else {
       //   throw new UnauthorizedException('用户不存在')
       // }
-    } catch (error) {
-      // Logger
-      return false
-    }
+
   }
 
   async activate(ctx: ExecutionContext): Promise<boolean> {

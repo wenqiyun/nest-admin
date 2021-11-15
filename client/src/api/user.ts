@@ -1,6 +1,7 @@
 import http from '@/utils/request'
 import config from '@/config/index'
 import { ResultData, BaseResult, Pagination, ApiMethodContants, ListResultData } from '@/common/types/apiResult.type'
+import { getRefreshToken } from '../utils/storage'
 
 /** 返回用户类型 */
 export interface UserApiResult extends BaseResult {
@@ -55,6 +56,14 @@ export function login (loginData: UserLogin): Promise<ResultData<LoginResult>> {
   })
 }
 
+export function updateToken (): Promise<ResultData<LoginResult>> {
+  return http.request({
+    url: `${config.api.baseUrl}/update/token`,
+    method: ApiMethodContants.POST,
+    headers: { Authorization: 'Bearer ' + getRefreshToken() }
+  })
+}
+
 export function getUserInfo (id: string): Promise<ResultData<UserApiResult>> {
   return http.request<ResultData<UserApiResult>>({
     url: `${config.api.baseUrl}/user/one/${id}`,
@@ -102,6 +111,7 @@ export function bindRoleUser (data: BindUserData): Promise<ResultData<null>> {
 }
 
 export function dowmloadUserTemplate () {
+  console.log(`${config.api.tmplDownloadUrl}/用户导入模板.xlsx`)
   return http.request({
     url: `${config.api.tmplDownloadUrl}/用户导入模板.xlsx`,
     method: ApiMethodContants.GET,

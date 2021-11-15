@@ -1,4 +1,4 @@
-import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpStatus, HttpCode, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiOkResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express'
 
@@ -77,8 +77,10 @@ export class UserController {
       },
     },
   })
+  @HttpCode(200)
   @UseInterceptors(FileInterceptor('file'))
   async importUsers (@UploadedFile() file: Express.Multer.File): Promise<ResultData> {
     return await this.userService.importUsers(file)
   }
+
 }

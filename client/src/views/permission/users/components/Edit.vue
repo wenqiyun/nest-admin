@@ -1,5 +1,5 @@
 <template>
-  <el-dialog  title="用户信息编辑" v-model="visible" top="10vh" width="500px" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
+  <el-dialog title="用户信息编辑" v-model="visible" top="10vh" width="500px" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
     <el-form ref="userFormRef" :model="userForm" label-width="80px" :rules="userFormRules" v-loading="loading">
       <el-form-item label="帐号" prop="">
         <el-input v-model="userForm.account" :disabled="true"></el-input>
@@ -27,7 +27,7 @@ import { ElMessage } from 'element-plus'
 
 import { UPDATE_MODEL_EVENT } from '@/common/contants'
 import { ICreateOrUpdateUser, getUserInfo as getUserInfoApi, updateUser } from '@/api/user'
-import { validPhone, validEmail } from '../../../../utils/validate'
+import { validPhone, validEmail } from '@/utils/validate'
 
 export default defineComponent({
   name: 'EditUser',

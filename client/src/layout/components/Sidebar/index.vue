@@ -43,9 +43,7 @@ export default defineComponent({
 
     const isCollapse = computed(() => !store.state.app.sidebar.opened)
 
-    // const variables: any = computed(() => _variables)
-
-    // console.log(variables, 878)
+    // console.log(_variables, 878)
 
     return {
       permRoutes,

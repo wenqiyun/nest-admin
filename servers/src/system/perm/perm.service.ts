@@ -34,7 +34,7 @@ export class PermService {
    * @param userId
    * @returns
    */
-  async findUserPerms(userId: number) {
+  async findUserPerms(userId: string) {
     // mp.menu_id != 1 去掉 有些角色可能没有菜单， 查询的时候 为 null, 不能直接 ！null
     const perms = await getConnection()
       .createQueryBuilder()
@@ -48,7 +48,7 @@ export class PermService {
     return perms.map(v => ({ apiUrl: v.mp_api_url, apiMethod: v.mp_api_method }))
   }
 
-  async findUserMenus(userId: number) {
+  async findUserMenus(userId: string) {
     const menus = await getConnection()
       .createQueryBuilder()
       .select()
@@ -57,7 +57,7 @@ export class PermService {
       .leftJoinAndSelect('sys_menu', 'm', 'rm.menu_id = m.id')
       .where('ur.user_id = :userId', { userId })
       .getRawMany()
-    return menus
+    return menus.map(v => ({ id: v.m_id, parent_id: v.m_parent, name: v.m_name, type: v.m_type, code: v.m_code, orderNum: v.m_order_num }))
   }
 
   // 从 express router 堆栈中拿到所有路由，供前端选择，设置相应的权限

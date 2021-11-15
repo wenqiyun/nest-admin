@@ -17,19 +17,18 @@
 
       <div class="filter-action-wrapper filter-item">
         <el-button type="primary" @click="searchEvent">搜索</el-button>
-        <el-button type="text" @click="loadingMoreEvent">{{ loadingMore ? '收起' : '更多' }}</el-button>
+        <el-button type="text" @click="loadingMoreEvent" style="margin-left: 20px;">{{ loadingMore ? '收起' : '更多' }}</el-button>
       </div>
 
     </div>
-     <div class="filter-container" v-show="loadingMore">
-        <div class="filter-item" >
-          <!-- 不用 upload 的组件是不灵活 -->
-          <!-- <el-upload style="display: inline-block;margin-right: 20px;" v-bind="uploadConfig" :show-file-list="false">
-            <el-button type="primary">批量上传</el-button>
-          </el-upload> -->
-          <el-button @click="downloadEvent">下载模板</el-button>
-        </div>
-     </div>
+    <div class="filter-container" v-show="loadingMore">
+      <div class="filter-item" >
+        <el-upload style="display: inline-block;margin-right: 20px;" v-bind="uploadConfig" :show-file-list="false">
+          <el-button type="primary">批量上传</el-button>
+        </el-upload>
+        <el-button @click="downloadEvent">下载模板</el-button>
+      </div>
+    </div>
     <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading"  border stripe current-row-key="id" style="width: 100%">
       <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
@@ -43,12 +42,15 @@
 
     <!-- 编辑用户 -->
     <edit-user v-model="showUserEdit" :curr-id="currId" @change="updateUserSuccess"></edit-user>
+    <!-- 批量导入用户 有报错 -->
+    <upload-err v-model="showUploadErr" v-bind="uploadErrData"></upload-err>
   </div>
 </template>
 
 <script lang="ts">
 // import KTable from '_c/Table/index.vue'
 import EditUser from './components/Edit.vue'
+import UploadErr from './components/UploadErr.vue'
 import { defineComponent, ref } from 'vue'
 import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult, dowmloadUserTemplate } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -59,7 +61,7 @@ import appConfig from '@/config/index'
 import { getToken } from '@/utils/storage'
 
 export default defineComponent({
-  components: { EditUser },
+  components: { EditUser, UploadErr },
   setup () {
     const userData = ref<IKTableProps<UserApiResult>>({
       mode: 'config',
@@ -73,7 +75,7 @@ export default defineComponent({
         { label: '邮箱', prop: 'email', default: '--' },
         { label: '状态', prop: 'status', type: 'slot', width: '90' },
         { label: '注册时间', prop: 'createDate', width: '90' },
-        { label: '操作', prop: 'actions', type: 'slot', width: '250' }
+        { label: '操作', prop: 'actions', type: 'slot', width: '250', fixed: 'right' }
       ],
       index: true
     })
@@ -170,12 +172,37 @@ export default defineComponent({
       downLoad(res, '用户批量导入模板.xlsx')
     }
 
+    const showUploadErr = ref<boolean>(false)
+    const uploadErrData = ref({})
+    const acceptFileType = 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     const uploadConfig = {
       action: `${appConfig.api.baseUrl}/user/import`,
       headers: {
         Authorization: getToken()
       },
-      accept: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      accept: acceptFileType,
+      beforeUpload: (file: any) => {
+        if (acceptFileType.indexOf(file.type) === -1) {
+          ElMessage({ type: 'error', message: '文件类型错误，请上传 .xlsx 或 .xls 文件' })
+          return false
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          ElMessage({ type: 'error', message: '文件大小超过，最大支持 5M' })
+        }
+        return true
+      },
+      onSuccess: (res: any) => {
+        if (res?.code === 200) {
+          ElMessage({ type: 'success', message: '导入成功' })
+        } else {
+          if (res?.data) {
+            uploadErrData.value = { errMsg: res.msg, errData: res.data }
+            showUploadErr.value = true
+          } else {
+            ElMessage({ type: 'error', message: res.msg || '网络异常，请稍后重试' })
+          }
+        }
+      }
     }
 
     return {
@@ -195,7 +222,9 @@ export default defineComponent({
       loadingMore,
       loadingMoreEvent,
       downloadEvent,
-      uploadConfig
+      uploadConfig,
+      showUploadErr,
+      uploadErrData
     }
   }
 })

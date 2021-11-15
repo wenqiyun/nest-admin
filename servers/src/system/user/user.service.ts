@@ -1,7 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { JwtService } from '@nestjs/jwt'
 import { Like, Repository, getManager, getConnection, In } from 'typeorm'
 import { classToPlain, plainToClass } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
@@ -11,6 +10,9 @@ import { ResultData } from '../../common/utils/result'
 import { getRedisKey, formatSecond } from '../../common/utils/utils';
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
+import { validPhone, validEmail } from '../../common/utils/validate'
+
+import { JwtUtilService } from '../jwt/jwt.service'
 
 import { UserEntity } from './user.entity'
 import { UserRoleEntity } from './user-role.entity'
@@ -19,7 +21,6 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { FindUserListDto } from './dto/find-user-list.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateOrUpdateUserRolesDto } from './dto/create-user-roles.dto'
-import { validPhone, validEmail } from '../../common/utils/validate';
 
 @Injectable()
 export class UserService {
@@ -29,7 +30,7 @@ export class UserService {
     @InjectRepository(UserRoleEntity)
     private readonly userRoleRepo: Repository<UserRoleEntity>,
     private readonly config: ConfigService,
-    private readonly jwtService: JwtService,
+    private readonly jwtUtilService: JwtUtilService,
     private readonly redisUtilService: RedisUtilService,
   ) {}
 
@@ -88,7 +89,7 @@ export class UserService {
     if (!checkPassword) return ResultData.fail(HttpStatus.NOT_FOUND, '帐号或密码错误')
     if (user.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '您已被禁用，如需要正常使用请联系管理员')
     // 生成 token
-    const data = this.genToken({ id: user.id })
+    const data = this.jwtUtilService.genToken({ id: user.id })
     return ResultData.ok(data)
   }
 
@@ -96,6 +97,9 @@ export class UserService {
    * 批量导入用户
    */
   async importUsers (file: Express.Multer.File): Promise<ResultData> {
+    const acceptFileType = 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    if (!acceptFileType.indexOf(file.mimetype)) return ResultData.fail(HttpStatus.BAD_REQUEST, '文件类型错误，请上传 .xls 或 .xlsx 文件')
+    if (file.size > 5 * 1024 * 1024) return ResultData.fail(HttpStatus.BAD_REQUEST, '文件大小超过，最大支持 5M')
     const workSheet = xlsx.parse(file.buffer)
     // 需要处理 excel 内帐号 手机号 邮箱 是否有重复的情况
     if (workSheet[0].data.length === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, 'excel 导入数据为空')
@@ -106,6 +110,7 @@ export class UserService {
     // 从 1 开始是去掉 excel 帐号等文字提示
     for (let i = 1, len = workSheet[0].data.length; i < len; i++) {
       const dataArr = workSheet[0].data[i]
+      if (dataArr.length === 0) break
       const [ account, phone, email, avatar ] = dataArr
       userArr.push({ account, phoneNum: phone, email, avatar})
       if (account && !accountMap.has(account)) {
@@ -343,29 +348,6 @@ export class UserService {
       const roleIds = roles.map((v) => v.roleId)
       await this.redisUtilService.set(userRoleKey, JSON.stringify(roleIds))
       return roleIds
-    }
-  }
-
-  /** 生成 token */
-  genToken(payload: { id: string }): Record<string, unknown> {
-    const accessToken = `Bearer ${this.jwtService.sign(payload)}`
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('jwt.refreshExpiresIn') })
-    return { accessToken, refreshToken }
-  }
-
-  /** 刷新 token */
-  refreshToken(id: string): string {
-    return this.jwtService.sign({ id })
-  }
-
-  /** 校验 token */
-  verifyToken(token: string): string {
-    try {
-      if (!token) return null
-      const id = this.jwtService.verify(token.replace('Bearer ', ''))
-      return id
-    } catch (error) {
-      return null
     }
   }
 }

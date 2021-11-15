@@ -1,6 +1,10 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import appConfig from '@/config/index'
-import { getToken } from './storage'
+import { getToken, setRefreshToken, setToken } from './storage'
+import { updateToken, LoginResult } from '../api/user'
+
+let isRefreshing = false
+const retryReqs: any[] = []
 
 class HttpService {
   private instance: AxiosInstance
@@ -30,19 +34,49 @@ class HttpService {
     // const axiosCance
     this.instance.interceptors.request.use((config: AxiosRequestConfig) => {
       const token = getToken()
-      if (token) {
+      if (token && !config.headers?.Authorization) {
         config.headers = { ...config.headers, Authorization: token }
       }
       return config
     }, (err) => { console.log(err) })
 
-    this.instance.interceptors.response.use((response: AxiosResponse<any>) => {
+    this.instance.interceptors.response.use(async (response: AxiosResponse<any>) => {
       const res = response?.data
       if (res || response.config?.responseType === 'blob') {
         return res
       }
       return null
-    }, (error: AxiosError<any>) => {
+    }, async (error: AxiosError<any>) => {
+      const response = error.response
+      const config = response?.config as AxiosRequestConfig
+      if (response?.status === 401) {
+        if (!isRefreshing) {
+          try {
+            isRefreshing = true
+            const res = await updateToken()
+            if (res?.code === 200) {
+              const data = res.data as LoginResult
+              setToken(data.accessToken)
+              setRefreshToken(data.refreshToken)
+              for (let i = 0, len = retryReqs.length; i < len; i++) {
+                retryReqs[i](getToken())
+              }
+              return this.request(config)
+            }
+          } catch (error) {
+            console.log(error)
+          } finally {
+            isRefreshing = false
+          }
+        } else {
+          return new Promise((resolve, reject) => {
+            retryReqs.push((token: string) => {
+              config.headers = { ...config.headers, Authorization: token }
+              resolve(this.request(config))
+            })
+          })
+        }
+      }
       return error.response?.data || null
     })
   }
