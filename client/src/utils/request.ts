@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { ElMessageBox } from 'element-plus'
 import appConfig from '@/config/index'
-import { getToken, setRefreshToken, setToken } from './storage'
+import { getToken, setToken, getRTExp, clearAll } from './storage'
 import { updateToken, LoginResult } from '../api/user'
 
 let isRefreshing = false
@@ -39,7 +40,6 @@ class HttpService {
       }
       return config
     }, (err) => { console.log(err) })
-
     this.instance.interceptors.response.use(async (response: AxiosResponse<any>) => {
       const res = response?.data
       if (res || response.config?.responseType === 'blob') {
@@ -50,18 +50,27 @@ class HttpService {
       const response = error.response
       const config = response?.config as AxiosRequestConfig
       if (response?.status === 401) {
-        if (!isRefreshing) {
+        if (getRTExp() <= Date.now()) {
+          // 刷新token 过期了
+          ElMessageBox.alert('您的登录已过期，点击跳转登录', '提示', {
+            confirmButtonText: 'OK',
+            callback: () => {
+              clearAll()
+              window.location.reload()
+            }
+          })
+        } else if (!isRefreshing) {
           try {
             isRefreshing = true
             const res = await updateToken()
             if (res?.code === 200) {
               const data = res.data as LoginResult
-              setToken(data.accessToken)
-              setRefreshToken(data.refreshToken)
+              setToken(data.accessToken, data.refreshToken)
               for (let i = 0, len = retryReqs.length; i < len; i++) {
-                retryReqs[i](getToken())
+                retryReqs[i](data.accessToken)
               }
-              return this.request(config)
+              config.headers = { ...config.headers, Authorization: data.accessToken }
+              return await this.request(config)
             }
           } catch (error) {
             console.log(error)
@@ -72,6 +81,7 @@ class HttpService {
           return new Promise((resolve, reject) => {
             retryReqs.push((token: string) => {
               config.headers = { ...config.headers, Authorization: token }
+              console.log(12212, config.headers)
               resolve(this.request(config))
             })
           })

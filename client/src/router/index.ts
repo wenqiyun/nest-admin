@@ -44,6 +44,15 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
       { path: 'menus', component: () => import('@/views/system/menus/index.vue'), name: 'system_menus', meta: { title: '资源管理' } },
       { path: 'oss', component: () => import('@/views/system/oss/index.vue'), name: 'system_oss', meta: { title: '文件列表' } }
     ]
+  },
+  {
+    path: '/component',
+    component: Layout,
+    meta: { title: '组件', icon: 'component' },
+    redirect: '/component/index',
+    children: [
+      { path: 'index', component: () => import('@/views/components-demo/index.vue'), name: 'component_index', meta: { title: '组件' } }
+    ]
   }
 ]
 

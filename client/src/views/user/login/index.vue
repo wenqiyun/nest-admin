@@ -1,12 +1,12 @@
 <template>
   <div class="login-container">
     <div class="login-wrapper">
-      <div class="form-wrapper">
+      <div class="form-wrapper" >
         <h3 class="form-title">
           <span class="nest-logo"></span>
           <span>登 录</span>
         </h3>
-        <el-form ref="loginFormRef" style="width: 100%;" :model="formData" :rules="loginFormRules" >
+        <el-form ref="loginFormRef" :disabled="loading" style="width: 100%;" :model="formData" :rules="loginFormRules" >
           <el-form-item prop="account">
             <el-input v-model.trim="formData.account" placeholder="帐号/邮箱/手机号"></el-input>
           </el-form-item>
@@ -35,7 +35,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ResultData } from '@/common/types/apiResult.type'
 import { UserLogin, login as loginApi, LoginResult } from '@/api/user'
 
-import { setRefreshToken, setToken } from '../../../utils/storage'
+import { setToken } from '@/utils/storage'
 
 export default {
   setup () {
@@ -54,16 +54,19 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const loginFormRef = ref()
+
+    const loading = ref<boolean>(false)
     // 登录事件
     const loginEvent = () => {
       if (loginFormRef.value) {
         loginFormRef.value.validate(async (valid: boolean) => {
           if (valid) {
+            loading.value = true
             const res: ResultData<LoginResult> = await loginApi(formData.value)
+            loading.value = false
             if (res?.code === 200) {
               const data = res.data as LoginResult
-              setToken(data.accessToken)
-              setRefreshToken(data.refreshToken)
+              setToken(data.accessToken, data.refreshToken)
               router.replace((route.query?.redirect || '/') as string)
             } else {
               ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
@@ -78,7 +81,8 @@ export default {
       formData,
       loginFormRef,
       loginFormRules,
-      loginEvent
+      loginEvent,
+      loading
     }
   }
 }

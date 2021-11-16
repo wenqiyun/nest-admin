@@ -31,7 +31,7 @@ import { computed, defineComponent } from 'vue'
 import { useStore } from '@/store'
 import Hamburger from '_c/Hamburger/index.vue'
 import Breadcrumb from '_c/Breadcrumb/index.vue'
-import { clearToken } from '../../../utils/storage'
+import { clearAll } from '../../../utils/storage'
 import { ElMessageBox } from 'element-plus'
 
 export default defineComponent({
@@ -52,7 +52,7 @@ export default defineComponent({
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        clearToken()
+        clearAll()
         window.location.reload()
       })
     }

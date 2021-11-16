@@ -5,9 +5,10 @@ import { Like, Repository, getManager, getConnection, In } from 'typeorm'
 import { classToPlain, plainToClass } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
 import xlsx from 'node-xlsx'
+import ms from 'ms'
 
 import { ResultData } from '../../common/utils/result'
-import { getRedisKey, formatSecond } from '../../common/utils/utils';
+import { getRedisKey } from '../../common/utils/utils';
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { validPhone, validEmail } from '../../common/utils/validate'
@@ -42,7 +43,7 @@ export class UserService {
     if (!user?.id) {
       user = await this.userRepo.findOne(id)
       user = plainToClass(UserEntity, { ...user }, { enableImplicitConversion: true })
-      await this.redisUtilService.hmset(redisKey, classToPlain(user), formatSecond(this.config.get<string>('jwt.expiresin')))
+      await this.redisUtilService.hmset(redisKey, classToPlain(user), ms(this.config.get<string>('jwt.expiresin')) / 1000)
     }
     user.password = ''
     user.salt = ''
@@ -90,6 +91,11 @@ export class UserService {
     if (user.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '您已被禁用，如需要正常使用请联系管理员')
     // 生成 token
     const data = this.jwtUtilService.genToken({ id: user.id })
+    return ResultData.ok(data)
+  }
+
+  async updateToken (userId: string): Promise<ResultData> {
+    const data = this.jwtUtilService.genToken({ id: userId })
     return ResultData.ok(data)
   }
 

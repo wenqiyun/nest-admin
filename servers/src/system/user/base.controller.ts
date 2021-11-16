@@ -34,7 +34,6 @@ export class BaseController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async updateToken (@Req() req): Promise<ResultData> {
-    console.log(req.user)
-    return ResultData.ok()
+    return await this.userService.updateToken(req.user.id)
   }
 }
