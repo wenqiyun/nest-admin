@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNumber, IsNotEmpty, IsString, Length, IsIn, Min, IsArray, IsOptional } from 'class-validator'
+import { MenuPermDto } from './menu-perm.dto'
 
 export class UpdateMenuDto {
   @ApiProperty({ description: '菜单id', required: false })
@@ -35,4 +36,8 @@ export class UpdateMenuDto {
   @Min(0)
   @IsOptional()
   readonly orderNum?: number
+
+  @ApiProperty({ description: '菜单接口权限' })
+  @IsArray({ message: 'menuPerms 类型错误' })
+  menuPermList: MenuPermDto[]
 }

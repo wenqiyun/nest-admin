@@ -32,15 +32,6 @@ export function arrToTree (source: any[], { root = 0, pidKey = 'pid', idKey = 'i
   return getNode(root)
 }
 
-export function showLoading () {
-  return ElLoading.service({
-    lock: true,
-    text: 'Loading',
-    spinner: 'el-icon-loading',
-    background: 'rgba(0, 0, 0, 0.7)'
-  })
-}
-
 /**
  * 处理下载流
  * @param { content } 流

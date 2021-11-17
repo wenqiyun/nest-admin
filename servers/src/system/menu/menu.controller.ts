@@ -6,7 +6,6 @@ import { ResultData } from '../../common/utils/result'
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { MenuService } from './menu.service'
 import { UpdateMenuDto } from './dto/update-menu.dto'
-import { UpdateMenuPermDto } from './dto/update-menu-perm.dto'
 
 @ApiTags('菜单与菜单权限管理')
 @Controller('menu')
@@ -33,7 +32,7 @@ export class MenuController {
 
   @Post()
   @ApiOperation({ summary: '创建菜单' })
-  async create(@Body() dto: any): Promise<ResultData> {
+  async create(@Body() dto: CreateMenuDto): Promise<ResultData> {
     return await this.menuService.create(dto)
   }
 
@@ -41,12 +40,6 @@ export class MenuController {
   @ApiOperation({ summary: '更新菜单' })
   async updateMenu(@Body() dto: UpdateMenuDto): Promise<ResultData> {
     return await this.menuService.updateMenu(dto)
-  }
-
-  @Put('menu-perm')
-  @ApiOperation({ summary: '更新菜单权限' })
-  async updateMenuPerm(@Body() dto: UpdateMenuPermDto): Promise<ResultData> {
-    return await this.menuService.updateMenuPerm(dto)
   }
 
   @Delete(':id')

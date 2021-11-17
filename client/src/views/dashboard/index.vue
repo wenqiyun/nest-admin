@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 
 import GrowCard from './components/GrowCard.vue'
 import ProductCard from './components/ProductCard.vue'
@@ -224,7 +224,7 @@ export default defineComponent({
   }
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (max-width: 1200px) {
   .dashboard-container .product-demo {
     margin-top: 12px;
   }

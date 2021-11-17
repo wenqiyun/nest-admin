@@ -90,6 +90,7 @@ export default defineComponent({
     // 当前菜单改变
     watch(() => props.currMenu as ICreateOrUpdateMenu, (val: ICreateOrUpdateMenu) => {
       menuForm.value = val
+      currApiPerms.value = []
       getOneMenuPermsFn(val.id as string)
     })
 

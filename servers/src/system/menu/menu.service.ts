@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { getManager, Repository, In } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
-import { plainToClass } from 'class-transformer'
+import { plainToClass } from 'class-transformer';
 
 import { ResultData } from '../../common/utils/result'
 
@@ -9,7 +9,6 @@ import { MenuEntity } from './menu.entity'
 import { MenuPermEntity } from './menu-perm.entity'
 import { CreateMenuDto } from './dto/create-menu.dto'
 
-import { UpdateMenuPermDto } from './dto/update-menu-perm.dto'
 import { UpdateMenuDto } from './dto/update-menu.dto'
 
 @Injectable()
@@ -75,26 +74,16 @@ export class MenuService {
     const existing = await this.menuRepo.findOne({ id: dto.id })
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前菜单不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+      // 删除原有接口权限权限
+      await this.menuPermRepo.delete({ menuId: dto.id })
+      // 新的接口权限入库
+      const menuPermDto = plainToClass(MenuPermEntity, dto.menuPermList.map(v => ({ menuId: dto.id, ...v })))
+      await transactionalEntityManager.save<MenuPermEntity>(menuPermDto)
+      delete dto.menuPermList
+      // excludeExtraneousValues true  排除无关属性。 但需要在实体类中 将属性使用 @Expose()
       return await transactionalEntityManager.update<MenuEntity>(MenuEntity, dto.id, plainToClass(MenuEntity, dto))
     })
     if (!affected) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '当前菜单更新失败，请稍后重试')
     return ResultData.ok()
-  }
-
-  async updateMenuPerm(dto: UpdateMenuPermDto): Promise<ResultData> {
-    const menuPerms = await getManager().transaction(async (transactionalEntityManager) => {
-      await this.menuPermRepo.delete({ menuId: dto.menuId })
-      const result = await transactionalEntityManager.save<MenuPermEntity>(
-        plainToClass(
-          MenuPermEntity,
-          dto.menuPerms.map((perm) => {
-            return { menuId: dto.menuId, perm }
-          }),
-        ),
-      )
-      return result
-    })
-    if (!menuPerms) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '菜单权限更新失败')
-    return ResultData.ok(menuPerms)
   }
 }

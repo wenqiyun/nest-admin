@@ -1,6 +1,6 @@
 <template>
   <el-dialog title="按钮编辑" v-model="visible" width="500px" top="10vh" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form ref="btnFormRef" :model="btnForm" :rules="btnFormRules" label-width="80px">
+    <el-form ref="btnFormRef" :model="btnForm" :rules="btnFormRules" label-width="80px" v-loading="loading">
       <el-form-item label="按钮名称" prop="name">
         <el-input v-model.trim="btnForm.name"></el-input>
       </el-form-item>
@@ -58,9 +58,13 @@ export default defineComponent({
       emit(UPDATE_MODEL_EVENT, false)
     }
 
+    const loading = ref<boolean>(false)
+
     const currApiPerms = ref<Array<string>>([])
     const getOneMenuPermsFn = async (id: string) => {
+      loading.value = true
       const res = await getOneMenuPerms(id)
+      loading.value = false
       if (res.code === 200) {
         const permList = res.data as Array<MenuPermApiResult>
         currApiPerms.value = permList.map(perm => `${perm.apiMethod.toUpperCase()},${perm.apiUrl}`)
@@ -102,11 +106,13 @@ export default defineComponent({
       }
       req.parentId = req.parentId || '0'
       let res
+      loading.value = true
       if (req.id) {
         res = await updateMenu(req)
       } else {
         res = await createMenu(req)
       }
+      loading.value = false
       if (res.code === 200) {
         ElMessage({ message: `${req.id ? '更新' : '创建'}成功`, type: 'success' })
         emit('change')
@@ -138,7 +144,8 @@ export default defineComponent({
       btnForm,
       currApiPerms,
       btnFormRules,
-      confirmEvent
+      confirmEvent,
+      loading
     }
   }
 })

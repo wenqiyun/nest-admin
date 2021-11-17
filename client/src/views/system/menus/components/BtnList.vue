@@ -5,7 +5,7 @@
         <el-button @click="addOrEditEvent('add')" :disabled="!currMenu?.id">添加</el-button>
       </div>
     </div>
-    <k-table :data="{ list: btnList }" :is-pager="false" mode="render" border stripe size="mini">
+    <k-table :data="{ list: btnList }" :loading="loading" :is-pager="false" mode="render" border stripe size="mini">
       <el-table-column label="按钮名称" prop="name" align="center"></el-table-column>
       <el-table-column label="唯一编码" prop="code" align="center"></el-table-column>
       <el-table-column label="排序" prop="orderNum" align="center"></el-table-column>
@@ -37,8 +37,11 @@ export default defineComponent({
   },
   setup (props, { emit }) {
     const btnList = ref<Array<MenuApiResult>>([])
+    const loading = ref<boolean>(false)
     const getOneMenuBtnsFn = async (id: string) => {
+      loading.value = true
       const res = await getOneMenuBtns(id)
+      loading.value = false
       if (res.code === 200) {
         btnList.value = res.data as Array<MenuApiResult>
       }
@@ -56,7 +59,9 @@ export default defineComponent({
           cancelButtonText: '取消',
           type: 'warning'
         })
+        loading.value = true
         const res = await delMenu(row.id as string)
+        loading.value = false
         if (res.code === 200) {
           ElMessage({ message: `按钮【${row.name}】删除成功`, type: 'success' })
           getOneMenuBtnsFn(props.currMenu.id)
@@ -81,6 +86,7 @@ export default defineComponent({
       getOneMenuBtnsFn(props.currMenu.id as string)
     }
     return {
+      loading,
       btnList,
       showEdit,
       addOrEditEvent,

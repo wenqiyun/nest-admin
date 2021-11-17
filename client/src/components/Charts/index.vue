@@ -3,8 +3,10 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
+
+import debounce from 'debounce'
 
 export default defineComponent({
   props: {
@@ -29,21 +31,38 @@ export default defineComponent({
       const height = typeof props.height === 'number' ? `${props.height}px` : props.height
       return `width: ${width};height: ${height}`
     })
-    const chart = ref()
+    // echarts 实例接收只能使用 普通变量
+    // 不能使用 vue 实例属性 如
+    // const chart = ref<echarts.ECharts>()
+    // chart.value = echarts.init(document.getElementById(id) as HTMLElement)
+    // 这样会导致 部分 echarts 方法 不可使用，属性不存在等问题
+    let chart: echarts.ECharts
     const initChart = () => {
       if (!props.options) return
-      if (!chart.value) {
-        chart.value = echarts.init(document.getElementById(id) as HTMLElement)
+      if (!chart) {
+        chart = echarts.init(document.getElementById(id) as HTMLElement)
       }
-      chart.value.setOption(props.options)
+      chart.clear()
+      chart.setOption(props.options)
     }
+
+    watch(() => props.options, () => {
+      initChart()
+    }, { deep: true })
+
+    // 响应式
+    const resize = debounce(() => {
+      chart?.resize()
+    }, 100)
 
     onMounted(() => {
       initChart()
+      window.addEventListener('resize', resize)
     })
 
     onBeforeUnmount(() => {
-      chart.value?.dispose()
+      window.removeEventListener('resize', resize)
+      chart?.dispose()
     })
 
     return {
