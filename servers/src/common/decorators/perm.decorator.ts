@@ -1,5 +1,8 @@
 import { SetMetadata } from '@nestjs/common'
 
-import { IPermDecorator } from './perm-decorator.interface';
+/**
+ * 接口 允许 无权限访问
+ */
+export const ALLOW_NO_PERM = 'allowNoPerm'
 
-export const Perm = (permission?: IPermDecorator | boolean) => SetMetadata('perm', permission)
+export const AllowNoPerm = () => SetMetadata(ALLOW_NO_PERM, true)

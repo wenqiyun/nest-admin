@@ -123,10 +123,7 @@ export default defineComponent({
   line-height: 21px;
   color: #8181a5;
 }
-.product__user-avatar {
+.product__user-avatar:not(:last-child) {
   margin-right: 5px;
-  &:last-child {
-    margin-right: 0
-  }
 }
 </style>

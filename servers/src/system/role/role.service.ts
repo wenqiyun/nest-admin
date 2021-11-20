@@ -10,7 +10,7 @@ import { RoleMenuEntity } from './role-menu.entity'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { FindRoleListDto } from './dto/find-role-list.dto'
-import { UserRoleEntity } from '../user/user-role.entity';
+import { UserRoleEntity } from '../user/user-role.entity'
 
 @Injectable()
 export class RoleService {
@@ -19,6 +19,8 @@ export class RoleService {
     private readonly roleRepo: Repository<RoleEntity>,
     @InjectRepository(RoleMenuEntity)
     private readonly roleMenuRepo: Repository<RoleMenuEntity>,
+    @InjectRepository(UserRoleEntity)
+    private readonly userRoleRepo: Repository<UserRoleEntity>
   ) {}
 
   async create(dto: CreateRoleDto): Promise<ResultData> {
@@ -67,11 +69,13 @@ export class RoleService {
   async delete(id: string): Promise<ResultData> {
     const existing = await this.roleRepo.findOne({ id })
     if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前角色不存在或已被删除')
+    const existingBindUser = await this.userRoleRepo.findOne({ where: { roleId: id } })
+    if (existingBindUser) return ResultData.fail(3434, '当前角色还有绑定的用户，需要解除关联后删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       // 删除 role - menu 关系
       await transactionalEntityManager.delete(RoleMenuEntity, { roleId: id })
       // 删除 user - role 关系
-      await transactionalEntityManager.delete(UserRoleEntity, { roleId: id })
+      // await transactionalEntityManager.delete(UserRoleEntity, { roleId: id })
       const result = await transactionalEntityManager.delete<RoleEntity>(RoleEntity, id)
       return result
     })

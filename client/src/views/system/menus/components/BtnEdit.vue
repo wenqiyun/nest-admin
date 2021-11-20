@@ -11,7 +11,7 @@
         <api-perms-select v-model="currApiPerms"></api-perms-select>
       </el-form-item>
       <el-form-item label="排序" prop="orderNum">
-        <el-input v-model.number="btnForm.orderNum"></el-input>
+        <el-input v-model="btnForm.orderNum"></el-input>
       </el-form-item>
     </el-form>
 
@@ -76,7 +76,7 @@ export default defineComponent({
     const btnForm = ref<ICreateOrUpdateMenu>({
       name: '',
       code: '',
-      orderNum: ''
+      orderNum: 0
     })
 
     watch(() => props.modelValue, (val) => {
@@ -85,7 +85,7 @@ export default defineComponent({
           btnFormRef.value.clearValidate()
           btnFormRef.value.resetFields()
         }
-        btnForm.value = props.currBtn || { name: '', code: '', orderNum: '' }
+        btnForm.value = props.currBtn || { name: '', code: '', orderNum: 0 }
         if (btnForm.value.id) {
           getOneMenuPermsFn(btnForm.value.id as string)
         } else {
@@ -98,7 +98,8 @@ export default defineComponent({
       const req: ICreateOrUpdateMenu = {
         ...btnForm.value,
         type: 3,
-        parentId: props.parent.id as number,
+        parentId: props.parent.id || '0',
+        orderNum: 0,
         menuPermList: currApiPerms.value.map(curr => {
           const permObjArr = curr.split(',')
           return { apiMethod: permObjArr[0], apiUrl: permObjArr[1] } as MenuPermApiResult

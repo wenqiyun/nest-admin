@@ -68,7 +68,7 @@ export default defineComponent({
     // 当前选中 apiPerms
     const currApiPerms = ref<Array<string>>([])
     // 表单详情
-    const menuForm = ref<ICreateOrUpdateMenu>({ parentId: '', name: '', code: '', type: '', orderNum: '' })
+    const menuForm = ref<ICreateOrUpdateMenu>({ parentId: '', name: '', code: '', type: '', orderNum: 0 })
 
     // 获取父级菜单
     const menuObj = ref<Record<string, MenuApiResult>>({})
@@ -99,7 +99,8 @@ export default defineComponent({
     const isEditStatus = ref<boolean>(false)
     const addOrUpdate = (type: 'edit' | 'add') => {
       if (type === 'add') {
-        menuForm.value = { parentId: props.currMenu?.id || 0, name: '', code: '', type: '', orderNum: '' } as ICreateOrUpdateMenu
+        currApiPerms.value = []
+        menuForm.value = { parentId: props.currMenu?.id || '0', name: '', code: '', type: '', orderNum: 0 } as ICreateOrUpdateMenu
       }
       isEditStatus.value = true
     }

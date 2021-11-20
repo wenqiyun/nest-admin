@@ -9,7 +9,10 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     hidden: true,
     component: () => import('@/views/user/login/index.vue'),
     meta: { title: '登录' }
-  },
+  }
+]
+
+export const asyncRoutes: Array<AppRouteRecordRaw> = [
   {
     path: '/',
     component: Layout,
@@ -55,8 +58,6 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     ]
   }
 ]
-
-export const asyncRoutes: Array<AppRouteRecordRaw> = []
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),

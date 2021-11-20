@@ -41,13 +41,10 @@ jwt:
   secretkey: 'zANDwNQVFzxlfG9myPxVWAkq4iXJEPhI'
   expiresin: '1h'
   refreshExpiresIn: '2h'
-
-# 权限， model 权限模式 global/manual
-# model global 配置了 才走白名单，否则只看函数头配置
+# 权限 白名单配置
 perm:
-  model: 'global'
   router:
-    whitelist: ['/api/register', '/api/login']
+    whitelist: [{ path: '/api/register', method: 'POST'  }, { path: '/api/login', method: 'POST' }, { path: '/api/perm/{id}', method: 'GET' }, { path: '/api/oss/upload', method: 'POST' }]
 
 # 用户相关
 # 初始密码， 重置密码

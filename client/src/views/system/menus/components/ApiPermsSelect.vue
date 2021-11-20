@@ -28,7 +28,7 @@ export default defineComponent({
     const apiPerms = ref<Array<PermApiResult>>()
     const apiPermsTmp: Array<PermApiResult> = []
     const getApiPerms = async () => {
-      apiPerms.value = await store.dispatch(UserActionContants.GET_CURRENT_USER_API_PERMS)
+      apiPerms.value = await store.dispatch(UserActionContants.GET_ALL_API_PERMS)
       apiPermsTmp.push(...(apiPerms.value as Array<PermApiResult>))
     }
     getApiPerms()

@@ -11,18 +11,19 @@ import {
 import { ResultData } from '@/common/types/apiResult.type'
 import { RootState } from '../index'
 import { login, UserApiResult, UserLogin, getUserInfo } from '@/api/user'
-import { PermApiResult, getCurrUserPerms } from '../../api/perm'
-import { MenuTypeContants, MenuApiResult } from '../../api/menu'
+import { PermApiResult, getCurrUserMenuPerms, getAllApiPerms } from '@/api/perm'
+import { MenuTypeContants, MenuApiResult } from '@/api/menu'
 
 export enum UserMutationContants {
   SET_USER = 'SET_USER',
   SET_PERMSMENU = 'SET_PERMSMENUS',
-  SET_APIPERMS = 'SET_APIPERMS'
+  SET_ALLAPIPERMS = 'SET_APIPERMS'
 }
 
 export enum UserActionContants {
-  LOGIN = 'user/login',
-  GET_CURRENT_USER_API_PERMS = 'user/getCurrUserApiPerms'
+  GET_USER_MENU_PERM = 'user/getCurrUserMenuPerm',
+  // LOGIN = 'user/login',
+  GET_ALL_API_PERMS = 'user/getAllApiPerms'
 }
 
 export interface UserState {
@@ -30,7 +31,7 @@ export interface UserState {
   permMenus: MenuApiResult[]
   permButton: MenuApiResult[]
   permTabs: MenuApiResult[]
-  apiPerms: PermApiResult[]
+  allApiPerms: PermApiResult[]
 }
 
 const state: UserState = {
@@ -38,13 +39,13 @@ const state: UserState = {
   permMenus: [],
   permButton: [],
   permTabs: [],
-  apiPerms: []
+  allApiPerms: []
 }
 
 interface UserMutation {
   [UserMutationContants.SET_USER](state: UserState, user: UserApiResult): void
   [UserMutationContants.SET_PERMSMENU](state: UserState, permSource: MenuApiResult[]): void
-  [UserMutationContants.SET_APIPERMS](state: UserState, apiPerms: Array<PermApiResult>): void
+  [UserMutationContants.SET_ALLAPIPERMS](state: UserState, apiPerms: Array<PermApiResult>): void
 }
 
 const mutations: MutationTree<UserState> & UserMutation = {
@@ -68,8 +69,8 @@ const mutations: MutationTree<UserState> & UserMutation = {
       }
     })
   },
-  [UserMutationContants.SET_APIPERMS]: (state: UserState, apiPerms: Array<PermApiResult>) => {
-    state.apiPerms = apiPerms
+  [UserMutationContants.SET_ALLAPIPERMS]: (state: UserState, apiPerms: Array<PermApiResult>) => {
+    state.allApiPerms = apiPerms
   }
 }
 
@@ -79,27 +80,28 @@ type AugmentedActionContext = {
 } & Omit<ActionContext<UserState, RootState>, 'commit' | 'state'>
 
 interface UserAction {
-  getCurrUserApiPerms({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>>
-  // getUserInfoPerm({ commit }: AugmentedActionContext): Promise<ResultData<UserApiResult>>
+  getAllApiPerms({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>>
+  getCurrUserMenuPerm({ commit }: AugmentedActionContext): Promise<MenuApiResult[]>
   // logout({ commit }: AugmentedActionContext): void
   // resetToken()
 }
 
 const actions: ActionTree<UserState, RootState> & UserAction = {
-  // getUserInfoPerm: async ({ commit }: AugmentedActionContext): Promise<ResultData<UserApiResult>> => {
-  //   const res = await getUserInfo()
-  //   if (res.code === 200) {
-  //     commit(UserMutationContants.SET_USER, res.data)
-  //     return res
-  //   }
-  //   return res
-  // }
-  getCurrUserApiPerms: async ({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>> => {
-    if (state.apiPerms.length > 0) return state.apiPerms
-    const res = await getCurrUserPerms()
+  getCurrUserMenuPerm: async ({ commit }: AugmentedActionContext): Promise<MenuApiResult[]> => {
+    const res = await getCurrUserMenuPerms()
+    if (res?.code === 200) {
+      const data: MenuApiResult[] = res.data as MenuApiResult[]
+      commit(UserMutationContants.SET_PERMSMENU, data)
+      return data
+    }
+    return []
+  },
+  getAllApiPerms: async ({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>> => {
+    if (state.allApiPerms.length > 0) return state.allApiPerms
+    const res = await getAllApiPerms()
     if (res.code === 200) {
       const apiPerms = res.data as Array<PermApiResult>
-      commit(UserMutationContants.SET_APIPERMS, apiPerms)
+      commit(UserMutationContants.SET_ALLAPIPERMS, apiPerms)
       return apiPerms
     }
     return []

@@ -21,7 +21,7 @@
         <span class="role-item__content">{{ currRole.remark }}</span>
       </div>
     </div>
-    <role-edit v-model="showEdit" :curr-role="currRole"></role-edit>
+    <role-edit v-model="showEdit" :curr-role="currRole" @change="editChange"></role-edit>
   </div>
 </template>
 
@@ -46,7 +46,8 @@ export default defineComponent({
       }
     }
   },
-  setup (props) {
+  emits: ['change'],
+  setup (props, { emit }) {
     const showEdit = ref<boolean>(false)
 
     const editRole = ref<ICreateOrUpdateRole>({
@@ -83,11 +84,16 @@ export default defineComponent({
 
     provide('menus', menuList)
 
+    const editChange = () => {
+      emit('change', 'edit')
+    }
+
     return {
       jsonTimeFormatFn,
       showEdit,
       delRoleFn,
-      showEditEvent
+      showEditEvent,
+      editChange
     }
   }
 })

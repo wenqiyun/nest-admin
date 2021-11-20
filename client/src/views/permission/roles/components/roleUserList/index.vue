@@ -8,6 +8,9 @@
     </h3>
     <!-- 当前角色关联的用户 -->
     <k-table ref="bindRoleUserTableRef" v-bind="userData" :callback="getRoleUserList" :loading="loading"  stripe>
+      <template #avatar="{row}">
+        <el-avatar :src="row.avatar" shape="square"></el-avatar>
+      </template>
        <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
       </template>
@@ -46,8 +49,8 @@ export default defineComponent({
       data: { list: [], total: 0 },
       isPager: true,
       columns: [
+        { label: '头像', prop: 'avatar', type: 'slot' },
         { label: '帐号', prop: 'account' },
-        { label: '头像', prop: 'avatar' },
         { label: '手机号', prop: 'phoneNum' },
         { label: '邮箱', prop: 'email' },
         { label: '状态', prop: 'status', type: 'slot', width: '90' },

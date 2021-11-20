@@ -29,7 +29,10 @@
         <el-button @click="downloadEvent">下载模板</el-button>
       </div>
     </div>
-    <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading"  border stripe current-row-key="id" style="width: 100%">
+    <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading" border stripe current-row-key="id" style="width: 100%">
+      <template #avatar="{row}">
+        <el-avatar :src="row.avatar" shape="square" :size="60"></el-avatar>
+      </template>
       <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
       </template>
@@ -48,7 +51,6 @@
 </template>
 
 <script lang="ts">
-// import KTable from '_c/Table/index.vue'
 import EditUser from './components/Edit.vue'
 import UploadErr from './components/UploadErr.vue'
 import { defineComponent, ref } from 'vue'
@@ -69,8 +71,8 @@ export default defineComponent({
       auto: true,
       isPager: true,
       columns: [
+        { label: '头像', prop: 'avatar', type: 'slot' },
         { label: '帐号', prop: 'account' },
-        { label: '头像', prop: 'avatar' },
         { label: '手机号', prop: 'phoneNum', default: '--' },
         { label: '邮箱', prop: 'email', default: '--' },
         { label: '状态', prop: 'status', type: 'slot', width: '90' },

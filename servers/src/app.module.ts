@@ -2,17 +2,17 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { RedisModuleOptions } from 'nestjs-redis'
-import { ServeStaticModule } from '@nestjs/serve-static';
+import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-static';
 import { APP_GUARD } from '@nestjs/core'
 import path from 'path'
 
 import configuration from './config/index'
 
 import { RedisUtilModule } from './common/libs/redis/redis.module'
+import { JwtAuthGuard } from './common/guards/auth.guard'
 import { RolesGuard } from './common/guards/roles.guard'
 
 import { UserModule } from './system/user/user.module'
-import { JwtUtilModule } from './system/jwt/jwt.module'
 import { AuthModule } from './system/auth/auth.module'
 import { MenuModule } from './system/menu/menu.module'
 import { RoleModule } from './system/role/role.module'
@@ -21,16 +21,20 @@ import { OssModule } from './system/oss/oss.module'
 
 @Module({
   imports: [
-    // 服务静态化, 生产环境最好使用 nginx 做资源映射， 可以根据环境配置做区分
-    ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '../../', 'upload'),
-      exclude: ['/api*'],
-    }),
     // 配置模块
     ConfigModule.forRoot({
       cache: true,
       load: [configuration],
       isGlobal: true,
+    }),
+    // 服务静态化, 生产环境最好使用 nginx 做资源映射， 可以根据环境配置做区分
+    ServeStaticModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        rootPath: path.join(__dirname, '../../', 'upload'),
+        exclude: [`${config.get('app.prefix')}`],
+      }] as ServeStaticModuleOptions[]
     }),
     // 数据库
     TypeOrmModule.forRootAsync({
@@ -62,19 +66,23 @@ import { OssModule } from './system/oss/oss.module'
     // 系统基础模块
     UserModule,
     AuthModule,
-    JwtUtilModule,
     MenuModule,
     RoleModule,
     PermModule,
     OssModule
     // 业务功能模块
   ],
-  // 全局守卫
-  // providers: [
-  //   {
-  //     provide: APP_GUARD,
-  //     useClass: RolesGuard,
-  //   },
-  // ],
+  // app module 守卫，两个守卫分别依赖 UserService、PermService, 而 UserService、PermService 没有设置全局模块，
+  // 所以这俩 守卫 不能再 main.ts 设置全局守卫
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ]
 })
 export class AppModule {}

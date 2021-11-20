@@ -23,7 +23,7 @@
     </div>
     <!-- 右侧 -->
     <div class="role-content">
-      <role-info ref="roleInfoRef" :curr-role="currRole"></role-info>
+      <role-info ref="roleInfoRef" :curr-role="currRole" @change="roleChange"></role-info>
       <role-user-list :curr-id="currRole.id"></role-user-list>
     </div>
   </div>
@@ -66,13 +66,18 @@ export default defineComponent({
       roleInfoRef.value.showEditEvent({ name: '', remark: '' })
     }
 
+    const roleChange = (type: 'edit' | 'del') => {
+      getRoleListFn({ size: 10, page: 1 })
+    }
+
     return {
       loading,
       roleInfoRef,
       roleData,
       currRole,
       roleClickEvent,
-      addRoleEvent
+      addRoleEvent,
+      roleChange
     }
   }
 })

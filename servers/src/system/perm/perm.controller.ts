@@ -1,14 +1,12 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common'
+import { Controller, Get, Param, Req } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
-import { JwtAuthGuard } from '../auth/auth.guard'
 
 import { PermService } from './perm.service'
 @ApiTags('权限路由相关')
 @ApiBearerAuth()
 @Controller('perm')
-@UseGuards(JwtAuthGuard)
 export class PermController {
   constructor(private readonly permService: PermService) {}
 
@@ -25,9 +23,10 @@ export class PermController {
     return ResultData.ok(appRoutes)
   }
 
-  @Get(':id')
+  @Get('menu')
   @ApiOperation({ summary: '用户权限'})
-  async findUser (@Param('id') userId: string): Promise<any> {
-    return await this.permService.findUserMenus(userId)
+  async findUser (@Req() req): Promise<ResultData> {
+    const menuPerms =  await this.permService.findUserMenus(req.user.id as string)
+    return ResultData.ok(menuPerms)
   }
 }

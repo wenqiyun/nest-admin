@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Like, Repository, getManager, getConnection, In } from 'typeorm'
 import { classToPlain, plainToClass } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
+import { JwtService } from '@nestjs/jwt'
 import xlsx from 'node-xlsx'
 import ms from 'ms'
 
@@ -13,8 +14,6 @@ import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { validPhone, validEmail } from '../../common/utils/validate'
 
-import { JwtUtilService } from '../jwt/jwt.service'
-
 import { UserEntity } from './user.entity'
 import { UserRoleEntity } from './user-role.entity'
 
@@ -22,6 +21,7 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { FindUserListDto } from './dto/find-user-list.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateOrUpdateUserRolesDto } from './dto/create-user-roles.dto'
+import { CreateTokenDto } from './dto/create-token.dto'
 
 @Injectable()
 export class UserService {
@@ -31,8 +31,8 @@ export class UserService {
     @InjectRepository(UserRoleEntity)
     private readonly userRoleRepo: Repository<UserRoleEntity>,
     private readonly config: ConfigService,
-    private readonly jwtUtilService: JwtUtilService,
     private readonly redisUtilService: RedisUtilService,
+    private readonly jwtService: JwtService
   ) {}
 
   async findOneById(id: string): Promise<UserEntity> {
@@ -90,12 +90,12 @@ export class UserService {
     if (!checkPassword) return ResultData.fail(HttpStatus.NOT_FOUND, '帐号或密码错误')
     if (user.status === 0) return ResultData.fail(HttpStatus.BAD_REQUEST, '您已被禁用，如需要正常使用请联系管理员')
     // 生成 token
-    const data = this.jwtUtilService.genToken({ id: user.id })
+    const data = this.genToken({ id: user.id })
     return ResultData.ok(data)
   }
 
   async updateToken (userId: string): Promise<ResultData> {
-    const data = this.jwtUtilService.genToken({ id: userId })
+    const data = this.genToken({ id: userId })
     return ResultData.ok(data)
   }
 
@@ -326,7 +326,6 @@ export class UserService {
         .take(size)
         .getManyAndCount()
     } else {
-      // 查询需要优化
       res = await getConnection()
         .createQueryBuilder('sys_user', 'su')
         .where((qb: any) => {
@@ -356,4 +355,34 @@ export class UserService {
       return roleIds
     }
   }
+
+  /**
+   * 生成 token 与 刷新 token
+   * @param payload
+   * @returns
+   */
+   genToken (payload: { id: string }): CreateTokenDto {
+    const accessToken = `Bearer ${this.jwtService.sign(payload)}`
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('jwt.refreshExpiresIn') })
+    return { accessToken, refreshToken }
+  }
+
+  /**
+   * 生成刷新 token
+   */
+  refreshToken(id: string): string {
+    return this.jwtService.sign({ id })
+  }
+
+  /** 校验 token */
+  verifyToken(token: string): string {
+    try {
+      if (!token) return null
+      const id = this.jwtService.verify(token.replace('Bearer ', ''))
+      return id
+    } catch (error) {
+      return null
+    }
+  }
+
 }

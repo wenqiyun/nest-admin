@@ -39,7 +39,7 @@ export default defineComponent({
       }
     }
   },
-  emits: [UPDATE_MODEL_EVENT],
+  emits: [UPDATE_MODEL_EVENT, 'change'],
   setup (props, { emit }) {
     // dialog
     const visible = ref<boolean>(false)
@@ -89,6 +89,8 @@ export default defineComponent({
       }
       if (res.code === 200) {
         ElMessage({ message: `${req.id ? '更新' : '创建'}成功`, type: 'success' })
+        emit('change')
+        handleClose()
       } else {
         ElMessage({ message: res.msg, type: 'error' })
       }
