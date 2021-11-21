@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, getManager, Like } from 'typeorm'
+import { Repository, getManager, Like, getConnection } from 'typeorm';
 import { plainToClass } from 'class-transformer'
 
+import { AppHttpCode } from '../../common/enums/code.enum'
+import { UserType } from '../../common/enums/user.enum'
 import { ResultData } from '../../common/utils/result'
+
+import { UserRoleEntity } from '../user/user-role.entity'
 
 import { RoleEntity } from './role.entity'
 import { RoleMenuEntity } from './role-menu.entity'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { FindRoleListDto } from './dto/find-role-list.dto'
-import { UserRoleEntity } from '../user/user-role.entity'
-import { AppHttpCode } from '../../common/enums/code.enum';
+import { UserEntity } from '../user/user.entity';
+
 
 @Injectable()
 export class RoleService {
@@ -24,7 +28,7 @@ export class RoleService {
     private readonly userRoleRepo: Repository<UserRoleEntity>
   ) {}
 
-  async create(dto: CreateRoleDto): Promise<ResultData> {
+  async create(dto: CreateRoleDto, user: UserEntity): Promise<ResultData> {
     const role = plainToClass(RoleEntity, dto)
     const res = await getManager().transaction(async (transactionalEntityManager) => {
       const result = await transactionalEntityManager.save<RoleEntity>(plainToClass(RoleEntity, role))
@@ -36,6 +40,11 @@ export class RoleService {
           }),
         )
         await transactionalEntityManager.save<RoleMenuEntity>(roleMenus)
+        if (user.type === UserType.ORDINARY_USER) {
+          // 如果是 一般用户，则需要将 他创建的角色绑定他自身， 超管用户因为可以查看所有角色，则不需要绑定
+          const userRole = { userId: user.id, roleId: result.id }
+          await transactionalEntityManager.save<UserRoleEntity>(plainToClass(UserRoleEntity, userRole))
+        }
       }
       return result
     })
@@ -89,8 +98,17 @@ export class RoleService {
     return ResultData.ok(roleMenu.map((v) => v.menuId))
   }
 
-  async findList(): Promise<ResultData> {
-    const roleData = await this.roleRepo.find({ order: { id: 'DESC' } })
+  async findList(type: UserType, userId: string): Promise<ResultData> {
+    let roleData = []
+    if (type === UserType.SUPER_ADMIN) {
+      roleData = await this.roleRepo.find({ order: { id: 'DESC' } })
+    } else {
+      roleData = await getConnection()
+        .createQueryBuilder('sys_role', 'sr')
+        .leftJoinAndSelect('sys_user_role', 'sur', 'sr.id = sur.role_id')
+        .where('sur.user_id = :userId', { userId })
+        .getMany()
+    }
     return ResultData.ok(roleData)
   }
 }

@@ -4,13 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { plainToClass } from 'class-transformer';
 
 import { ResultData } from '../../common/utils/result'
+import { AppHttpCode } from '../../common/enums/code.enum'
 
 import { MenuEntity } from './menu.entity'
 import { MenuPermEntity } from './menu-perm.entity'
 import { CreateMenuDto } from './dto/create-menu.dto'
 
 import { UpdateMenuDto } from './dto/update-menu.dto'
-import { AppHttpCode } from '../../common/enums/code.enum';
 
 @Injectable()
 export class MenuService {

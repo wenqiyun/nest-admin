@@ -3,7 +3,7 @@
     <h3 class="roles__tip clearfix">
       <span>基础信息</span>
       <span class="fr role-edit-action">
-        <el-button type="primary" :disabled="!currRole.id" @click="showEditEvent">编辑</el-button>
+        <el-button type="primary" :disabled="!currRole.id" @click="() => showEditEvent()">编辑</el-button>
         <el-button type="danger" :disabled="!currRole.id" @click="delRoleFn">删除</el-button>
       </span>
     </h3>
@@ -21,7 +21,7 @@
         <span class="role-item__content">{{ currRole.remark }}</span>
       </div>
     </div>
-    <role-edit v-model="showEdit" :curr-role="currRole" @change="editChange"></role-edit>
+    <role-edit v-model="showEdit" :curr-role="editRole" @change="editChange"></role-edit>
   </div>
 </template>
 
@@ -30,7 +30,8 @@ import { defineComponent, provide, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { jsonTimeFormat } from '@/utils/index'
 import RoleEdit from './RoleEdit.vue'
-import { getAllMenu, MenuApiResult } from '@/api/menu'
+import { MenuApiResult } from '@/api/menu'
+import { getCurrUserMenuPerms } from '@/api/perm'
 import { ICreateOrUpdateRole, delRoleInfo } from '@/api/role'
 
 export default defineComponent({
@@ -86,7 +87,7 @@ export default defineComponent({
     const menuList = ref<Array<MenuApiResult>>([])
 
     const getMenuList = async () => {
-      const res = await getAllMenu(1)
+      const res = await getCurrUserMenuPerms()
       if (res.code === 200) {
         menuList.value = res.data as MenuApiResult[]
       }
@@ -104,7 +105,8 @@ export default defineComponent({
       showEdit,
       delRoleFn,
       showEditEvent,
-      editChange
+      editChange,
+      editRole
     }
   }
 })

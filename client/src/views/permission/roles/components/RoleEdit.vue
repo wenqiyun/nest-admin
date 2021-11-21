@@ -63,7 +63,7 @@ export default defineComponent({
         roleForm.value = { ...props.currRole }
         props.currRole?.id && getRolePermsFn(props.currRole.id)
       } else {
-        //
+        currRolePermMenus.value = []
       }
     })
 

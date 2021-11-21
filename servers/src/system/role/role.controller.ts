@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Query, Param, Delete, Body } from '@nestjs/common'
+import { Controller, Get, Post, Put, Query, Param, Delete, Body, Req } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
@@ -15,10 +15,10 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Get('list')
-  @ApiOperation({ summary: '查询 role list' })
+  @ApiOperation({ summary: '查询 role 列表' })
   @ApiOkResponse({ type: RoleEntity, isArray: true })
-  async findList(): Promise<ResultData> {
-    return await this.roleService.findList()
+  async findList(@Req() req): Promise<ResultData> {
+    return await this.roleService.findList(req.user.type, req.user.id)
   }
 
   @Get('one/:id/perms')
@@ -30,8 +30,8 @@ export class RoleController {
 
   @Post()
   @ApiOperation({ summary: '创建角色' })
-  async create(@Body() dto: CreateRoleDto): Promise<ResultData> {
-    return await this.roleService.create(dto)
+  async create(@Body() dto: CreateRoleDto, @Req() req): Promise<ResultData> {
+    return await this.roleService.create(dto, req.user)
   }
 
   @Put()

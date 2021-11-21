@@ -1,6 +1,8 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
-import { Exclude, Expose } from 'class-transformer'
+import { Exclude } from 'class-transformer'
+
+import { UserType, UserStatus } from '../../common/enums/user.enum'
 
 @Entity('sys_user')
 export class UserEntity {
@@ -30,7 +32,7 @@ export class UserEntity {
 
   @ApiProperty({ type: String, description: '所属状态: 1-有效，0-禁用' })
   @Column({ type: 'tinyint', default: 1, comment: '所属状态: 1-有效，0-禁用' })
-  public status: number
+  public status: UserStatus
 
   @ApiProperty({ type: String, description: '头像url' })
   @Column({ type: 'varchar', comment: '头像地址' })
@@ -38,7 +40,7 @@ export class UserEntity {
 
   @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户' })
   @Column({ type: 'tinyint', default: 1, comment: '帐号类型：0-超管， 1-普通用户' })
-  public type: number
+  public type: UserType
 
   @ApiProperty({ type: Date, description: '创建时间' })
   @CreateDateColumn({ type: 'timestamp', name: 'create_date', comment: '创建时间' })

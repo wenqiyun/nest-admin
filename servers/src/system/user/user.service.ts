@@ -11,6 +11,7 @@ import ms from 'ms'
 import { ResultData } from '../../common/utils/result'
 import { getRedisKey } from '../../common/utils/utils';
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
+import { AppHttpCode } from '../../common/enums/code.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { validPhone, validEmail } from '../../common/utils/validate'
 
@@ -22,7 +23,6 @@ import { FindUserListDto } from './dto/find-user-list.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateOrUpdateUserRolesDto } from './dto/create-user-roles.dto'
 import { CreateTokenDto } from './dto/create-token.dto'
-import { AppHttpCode } from '../../common/enums/code.enum';
 
 @Injectable()
 export class UserService {
