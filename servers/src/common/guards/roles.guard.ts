@@ -17,15 +17,13 @@ export class RolesGuard implements CanActivate {
     private readonly permService: PermService,
     private readonly config: ConfigService,
   ) {
-    this.globalWhiteList = [].concat(this.config.get<string[] | string>('perm.router.whitelist') || [])
+    this.globalWhiteList = [].concat(this.config.get('perm.router.whitelist') || [])
   }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     // 首先 无 token 的 是不需要 对比权限
     const allowAnon = this.reflector.getAllAndOverride<boolean>(ALLOW_ANON, [ctx.getHandler(), ctx.getClass()])
     if (allowAnon) return true
-    const allowNoPerm = this.reflector.getAllAndOverride<boolean>(ALLOW_NO_PERM, [ctx.getHandler(), ctx.getClass()])
-    if (allowNoPerm) return true
     // 全局配置，
     const req = ctx.switchToHttp().getRequest()
 
@@ -39,6 +37,9 @@ export class RolesGuard implements CanActivate {
     })
     // 在白名单内 则 进行下一步， i === -1 ，则不在白名单，需要 比对是否有当前接口权限
     if (i > -1) return true
+    // 函数请求头配置 AllowNoPerm 装饰器 无需验证权限
+    const allowNoPerm = this.reflector.getAllAndOverride<boolean>(ALLOW_NO_PERM, [ctx.getHandler(), ctx.getClass()])
+    if (allowNoPerm) return true
 
     // 需要比对 该用户所拥有的 接口权限
     const user = req.user

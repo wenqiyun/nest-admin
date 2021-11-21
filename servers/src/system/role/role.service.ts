@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, getManager, Like } from 'typeorm'
 import { plainToClass } from 'class-transformer'
@@ -11,6 +11,7 @@ import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { FindRoleListDto } from './dto/find-role-list.dto'
 import { UserRoleEntity } from '../user/user-role.entity'
+import { AppHttpCode } from '../../common/enums/code.enum';
 
 @Injectable()
 export class RoleService {
@@ -38,13 +39,13 @@ export class RoleService {
       }
       return result
     })
-    if (!res) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '角色创建失败，请稍后重试')
+    if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '角色创建失败，请稍后重试')
     return ResultData.ok(res)
   }
 
   async update(dto: UpdateRoleDto): Promise<ResultData> {
     const existing = await this.roleRepo.findOne({ id: dto.id })
-    if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前角色不存在或已被删除')
+    if (!existing) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       if (dto.menuIds) {
         await transactionalEntityManager.delete(RoleMenuEntity, { roleId: dto.id })
@@ -62,15 +63,15 @@ export class RoleService {
       const result = await transactionalEntityManager.update<RoleEntity>(RoleEntity, dto.id, plainToClass(RoleEntity, updateRole))
       return result
     })
-    if (!affected) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '当前角色更新失败，请稍后尝试')
+    if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前角色更新失败，请稍后尝试')
     return ResultData.ok()
   }
 
   async delete(id: string): Promise<ResultData> {
     const existing = await this.roleRepo.findOne({ id })
-    if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前角色不存在或已被删除')
+    if (!existing) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
     const existingBindUser = await this.userRoleRepo.findOne({ where: { roleId: id } })
-    if (existingBindUser) return ResultData.fail(3434, '当前角色还有绑定的用户，需要解除关联后删除')
+    if (existingBindUser) return ResultData.fail(AppHttpCode.ROLE_NOT_DEL, '当前角色还有绑定的用户，需要解除关联后删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       // 删除 role - menu 关系
       await transactionalEntityManager.delete(RoleMenuEntity, { roleId: id })
@@ -79,7 +80,7 @@ export class RoleService {
       const result = await transactionalEntityManager.delete<RoleEntity>(RoleEntity, id)
       return result
     })
-    if (!affected) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '删除失败，请稍后重试')
+    if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '删除失败，请稍后重试')
     return ResultData.ok()
   }
 

@@ -27,10 +27,11 @@
 
 <script lang="ts">
 import { defineComponent, provide, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { jsonTimeFormat } from '@/utils/index'
 import RoleEdit from './RoleEdit.vue'
 import { getAllMenu, MenuApiResult } from '@/api/menu'
-import { ICreateOrUpdateRole } from '@/api/role'
+import { ICreateOrUpdateRole, delRoleInfo } from '@/api/role'
 
 export default defineComponent({
   components: { RoleEdit },
@@ -68,7 +69,17 @@ export default defineComponent({
     }
 
     const delRoleFn = async () => {
-      console.log(1)
+      await ElMessageBox.confirm(`是否确认删除【${props.currRole.name}】角色？`, '提示', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      const res = await delRoleInfo(props.currRole.id)
+      if (res?.code === 200) {
+        ElMessage({ type: 'success', message: '删除角色成功' })
+      } else {
+        ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试' })
+      }
     }
 
     // 查询所拥有的菜单资源

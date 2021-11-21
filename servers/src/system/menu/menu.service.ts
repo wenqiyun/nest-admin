@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { getManager, Repository, In } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 import { plainToClass } from 'class-transformer';
@@ -10,6 +10,7 @@ import { MenuPermEntity } from './menu-perm.entity'
 import { CreateMenuDto } from './dto/create-menu.dto'
 
 import { UpdateMenuDto } from './dto/update-menu.dto'
+import { AppHttpCode } from '../../common/enums/code.enum';
 
 @Injectable()
 export class MenuService {
@@ -24,7 +25,7 @@ export class MenuService {
     if (dto.parentId !== '0') {
       // 查询当前父级菜单是否存在
       const parentMenu = await this.menuRepo.findOne({ id: dto.parentId })
-      if (!parentMenu) return ResultData.fail(HttpStatus.NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
+      if (!parentMenu) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
     }
     const menu = await getManager().transaction(async (transactionalEntityManager) => {
       const menu = await transactionalEntityManager.save<MenuEntity>(plainToClass(MenuEntity, dto))
@@ -38,7 +39,7 @@ export class MenuService {
       )
       return menu
     })
-    if (!menu) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '菜单创建失败，请稍后重试')
+    if (!menu) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单创建失败，请稍后重试')
     return ResultData.ok()
   }
 
@@ -60,19 +61,19 @@ export class MenuService {
 
   async deleteMenu(id: string): Promise<ResultData> {
     const existing = await this.menuRepo.findOne({ id })
-    if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前菜单不存在或已删除')
+    if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.delete(MenuPermEntity, { menuId: id })
       const result = await transactionalEntityManager.delete<MenuEntity>(MenuEntity, id)
       return result
     })
-    if (!affected) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '菜单删除失败，请稍后重试')
+    if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单删除失败，请稍后重试')
     return ResultData.ok()
   }
 
   async updateMenu(dto: UpdateMenuDto): Promise<ResultData> {
     const existing = await this.menuRepo.findOne({ id: dto.id })
-    if (!existing) return ResultData.fail(HttpStatus.NOT_FOUND, '当前菜单不存在或已删除')
+    if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       // 删除原有接口权限权限
       await this.menuPermRepo.delete({ menuId: dto.id })
@@ -83,7 +84,7 @@ export class MenuService {
       // excludeExtraneousValues true  排除无关属性。 但需要在实体类中 将属性使用 @Expose()
       return await transactionalEntityManager.update<MenuEntity>(MenuEntity, dto.id, plainToClass(MenuEntity, dto))
     })
-    if (!affected) return ResultData.fail(HttpStatus.INTERNAL_SERVER_ERROR, '当前菜单更新失败，请稍后重试')
+    if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前菜单更新失败，请稍后重试')
     return ResultData.ok()
   }
 }
