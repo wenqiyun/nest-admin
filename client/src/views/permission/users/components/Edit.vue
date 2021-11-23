@@ -4,8 +4,8 @@
       <el-form-item label="帐号" prop="">
         <el-input v-model="userForm.account" :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="头像" prop="">
-        <el-avatar src='https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'></el-avatar>
+      <el-form-item label="头像" prop="avatar">
+        <el-avatar :src='userForm.avatar' style="cursor: pointer;" @click="avatarClickEvent"></el-avatar>
       </el-form-item>
       <el-form-item label="手机号" prop="phoneNum">
         <el-input v-model.trim="userForm.phoneNum"></el-input>
@@ -14,6 +14,9 @@
         <el-input v-model.trim="userForm.email"></el-input>
       </el-form-item>
     </el-form>
+
+    <!-- 头像编辑 -->
+    <avatar-cropper v-model="showAvatarCropper" :avatar-url="userForm.avatar" @change="uploadSuccess"></avatar-cropper>
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
       <el-button type="primary" @click="updateOrCreate">确认</el-button>
@@ -29,8 +32,11 @@ import { UPDATE_MODEL_EVENT } from '@/common/contants'
 import { ICreateOrUpdateUser, getUserInfo as getUserInfoApi, updateUser } from '@/api/user'
 import { validPhone, validEmail } from '@/utils/validate'
 
+import AvatarCropper from './AvatarCropper.vue'
+
 export default defineComponent({
   name: 'EditUser',
+  components: { AvatarCropper },
   props: {
     modelValue: {
       type: Boolean,
@@ -91,6 +97,9 @@ export default defineComponent({
     }
 
     const userFormRules = {
+      avatar: [
+        { required: true, message: '请上传头像', trigger: 'blur' }
+      ],
       phoneNum: [
         { required: true, message: '请输入手机号', trigger: 'blur' },
         { validator: validPhoneNum, trigger: 'blur' }
@@ -130,6 +139,15 @@ export default defineComponent({
     watch(() => props.modelValue, (val: boolean) => {
       val && props.currId && getUserInfo(props.currId)
     })
+    // 头像编辑
+    const showAvatarCropper = ref<boolean>(false)
+    const avatarClickEvent = () => {
+      showAvatarCropper.value = !showAvatarCropper.value
+    }
+
+    const uploadSuccess = (url: string) => {
+      userForm.value.avatar = url
+    }
 
     return {
       loading,
@@ -138,7 +156,10 @@ export default defineComponent({
       userForm,
       userFormRef,
       userFormRules,
-      updateOrCreate
+      updateOrCreate,
+      showAvatarCropper,
+      avatarClickEvent,
+      uploadSuccess
     }
   }
 })

@@ -81,7 +81,6 @@ class HttpService {
           return new Promise((resolve, reject) => {
             retryReqs.push((token: string) => {
               config.headers = { ...config.headers, Authorization: token }
-              console.log(12212, config.headers)
               resolve(this.request(config))
             })
           })

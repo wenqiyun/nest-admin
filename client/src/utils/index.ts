@@ -47,3 +47,9 @@ export function downLoad (content: any, fileName: string) {
   document.body.appendChild(dom)
   dom.click()
 }
+/**
+ * 将 el-icond的组件名 AbbCdd 转化为 i-abb-cdd 形式
+ */
+export function tranElIconName (iconName: string) {
+  return `i${iconName.replace(/[A-Z]/g, match => ('-' + match.toLowerCase))}`
+}

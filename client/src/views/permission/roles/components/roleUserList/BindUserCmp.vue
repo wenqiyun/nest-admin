@@ -22,9 +22,9 @@
 import { defineComponent, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
-import { UPDATE_MODEL_EVENT } from '../../../../../common/contants'
-import { getUserList, QueryUserList, UserApiResult, BindUserData, bindRoleUser } from '../../../../../api/user'
-import { ListResultData, ResultData } from '../../../../../common/types/apiResult.type'
+import { UPDATE_MODEL_EVENT } from '@/common/contants'
+import { getUserList, QueryUserList, UserApiResult, BindUserData, bindRoleUser } from '@/api/user'
+import { ListResultData, ResultData } from '@/common/types/apiResult.type'
 
 export default defineComponent({
   props: {

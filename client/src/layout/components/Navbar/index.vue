@@ -5,10 +5,13 @@
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
 
     <div class="right-menu">
-      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click" @visible-change="visibleChange">
         <div class="avatar-wrapper">
-          <el-avatar icon="el-icon-user-solid" src="https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80" fit="fill" class="user-avatar" shape="square"></el-avatar>
-          <i class="el-icon-caret-bottom" />
+          <el-avatar :src="userAvatar" fit="fill" class="user-avatar" shape="circle"></el-avatar>
+          <div class="user-name-wrapper">
+            <span>{{ userAccount }}</span>
+            <svg-icon icon-class="arrow-down" :class="{ 'arrow-down': true, 'arrow-down-show': dropdownShow }"></svg-icon>
+          </div>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -27,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import { useStore } from '@/store'
 import Hamburger from '_c/Hamburger/index.vue'
 import Breadcrumb from '_c/Breadcrumb/index.vue'
@@ -41,6 +44,10 @@ export default defineComponent({
     const store = useStore()
 
     const sidebar = computed(() => store.state.app.sidebar)
+
+    const userAvatar = computed(() => store.state.user.user.avatar)
+
+    const userAccount = computed(() => store.state.user.user.account)
 
     const toggleSideBar = () => {
       store.dispatch('app/toggleSideBar')
@@ -57,10 +64,19 @@ export default defineComponent({
       })
     }
 
+    const dropdownShow = ref<boolean>(false)
+    const visibleChange = (show: boolean) => {
+      dropdownShow.value = show
+    }
+
     return {
       sidebar,
+      userAvatar,
+      userAccount,
       toggleSideBar,
-      loginout
+      loginout,
+      dropdownShow,
+      visibleChange
     }
   }
 })
@@ -119,23 +135,27 @@ export default defineComponent({
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 10px;
 
       .avatar-wrapper {
-        margin-top: 5px;
+        // margin-top: 5px;
         position: relative;
+        line-height: 50px;
+        display: flex;
+        align-items: center;
 
         .user-avatar {
           cursor: pointer;
-          border-radius: 10px;
         }
 
-        .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-          font-size: 12px;
+        .user-name-wrapper {
+          margin-left: 10px;
+        }
+        .arrow-down {
+          transition: all .28s;
+        }
+        .arrow-down-show {
+          transform: rotate(180deg);
         }
       }
     }

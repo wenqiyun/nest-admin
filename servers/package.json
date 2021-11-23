@@ -42,6 +42,7 @@
     "helmet": "^4.6.0",
     "js-yaml": "^4.1.0",
     "log4js": "^6.3.0",
+    "mime-types": "^2.1.34",
     "mysql2": "^2.3.3-rc.0",
     "nestjs-redis": "github:skunight/nestjs-redis",
     "node-xlsx": "^0.17.2",

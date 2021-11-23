@@ -9,6 +9,12 @@ export interface OssApiResult extends BaseResult {
   size: string
   // 文件 mimetype
   type: string
+  // 注释
+  business: string
+
+  userId: string
+
+  userAccount: string
 
   createDate: string
 }
@@ -18,5 +24,13 @@ export function getFileList (params: Pagination): Promise<ResultData<OssApiResul
     url: `${config.api.baseUrl}/oss/list`,
     method: ApiMethodContants.GET,
     params
+  })
+}
+
+export function fileUpload (data: FormData): Promise<ResultData<OssApiResult[]>> {
+  return http.request<ResultData<OssApiResult[]>>({
+    url: `${config.api.baseUrl}/oss/upload`,
+    method: ApiMethodContants.POST,
+    data
   })
 }

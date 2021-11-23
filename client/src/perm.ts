@@ -14,6 +14,7 @@ router.beforeEach(async (to, from, next) => {
     if (to.path === '/login') {
       next({ path: '/' })
     } else if (!store.state.permission.isReqPerm) {
+      store.dispatch(UserActionContants.GET_USER_INFO, true)
       const menuPerms = await store.dispatch(UserActionContants.GET_USER_MENU_PERM)
       const accessRoutes: Array<AppRouteRecordRaw> = await store.dispatch(PermissionActionContants.GENRATERROUTES, menuPerms)
       accessRoutes.forEach(route => router.addRoute(route))

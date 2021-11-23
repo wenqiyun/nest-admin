@@ -9,6 +9,7 @@
       "lint": "vue-cli-service lint"
    },
    "dependencies": {
+      "@element-plus/icons": "^0.0.11",
       "async-validator": "^4.0.3",
       "axios": "^0.24.0",
       "core-js": "^3.19.1",
@@ -16,7 +17,7 @@
       "dayjs": "^1.10.7",
       "debounce": "^1.2.1",
       "echarts": "^5.2.2",
-      "element-plus": "^1.1.0-beta.24",
+      "element-plus": "^1.2.0-beta.3",
       "intersection-observer": "^0.12.0",
       "jwt-decode": "^3.1.2",
       "path-to-regexp": "^6.2.0",
@@ -24,6 +25,7 @@
       "ts-debounce": "^4.0.0",
       "vue": "^3.2.22",
       "vue-class-component": "^8.0.0-rc.1",
+      "vue-cropper": "^1.0.2",
       "vue-router": "^4.0.12",
       "vuex": "^4.0.2"
    },

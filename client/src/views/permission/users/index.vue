@@ -31,7 +31,7 @@
     </div>
     <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading" border stripe current-row-key="id" style="width: 100%">
       <template #avatar="{row}">
-        <el-avatar :src="row.avatar" shape="square" :size="60"></el-avatar>
+        <el-avatar :src="row.avatar" shape="circle" :size="60"></el-avatar>
       </template>
       <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>

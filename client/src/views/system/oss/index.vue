@@ -8,10 +8,10 @@ import { defineComponent } from "vue";
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import { IKTableProps } from '../../../plugins/k-ui/packages/table/src/Table.type'
-import { ListResultData, Pagination } from '../../../common/types/apiResult.type'
-import { getFileList as getFileListApi, OssApiResult } from '../../../api/oss'
-import { jsonTimeFormat } from '../../../utils/index'
+import { IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+import { ListResultData, Pagination } from '@/common/types/apiResult.type'
+import { getFileList as getFileListApi, OssApiResult } from '@/api/oss'
+import { jsonTimeFormat } from '@/utils/index'
 import { ElMessage } from 'element-plus'
 
 export default defineComponent({
@@ -24,6 +24,7 @@ export default defineComponent({
       columns: [
         { label: '文件', prop: 'url' },
         { label: '大小', prop: 'size' },
+        { label: '上传用户', prop: 'userAccount' },
         { label: '上传时间', prop: 'createDate' }
       ],
       index: true

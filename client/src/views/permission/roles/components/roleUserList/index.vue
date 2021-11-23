@@ -9,7 +9,7 @@
     <!-- 当前角色关联的用户 -->
     <k-table ref="bindRoleUserTableRef" v-bind="userData" :callback="getRoleUserList" :loading="loading"  stripe>
       <template #avatar="{row}">
-        <el-avatar :src="row.avatar" shape="square"></el-avatar>
+        <el-avatar :src="row.avatar" shape="circle"></el-avatar>
       </template>
        <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
@@ -27,11 +27,11 @@
 import { defineComponent, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-import { IKTableProps } from '../../../../../plugins/k-ui/packages/table/src/Table.type'
-import { ListResultData, Pagination } from '../../../../../common/types/apiResult.type'
+import { IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+import { ListResultData, Pagination } from '@/common/types/apiResult.type'
 
-import { jsonTimeFormat } from '../../../../../utils/index'
-import { bindRoleUser, BindUserData, getUserList, QueryUserList, UserApiResult } from '../../../../../api/user'
+import { jsonTimeFormat } from '@/utils/index'
+import { bindRoleUser, BindUserData, getUserList, QueryUserList, UserApiResult } from '@/api/user'
 
 import BindUser from './BindUserCmp.vue'
 

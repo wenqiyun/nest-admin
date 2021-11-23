@@ -10,7 +10,7 @@ import {
 } from 'vuex'
 import { ResultData } from '@/common/types/apiResult.type'
 import { RootState } from '../index'
-import { login, UserApiResult, UserLogin, getUserInfo } from '@/api/user'
+import { login, UserApiResult, UserLogin, getUserInfo as getUserInfoApi } from '@/api/user'
 import { PermApiResult, getCurrUserMenuPerms, getAllApiPerms } from '@/api/perm'
 import { MenuTypeContants, MenuApiResult } from '@/api/menu'
 
@@ -21,8 +21,8 @@ export enum UserMutationContants {
 }
 
 export enum UserActionContants {
+  GET_USER_INFO = 'user/getUserInfo',
   GET_USER_MENU_PERM = 'user/getCurrUserMenuPerm',
-  // LOGIN = 'user/login',
   GET_ALL_API_PERMS = 'user/getAllApiPerms'
 }
 
@@ -80,13 +80,22 @@ type AugmentedActionContext = {
 } & Omit<ActionContext<UserState, RootState>, 'commit' | 'state'>
 
 interface UserAction {
+  getUserInfo({ commit, state }: AugmentedActionContext, reload?: boolean): Promise<UserApiResult>
   getAllApiPerms({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>>
   getCurrUserMenuPerm({ commit }: AugmentedActionContext): Promise<MenuApiResult[]>
-  // logout({ commit }: AugmentedActionContext): void
-  // resetToken()
 }
 
 const actions: ActionTree<UserState, RootState> & UserAction = {
+  getUserInfo: async ({ commit, state }: AugmentedActionContext, reload?: boolean): Promise<UserApiResult> => {
+    if (state.user && !reload) return state.user
+    const res = await getUserInfoApi()
+    if (res?.code === 200) {
+      const user = res.data as UserApiResult
+      commit(UserMutationContants.SET_USER, user)
+      return user
+    }
+    return { id: '', account: '', avatar: '' } as UserApiResult
+  },
   getCurrUserMenuPerm: async ({ commit }: AugmentedActionContext): Promise<MenuApiResult[]> => {
     const res = await getCurrUserMenuPerms()
     if (res?.code === 200) {

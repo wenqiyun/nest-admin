@@ -64,10 +64,11 @@ export function updateToken (): Promise<ResultData<LoginResult>> {
   })
 }
 
-export function getUserInfo (id: string): Promise<ResultData<UserApiResult>> {
+export function getUserInfo (id?: string): Promise<ResultData<UserApiResult>> {
   return http.request<ResultData<UserApiResult>>({
-    url: `${config.api.baseUrl}/user/one/${id}`,
-    method: ApiMethodContants.GET
+    url: `${config.api.baseUrl}/user/one/info`,
+    method: ApiMethodContants.GET,
+    params: { id }
   })
 }
 

@@ -1,5 +1,5 @@
-import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpStatus, HttpCode, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiOkResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpCode, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'
@@ -24,12 +24,12 @@ export class UserController {
     return await this.userService.findList(dto)
   }
 
-  @Get('one/:id')
-  @ApiOperation({ summary: '根据id 查询用户信息' })
+  @Get('one/info')
+  @ApiOperation({ summary: '根据id查询用户信息' })
   @ApiOkResponse({ type: UserEntity })
-  @ApiParam({ name: 'id' })
-  async findOne (@Param('id') id: string): Promise<ResultData> {
-    return await this.userService.findOne(id)
+  @ApiQuery({ name: 'id' })
+  async findOne (@Query('id') id: string, @Req() req): Promise<ResultData> {
+    return await this.userService.findOne(id || req.user.id)
   }
 
   @Get(':id/role')
