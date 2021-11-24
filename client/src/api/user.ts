@@ -112,7 +112,6 @@ export function bindRoleUser (data: BindUserData): Promise<ResultData<null>> {
 }
 
 export function dowmloadUserTemplate () {
-  console.log(`${config.api.tmplDownloadUrl}/用户导入模板.xlsx`)
   return http.request({
     url: `${config.api.tmplDownloadUrl}/用户导入模板.xlsx`,
     method: ApiMethodContants.GET,

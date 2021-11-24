@@ -41,7 +41,7 @@ export class OssService {
       // 千万别忘记了 关闭流
       writeFile.close()
       const ossFile = {
-        url: `${this.config.get<string>('app.file.domain')}/${newFileName}`,
+        url: `${this.config.get<string>('app.file.domain')}${this.config.get<string>('app.file.serveRoot') || ''}/${newFileName}`,
         size: file.size,
         type: file.mimetype,
         location: fileLocation,

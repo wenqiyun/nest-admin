@@ -34,6 +34,10 @@ import { OssModule } from './system/oss/oss.module'
       useFactory: (config: ConfigService) => [{
         rootPath: path.join(__dirname, '../../', 'upload'),
         exclude: [`${config.get('app.prefix')}`],
+        serveRoot: config.get('app.file.serveRoot'),
+        serveStaticOptions: {
+          cacheControl: true
+        }
       }] as ServeStaticModuleOptions[]
     }),
     // 数据库

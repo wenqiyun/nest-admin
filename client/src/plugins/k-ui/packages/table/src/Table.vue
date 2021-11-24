@@ -8,14 +8,11 @@
         <el-table-column type="selection" align="center" width="55" v-if="selection" ></el-table-column>
         <!-- 索引列 -->
         <el-table-column type="index" :label="indexLabel" align="center" width="50" v-if="index" :index="indexMethodFn" ></el-table-column>
-        <template v-for="(column, index) in columns" :key="`${column.label}_${index}`" >
-          <el-table-column :align="column.align || 'center'" v-if="column.type === 'slot'" v-bind="column" >
-            <template #default="scope">
-              <slot :name="column.prop" v-bind="{ ...scope, $index: indexMethodFn(index) }"  >{{ scope.row[column.prop] || column.default  || '' }}</slot>
-            </template>
-          </el-table-column>
-          <TableColumn v-bind="column" v-else ></TableColumn>
-        </template>
+        <el-table-column v-bind="column"  v-for="(column, index) in columns" :align="column.align || 'center'" :key="`${column.label}_${index}`" >
+          <template #default="scope" v-if="!!column.slot">
+            <slot :name="column.prop" v-bind="{ ...scope, $index: indexMethodFn(index) }"  >{{ scope.row[column.prop] || column.default  || '' }}</slot>
+          </template>
+        </el-table-column>
       </template>
       <template #empty>
         <el-empty description="暂无数据"></el-empty>
@@ -41,7 +38,7 @@
 
 <script>
 import { computed, defineComponent, nextTick, ref } from 'vue'
-import TableColumn from './TableColumn'
+// import TableColumn from './TableColumn'
 
 const methodArr = [
   'clearSelection',
@@ -56,7 +53,7 @@ const methodArr = [
 ]
 export default defineComponent({
   name: 'KTable',
-  components: { TableColumn },
+  // components: { TableColumn },
   props: {
     // 模式配置  render element 表格模式，封装了 分页组件
     // config data配置模式

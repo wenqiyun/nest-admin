@@ -4,7 +4,7 @@
       <h3 class="roles__tip">
         <span>全部角色</span>
         <span class="fr clearfix tip-action">
-          <el-button size="mini" @click="addRoleEvent">新增</el-button>
+          <el-button size="mini" @click="addRoleEvent" v-perm="'perm_roles:create'">新增</el-button>
         </span>
       </h3>
       <el-scrollbar wrap-class="scrollbar-list" v-loading="loading">

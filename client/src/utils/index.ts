@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import { ElLoading } from 'element-plus'
 
 export function jsonTimeFormat (jsonTime: string, format?: string): string {
   return dayjs(jsonTime).format(format || 'YYYY-MM-DD HH:mm:ss')
@@ -47,6 +46,28 @@ export function downLoad (content: any, fileName: string) {
   document.body.appendChild(dom)
   dom.click()
 }
+
+/**
+ * 文件大小 字节 显示 GB MB
+ * @param fileSize
+ */
+export function tranFileSize (fileSize: number): string {
+  let result = ''
+  if (fileSize >= 1073741824) {
+  // B => GB
+    result = fileSize % 1073741824 === 0 ? fileSize / 1073741824 + 'G' : Math.trunc(fileSize / 1073741824) + 'G'
+  } else if (fileSize >= 1048576) {
+  // B => MB
+    result = fileSize % 1048576 === 0 ? fileSize / 1048576 + 'MB' : Math.trunc(fileSize / 1048576) + 'MB'
+  } else if (fileSize >= 1024) {
+  // B => KB
+    result = fileSize % 1024 === 0 ? fileSize / 1024 + 'KB' : Math.trunc(fileSize / 1024) + 'KB'
+  } else {
+    result = fileSize + 'B'
+  }
+  return result
+}
+
 /**
  * 将 el-icond的组件名 AbbCdd 转化为 i-abb-cdd 形式
  */

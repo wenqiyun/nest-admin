@@ -2,17 +2,17 @@
   <div class="btn-list-wrapper">
     <div class="filter-container">
       <div class="filter-item">
-        <el-button @click="addOrEditEvent('add')" :disabled="!currMenu?.id">添加</el-button>
+        <el-button @click="addOrEditEvent('add')" :disabled="!currMenu?.id" v-perm="'system_menus:create'">添加</el-button>
       </div>
     </div>
     <k-table :data="{ list: btnList }" :loading="loading" :is-pager="false" mode="render" border stripe size="mini">
       <el-table-column label="按钮名称" prop="name" align="center"></el-table-column>
       <el-table-column label="唯一编码" prop="code" align="center"></el-table-column>
       <el-table-column label="排序" prop="orderNum" align="center"></el-table-column>
-      <el-table-column label="操作" align="center" width="200">
+      <el-table-column label="操作" align="center" width="200" v-if="isActionPerm">
         <template #default="{ row }">
-          <el-button type="primary" plain size="mini" @click="addOrEditEvent('edit', row)">编辑</el-button>
-          <el-button type="danger" plain size="mini" @click="delBtnFn(row)">删除</el-button>
+          <el-button type="primary" plain size="mini" @click="addOrEditEvent('edit', row)" v-perm="'system_menus:edit'">编辑</el-button>
+          <el-button type="danger" plain size="mini" @click="delBtnFn(row)" v-perm="'system_menus:del'">删除</el-button>
         </template>
       </el-table-column>
     </k-table>
@@ -26,6 +26,7 @@ import { delMenu, getOneMenuBtns, MenuApiResult } from '@/api/menu'
 import { defineComponent, ref, watch } from 'vue'
 import BtnEdit from './BtnEdit.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import hasPerm from '@/utils/perm'
 
 export default defineComponent({
   components: { BtnEdit },
@@ -73,7 +74,7 @@ export default defineComponent({
 
     const currBtn = ref<MenuApiResult>()
     const showEdit = ref<boolean>(false)
-    const addOrEditEvent = (type: 'add' | 'edit', row: MenuApiResult) => {
+    const addOrEditEvent = (type: 'add' | 'edit', row?: MenuApiResult) => {
       if (type === 'add' && !props.currMenu?.id) {
         ElMessage({ message: '请先选择左侧菜单,再添加该菜单下的按钮', type: 'error' })
         return
@@ -85,6 +86,8 @@ export default defineComponent({
     const addOrEditSuccess = () => {
       getOneMenuBtnsFn(props.currMenu.id as string)
     }
+
+    const isActionPerm = hasPerm('system_menus:del') || hasPerm('system_menus:edit')
     return {
       loading,
       btnList,
@@ -92,7 +95,8 @@ export default defineComponent({
       addOrEditEvent,
       delBtnFn,
       currBtn,
-      addOrEditSuccess
+      addOrEditSuccess,
+      isActionPerm
     }
   }
 })

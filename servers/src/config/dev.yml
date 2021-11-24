@@ -12,6 +12,8 @@ app:
     location: '../upload'
     # 文件服务器地址，开发环境
     domain: 'http://localhost:8081'
+    # 文件虚拟路径, 必须以 / 开头， 如 http://localhost:8081/static/****.jpg  , 如果不需要则 设置 ''
+    serveRoot: '/static'
 # 数据库配置
 db:
   mysql:

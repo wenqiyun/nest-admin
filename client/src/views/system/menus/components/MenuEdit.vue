@@ -1,9 +1,9 @@
 <template>
   <div class="menu-form-wrapper" >
     <div class="menu-action">
-      <el-button type="primary" :disabled="isEditStatus || !currMenu?.id" @click="addOrUpdate('edit')">编辑</el-button>
-      <el-button type="danger" :disabled="isEditStatus || !currMenu?.id" @click="delMenuFn">删除</el-button>
-      <el-button :disabled="isEditStatus"  @click="addOrUpdate('add')">添加</el-button>
+      <el-button type="primary" :disabled="isEditStatus || !currMenu?.id" @click="addOrUpdate('edit')" v-perm="'system_menus:edit'">编辑</el-button>
+      <el-button type="danger" :disabled="isEditStatus || !currMenu?.id" @click="delMenuFn" v-perm="'system_menus:del'">删除</el-button>
+      <el-button :disabled="isEditStatus"  @click="addOrUpdate('add')" v-perm="'system_menus:create'">添加</el-button>
     </div>
     <el-form ref="menuFormRef" class="menu-form" :model="menuForm" :rules="menuFormRules" label-width="100px" :disabled="!isEditStatus">
       <el-form-item label="菜单名称" prop="name">

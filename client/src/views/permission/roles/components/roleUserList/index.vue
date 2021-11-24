@@ -3,7 +3,7 @@
     <h3 class="roles__tip clearfix">
       <span>关联用户</span>
       <span class="fr role-user-add">
-        <el-button @click="bindUserEvent" :disabled="!currId">关联用户</el-button>
+        <el-button @click="bindUserEvent" :disabled="!currId" v-perm="'perm_roles:bind'">关联用户</el-button>
       </span>
     </h3>
     <!-- 当前角色关联的用户 -->
@@ -15,7 +15,7 @@
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
       </template>
       <template #actions={row} >
-        <el-button type="danger" plain @click="cancelBindUserEvent(row)">解除关联</el-button>
+        <el-button type="danger" plain @click="cancelBindUserEvent(row)" v-perm="'perm_roles:bind'">解除关联</el-button>
       </template>
     </k-table>
 
@@ -49,13 +49,13 @@ export default defineComponent({
       data: { list: [], total: 0 },
       isPager: true,
       columns: [
-        { label: '头像', prop: 'avatar', type: 'slot' },
+        { label: '头像', prop: 'avatar', slot: true },
         { label: '帐号', prop: 'account' },
         { label: '手机号', prop: 'phoneNum' },
         { label: '邮箱', prop: 'email' },
-        { label: '状态', prop: 'status', type: 'slot', width: '90' },
-        { label: '注册时间', prop: 'createDate', width: '90' },
-        { label: '操作', prop: 'actions', type: 'slot', width: '120' }
+        { label: '状态', prop: 'status', slot: true, width: '90' },
+        { label: '注册时间', prop: 'createDate', width: '90', formatter: (row: UserApiResult) => jsonTimeFormat(row.createDate as string) },
+        { label: '操作', prop: 'actions', slot: true, width: '120' }
       ],
       index: true
     })
@@ -69,11 +69,6 @@ export default defineComponent({
       loading.value = false
       if (res.code === 200) {
         const data = res.data as ListResultData<UserApiResult>
-        data.list = data.list.map((v
-        ) => {
-          v.createDate = jsonTimeFormat(v.createDate as string)
-          return v
-        })
         userData.value.data = data
       } else {
         ElMessage({ message: res.msg, type: 'error' })

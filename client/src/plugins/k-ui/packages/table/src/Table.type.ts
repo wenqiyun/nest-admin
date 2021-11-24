@@ -1,5 +1,5 @@
 import { PaginationProps } from 'element-plus'
-
+// import { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
 export interface IPager {
   page: number,
   size: number
@@ -13,7 +13,34 @@ export interface IIndexMethod {
   (index: number): number
 }
 
-// import type { ExtractPropTypes } from 'vue'
+export interface IKTableColumn {
+  label?: string
+  align?: 'left' | 'right' | 'center'
+  headerAlign?: 'left' | 'right' | 'center'
+  prop?: string
+  columnKey?: string
+  width?: string | number
+  minWidth?: string | number
+  fixed?: true | 'left' | 'right'
+  renderHeader?: any
+  sortable?: boolean | 'custom'
+  sortMethod?: any
+  sortBy?: any
+  sortOrders?: Array<any>
+  resizable?: boolean
+  formatter?: any
+  className?: string
+  labelClassName?: string
+  selectable?: any
+  reseveSelection?: boolean
+  filters?: Array<any>
+  filterPlacement?: string
+  filterMultiple?: boolean
+  filterMethod?: any
+  filteredValue?: Array<any>
+  slot?: boolean
+  default?: string
+}
 
 export interface IKTableProps<T> {
   mode?: 'config' | 'render',
@@ -28,7 +55,7 @@ export interface IKTableProps<T> {
   pageNum?: number,
   pageSize?: number,
   pagination?: PaginationProps,
-  columns?: Array<unknown>,
+  columns: IKTableColumn[],
   selection?: boolean,
   index?: boolean,
   indexMethod?: IIndexMethod,

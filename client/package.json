@@ -22,7 +22,6 @@
       "jwt-decode": "^3.1.2",
       "path-to-regexp": "^6.2.0",
       "register-service-worker": "^1.7.2",
-      "ts-debounce": "^4.0.0",
       "vue": "^3.2.22",
       "vue-class-component": "^8.0.0-rc.1",
       "vue-cropper": "^1.0.2",

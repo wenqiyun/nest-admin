@@ -13,7 +13,7 @@ export type RootState = {
   user: UserState
 }
 
-export const store = createStore({
+export const store = createStore<RootState>({
   modules: {
     app: AppModule,
     tagsView: TagsViewModule,

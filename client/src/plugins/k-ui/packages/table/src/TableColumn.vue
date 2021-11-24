@@ -8,6 +8,8 @@
 </template>
 
 <script>
+// 没用，封装后，在 el-table 中 使用 KTableColumn 非 props 属性 不生效
+// 之后再找下原因，不使用这个，json 配置模式 不能使用多级表头
 import { defineComponent } from 'vue'
 export default defineComponent({
   name: 'TableColumn',

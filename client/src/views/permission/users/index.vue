@@ -17,12 +17,12 @@
 
       <div class="filter-action-wrapper filter-item">
         <el-button type="primary" @click="searchEvent">搜索</el-button>
-        <el-button type="text" @click="loadingMoreEvent" style="margin-left: 20px;">{{ loadingMore ? '收起' : '更多' }}</el-button>
+        <el-button type="text" @click="loadingMoreEvent" style="margin-left: 20px;" v-perm="'perm_users:createMultUser'">{{ loadingMore ? '收起' : '更多' }}</el-button>
       </div>
 
     </div>
-    <div class="filter-container" v-show="loadingMore">
-      <div class="filter-item" >
+    <div class="filter-container" v-show="loadingMore" v-perm="'perm_users:createMultUser'">
+      <div class="filter-item">
         <el-upload style="display: inline-block;margin-right: 20px;" v-bind="uploadConfig" :show-file-list="false">
           <el-button type="primary">批量上传</el-button>
         </el-upload>
@@ -37,9 +37,9 @@
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
       </template>
       <template  #actions="{ row }">
-        <el-button type="primary" plain @click="showUserEditEvent(row)" v-if="row.status === 1">编辑</el-button>
-        <el-button :type="row.status ? 'danger' : 'success'" plain @click="forbiddenEvent(row)">{{ row.status ? '禁用' : '启用' }}</el-button>
-        <el-button type="warning" plain @click="resetPasswordEvent(row)" v-if="row.status === 1">重置密码</el-button>
+        <el-button type="primary" plain @click="showUserEditEvent(row)" v-if="row.status === 1" v-perm="'perm_users:edit'">编辑</el-button>
+        <el-button :type="row.status ? 'danger' : 'success'" plain @click="forbiddenEvent(row)" v-perm="'perm_users:updateStatus'">{{ row.status ? '禁用' : '启用' }}</el-button>
+        <el-button type="warning" plain @click="resetPasswordEvent(row)" v-if="row.status === 1" v-perm="'perm_users:resetPw'">重置密码</el-button>
       </template>
     </k-table>
 
@@ -58,29 +58,34 @@ import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateS
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { downLoad, jsonTimeFormat } from '@/utils/index'
 import { ListResultData, Pagination } from '@/common/types/apiResult.type'
-import { IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+import { IKTableColumn, IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
 import appConfig from '@/config/index'
 import { getToken } from '@/utils/storage'
+import hasPerm from '@/utils/perm'
 
 export default defineComponent({
   components: { EditUser, UploadErr },
   setup () {
+    const hasActionPerm = hasPerm('perm_users:edit') || hasPerm('perm_users:updateStatus') || hasPerm('perm_users:resetPw')
+
     const userData = ref<IKTableProps<UserApiResult>>({
       mode: 'config',
       data: { list: [], total: 0 },
       auto: true,
       isPager: true,
       columns: [
-        { label: '头像', prop: 'avatar', type: 'slot' },
+        { label: '头像', prop: 'avatar', slot: true },
         { label: '帐号', prop: 'account' },
         { label: '手机号', prop: 'phoneNum', default: '--' },
         { label: '邮箱', prop: 'email', default: '--' },
-        { label: '状态', prop: 'status', type: 'slot', width: '90' },
-        { label: '注册时间', prop: 'createDate', width: '90' },
-        { label: '操作', prop: 'actions', type: 'slot', width: '250', fixed: 'right' }
+        { label: '状态', prop: 'status', slot: true, width: '90' },
+        { label: '注册时间', prop: 'createDate', width: '90', formatter: (row: UserApiResult) => jsonTimeFormat(row.createDate as string) }
       ],
       index: true
     })
+
+    hasActionPerm && userData.value.columns.push({ label: '操作', prop: 'actions', slot: true, width: '250', fixed: 'right' })
+
     const loading = ref<boolean>(false)
 
     const searchReq = ref<QueryUserList>({
@@ -97,10 +102,6 @@ export default defineComponent({
       loading.value = false
       if (res.code === 200) {
         const data = res.data as ListResultData<UserApiResult>
-        data.list = data.list.map((v) => {
-          v.createDate = jsonTimeFormat(v.createDate as string)
-          return v
-        })
         userData.value.data = data
       } else {
         ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })

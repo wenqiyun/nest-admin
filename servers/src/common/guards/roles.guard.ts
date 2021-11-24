@@ -7,6 +7,7 @@ import { ALLOW_ANON } from '../decorators/allow-anon.decorator'
 import { ALLOW_NO_PERM } from '../decorators/perm.decorator'
 
 import { PermService } from '../../system/perm/perm.service'
+import { UserType } from '../enums/user.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -45,7 +46,10 @@ export class RolesGuard implements CanActivate {
     const user = req.user
     // 没有挈带 token 直接返回 false
     if (!user) return false
-    const userPermApi = await this.permService.findAppAllRoutesBySwaggerApi()
+    // 超管
+    if (user.type === UserType.SUPER_ADMIN) return true
+
+    const userPermApi = await this.permService.findUserPerms(user.id)
     const index = userPermApi.findIndex(route => {
       // 请求方法类型相同
       if (req.method.toUpperCase() === route.method.toUpperCase()) {

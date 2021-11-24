@@ -8,11 +8,11 @@ import { defineComponent } from "vue";
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
 import { ListResultData, Pagination } from '@/common/types/apiResult.type'
 import { getFileList as getFileListApi, OssApiResult } from '@/api/oss'
-import { jsonTimeFormat } from '@/utils/index'
-import { ElMessage } from 'element-plus'
+import { jsonTimeFormat, tranFileSize } from '@/utils/index'
 
 export default defineComponent({
   setup () {
@@ -23,9 +23,9 @@ export default defineComponent({
       isPager: true,
       columns: [
         { label: '文件', prop: 'url' },
-        { label: '大小', prop: 'size' },
+        { label: '大小', prop: 'size', formatter: (row: OssApiResult) => tranFileSize(row.size) },
         { label: '上传用户', prop: 'userAccount' },
-        { label: '上传时间', prop: 'createDate' }
+        { label: '上传时间', prop: 'createDate', formatter: (row: OssApiResult) => jsonTimeFormat(row.createDate) }
       ],
       index: true
     })
@@ -37,10 +37,6 @@ export default defineComponent({
       loading.value = false
       if (res?.code === 200) {
         const data = res.data as ListResultData<OssApiResult>
-        data.list = data.list.map(v => {
-          v.createDate = jsonTimeFormat(v.createDate)
-          return v
-        })
         fileData.value.data = data
       } else {
         ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })

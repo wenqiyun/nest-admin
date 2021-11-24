@@ -6,7 +6,7 @@ export interface OssApiResult extends BaseResult {
   // 文件路径
   url: string
   // 文件size
-  size: string
+  size: number
   // 文件 mimetype
   type: string
   // 注释

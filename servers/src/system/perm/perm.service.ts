@@ -45,7 +45,7 @@ export class PermService {
       .where('ur.user_id = :userId and mp.menu_id != 1', { userId })
       .getRawMany()
 
-    return perms.map(v => ({ apiUrl: v.mp_api_url, apiMethod: v.mp_api_method }))
+    return perms.map(v => ({ path: v.mp_api_url, method: v.mp_api_method }))
   }
 
   async findUserMenus(userId: string) {
