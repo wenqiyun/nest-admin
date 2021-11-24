@@ -14,6 +14,7 @@ import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { AppHttpCode } from '../../common/enums/code.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { validPhone, validEmail } from '../../common/utils/validate'
+import { UserType } from '../../common/enums/user.enum'
 
 import { UserEntity } from './user.entity'
 import { UserRoleEntity } from './user-role.entity'
@@ -32,19 +33,19 @@ export class UserService {
     @InjectRepository(UserRoleEntity)
     private readonly userRoleRepo: Repository<UserRoleEntity>,
     private readonly config: ConfigService,
-    private readonly redisUtilService: RedisUtilService,
+    private readonly redisService: RedisUtilService,
     private readonly jwtService: JwtService
   ) {}
 
   async findOneById(id: string): Promise<UserEntity> {
     const redisKey = getRedisKey(RedisKeyPrefix.USER_INFO, id)
-    const result = await this.redisUtilService.hGetAll(redisKey)
+    const result = await this.redisService.hGetAll(redisKey)
     // plainToClass 去除 password slat
     let user = plainToClass(UserEntity, result, { enableImplicitConversion: true })
     if (!user?.id) {
       user = await this.userRepo.findOne(id)
       user = plainToClass(UserEntity, { ...user }, { enableImplicitConversion: true })
-      await this.redisUtilService.hmset(redisKey, classToPlain(user), ms(this.config.get<string>('jwt.expiresin')) / 1000)
+      await this.redisService.hmset(redisKey, classToPlain(user), ms(this.config.get<string>('jwt.expiresin')) / 1000)
     }
     user.password = ''
     user.salt = ''
@@ -208,7 +209,7 @@ export class UserService {
       return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, dto)
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后重试')
-    await this.redisUtilService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), dto)
+    await this.redisService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), dto)
     // redis 更新用户信息
     return ResultData.ok()
   }
@@ -219,14 +220,16 @@ export class UserService {
    * @param status
    * @returns
    */
-  async updateStatus(userId: string, status: 0 | 1): Promise<ResultData> {
+  async updateStatus(userId: string, status: 0 | 1, currUserId: string): Promise<ResultData> {
+    if (userId === currUserId) return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '当前登录用户状态不可更改')
     const existing = await this.findOneById(userId)
     if (!existing) ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
+    if (existing.type === UserType.SUPER_ADMIN) return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '超管帐号状态禁止更改')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, { id: userId, status })
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后尝试')
-    await this.redisUtilService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, userId), { status })
+    await this.redisService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, userId), { status })
     return ResultData.ok()
   }
 
@@ -261,7 +264,7 @@ export class UserService {
       return result
     })
     if (!res) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '用户更新角色失败')
-    await this.redisUtilService.set(getRedisKey(RedisKeyPrefix.USER_ROLE, dto.userId), JSON.stringify(dto.roleIds))
+    await this.redisService.set(getRedisKey(RedisKeyPrefix.USER_ROLE, dto.userId), JSON.stringify(dto.roleIds))
     return ResultData.ok()
   }
 
@@ -347,12 +350,12 @@ export class UserService {
   /** 根据用户id 查询角色 id 集合 */
   async findUserRoleByUserId(id: string): Promise<number[]> {
     const userRoleKey = getRedisKey(RedisKeyPrefix.USER_ROLE, id)
-    const result = await this.redisUtilService.get(userRoleKey)
+    const result = await this.redisService.get(userRoleKey)
     if (result) return JSON.parse(result)
     else {
       const roles = await this.userRoleRepo.find({ select: ['roleId'], where: { userId: id } })
       const roleIds = roles.map((v) => v.roleId)
-      await this.redisUtilService.set(userRoleKey, JSON.stringify(roleIds))
+      await this.redisService.set(userRoleKey, JSON.stringify(roleIds))
       return roleIds
     }
   }

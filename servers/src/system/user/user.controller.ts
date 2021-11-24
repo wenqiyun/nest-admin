@@ -53,8 +53,8 @@ export class UserController {
 
   @Put('/status/change')
   @ApiOperation({ summary: '更改用户可用状态' })
-  async updateStatus (@Body() dto: UpdateStatusDto): Promise<ResultData> {
-    return await this.userService.updateStatus(dto.id, dto.status)
+  async updateStatus (@Body() dto: UpdateStatusDto, @Req() req): Promise<ResultData> {
+    return await this.userService.updateStatus(dto.id, dto.status, req.user.id)
   }
 
   @Put('/password/reset/:userId')

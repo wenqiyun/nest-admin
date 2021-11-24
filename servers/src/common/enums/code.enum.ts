@@ -16,6 +16,8 @@ export enum AppHttpCode {
   USER_PASSWORD_INVALID = 200002,
   /** 帐号被禁用 */
   USER_ACCOUNT_FORBIDDEN = 200003,
+  /** 用户状态更改，当前用户 与 修改用户一致 */
+  USER_FORBIDDEN_UPDATE = 20004,
   /** 用户不存在 */
   USER_NOT_FOUND = 200004,
   /** 角色未找到 */
