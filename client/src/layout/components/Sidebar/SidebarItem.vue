@@ -1,6 +1,6 @@
 <template>
-  <template v-if="!item.hidden && hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren) && !item.alwaysShow">
-    <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
+  <template v-if="!item.hidden && hasOneShowingChild(item.children,item) && ( onlyOneChild && (!onlyOneChild.children || onlyOneChild.noShowingChildren)) && !item.alwaysShow">
+    <app-link v-if="onlyOneChild && onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
       <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
         <MenuItemIcon :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)"></MenuItemIcon>
         <template #title>
@@ -13,7 +13,7 @@
   <el-sub-menu v-else-if="!item.hidden" :index="resolvePath(item.path)" >
     <template #title>
       <MenuItemIcon :icon="item.meta && item.meta.icon"></MenuItemIcon>
-      <span>{{ item.meta.title }}</span>
+      <span>{{ item.meta && item.meta.title }}</span>
     </template>
     <sidebar-item
       v-for="child in item.children"
@@ -62,7 +62,7 @@ export default defineComponent({
     //   onlyOneChild: null
     // })
     const { basePath } = toRefs<ISidebarItemProps>(props)
-    const onlyOneChild = ref<AppRouteRecordRaw | null>(null)
+    const onlyOneChild = ref<AppRouteRecordRaw>()
     const hasOneShowingChild = (children: Array<AppRouteRecordRaw> = [], parent: AppRouteRecordRaw): boolean => {
       const showingChildren = children.filter(route => {
         if (route.hidden) return false
