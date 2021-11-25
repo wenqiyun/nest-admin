@@ -19,7 +19,13 @@ export interface OssApiResult extends BaseResult {
   createDate: string
 }
 
-export function getFileList (params: Pagination): Promise<ResultData<OssApiResult>> {
+export interface findOssList extends Pagination {
+  startDay?: string
+
+  endDay?: string
+}
+
+export function getFileList (params: findOssList): Promise<ResultData<OssApiResult>> {
   return http.request<ResultData<OssApiResult>>({
     url: `${config.api.baseUrl}/oss/list`,
     method: ApiMethodContants.GET,

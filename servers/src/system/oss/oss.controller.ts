@@ -3,9 +3,9 @@ import { FileInterceptor } from "@nestjs/platform-express"
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
-import { ReqListQuery } from '../../common/utils/req-list-query'
 
 import { OssService } from "./oss.service"
+import { FindOssDto } from './dto/find-oss.dto';
 
 @ApiTags('文件存储相关')
 @Controller('oss')
@@ -40,8 +40,8 @@ export class OssController {
 
   @Get('list')
   @ApiOperation({ summary: '查询文件上传列表' })
-  async findList (@Query() pager: ReqListQuery) {
-    return await this.ossService.findList(pager)
+  async findList (@Query() search: FindOssDto) {
+    return await this.ossService.findList(search)
   }
 
 }

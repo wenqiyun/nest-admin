@@ -2,17 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm'
 import { plainToClass, classToPlain } from 'class-transformer';
-import { getManager, Repository } from 'typeorm'
+import { Between, getManager, Repository } from 'typeorm'
 import * as fs from 'fs'
 import * as uuid from 'uuid'
 import path from 'path'
 import mime from 'mime-types'
 
-import { ReqListQuery } from '../../common/utils/req-list-query'
 import { ResultData } from '../../common/utils/result'
 import { AppHttpCode } from '../../common/enums/code.enum'
 
 import { OssEntity } from './oss.entity'
+import { FindOssDto } from './dto/find-oss.dto';
 
 @Injectable()
 export class OssService {
@@ -60,9 +60,10 @@ export class OssService {
     return ResultData.ok(classToPlain(result))
   }
 
-  async findList (pager: ReqListQuery): Promise<ResultData> {
-    const { size, page } = pager
-    const res = await this.ossRepo.findAndCount({ order: { id: 'DESC' }, skip: size * (page - 1), take: size })
+  async findList (search: FindOssDto): Promise<ResultData> {
+    const { size, page, startDay, endDay } = search
+    const where = startDay && endDay ? { createDate: Between(`${startDay} 00:00:00`, `${endDay} 23:59:59`) } : {}
+    const res = await this.ossRepo.findAndCount({ order: { id: 'DESC' }, skip: size * (page - 1), take: size, where })
     return ResultData.ok({ list: classToPlain(res[0]), total: res[1] })
   }
 }
