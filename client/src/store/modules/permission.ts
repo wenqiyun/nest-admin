@@ -44,15 +44,19 @@ interface PermissionAction {
   generaterRoutes({ commit }: AugmentedActionContext, menus: MenuApiResult[]): Promise<AppRouteRecordRaw[]>
 }
 
+// 判断对比 路由 name 与 后端返回的 菜单唯一标识是否一致
 const hasPermission = (route: AppRouteRecordRaw, menus: MenuApiResult[]): boolean => {
   if (route.name) {
     return menus.some(menu => menu.code === route.name)
   }
+  // route 设置 hidden 路由隐藏的 不需要判断权限
   if (route.hidden) return true
+  // 当父级路由不匹配，但该路由子级路由有权限时 父级路由自动拥有权限
   if (route.children && route.children.length > 0) return hasPermission(route.children[0], menus)
   return false
 }
 
+// 递归遍历路由权限
 const filterAsyncRoutes = (routes: AppRouteRecordRaw[], menus: MenuApiResult[]): AppRouteRecordRaw[] => {
   const res: AppRouteRecordRaw[] = []
   routes.forEach(route => {

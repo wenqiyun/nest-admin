@@ -24,7 +24,7 @@
 核心模块包括： 用户、角色、菜单、日志、文件管理等功能。
 
 
-#### 本地部署
+#### 本地开发
 1. 通过 git 下载源码
 2. 执行 db/kapok.sql 文件，初始化数据
 3. 修改 config/dev.yml 文件， 更改 mysql 账号和密码，库
@@ -37,21 +37,21 @@
 
 #### 效果图
 
-![image](./upload/user.png)
+![image](./docs/images/user.png)
 
 
-![image](./upload/dept.png)
+![image](./docs/images/dept.png)
 
 
-![image](./upload/role.png)
+![image](./docs/images/role.png)
 
 
-![image](./upload/menu.png)
+![image](./docs/images/menu.png)
 
 
-![image](./upload/oss.png)
+![image](./docs/images/oss.png)
 
 
 如果你觉得这个项目帮助到了你，你可以帮作者买一杯果汁表示鼓励
-![image](./upload/pay.jpg)
+![image](./docs/images/pay.jpg)
 

@@ -1,3 +1,18 @@
+为了方便管理维护，统一的请求处理都放在 ```src/api``` 文件夹中，并且按照 model 维度进行拆分文件，如：
+
+```javascript
+api/
+  menu.ts
+  oss.ts
+  perm.ts
+  role.ts
+  user.ts
+```
+
+#### request.ts
+其中， ```src/utils/request.ts``` 是基于 axios 的封装，便于统一处理 POST、GET 等请求参数，请求头，以及错误处理等，它封装了全局 ```request 拦截器```、```response 拦截器```、```统一做了超时处理```、```token刷新策略``` 等。具体查看以下代码：
+
+```javascript
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessageBox } from 'element-plus'
 import appConfig from '@/config/index'
@@ -49,6 +64,7 @@ class HttpService {
     }, async (error: AxiosError<any>) => {
       const response = error.response
       const config = response?.config as AxiosRequestConfig
+      // 拦截 401， 刷新 token
       if (response?.status === 401) {
         if (getRTExp() <= Date.now()) {
           // 刷新token 过期了
@@ -110,3 +126,5 @@ const service = new HttpService({
 })
 
 export default service
+
+```

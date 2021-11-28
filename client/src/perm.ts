@@ -8,7 +8,8 @@ import { UserActionContants } from './store/modules/user'
 const whiteList = ['/login']
 
 router.beforeEach(async (to, from, next) => {
-  document.title = `${to.meta.title}-Nest Admin`
+  const toMetaTitle = to.meta?.title || ''
+  document.title = `${toMetaTitle ? (toMetaTitle + '-') : ''}Nest Admin`
   const hasToken = getToken()
   if (hasToken) {
     if (to.path === '/login') {

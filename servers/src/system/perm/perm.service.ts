@@ -10,7 +10,7 @@ import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { ResultData } from '../../common/utils/result'
 import { getRedisKey } from '../../common/utils/utils'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
-import { IRoute } from '../../common/interface/route.interface'
+import { IRoute } from '../../common/interfaces/route.interface'
 import { UserType } from '../../common/enums/user.enum'
 
 import { MenuEntity } from '../menu/menu.entity'
