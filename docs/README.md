@@ -27,6 +27,9 @@
 #### 如何学习本项目
 本项目分别从前端角度，后端角度提供了非常详细的文档，以及代码注释，建议可以从头开始看一遍。
 
+> [!TIP]
+> 如果您对 [Nestjs](https://docs.nestjs.com)、[Vue](https://v3.cn.vuejs.org/guide/introduction.html) 不太了解，请先移步官方文档
+
 #### 如何加入我们
 Nest-Admin 还在持续更新中，本项目欢迎您的参与，共同维护，将项目做到更强。
 

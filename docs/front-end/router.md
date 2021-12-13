@@ -23,7 +23,7 @@ meta: {
 ```
 #### 示例
 
-```
+```javascript
 {
   path: '/perm',
   component: Layout,
@@ -68,7 +68,7 @@ meta: {
 > 当 侧边栏需要跳转外链时，只需你在 ```path``` 中填写合法的 url 路径，当你点击侧边栏时就会新开浏览器标签页打开
 
 例如：
-```
+```javascript
 {
   path: 'external-link',
   component: Layout,

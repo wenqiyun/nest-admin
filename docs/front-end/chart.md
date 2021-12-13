@@ -90,7 +90,8 @@ export default defineComponent({
 </style>
 
 ```
-
+> [!WARNING]
+> Echarts 实例接收只能使用普通变量,不能使用 vue 实例属性，会导致部分 echarts 方法不可使用，属性不存在等问题。
 
 #### 其他
 当然社区里的其他图表如 [d3](https://d3js.org/) , [Chart.js](https://www.chartjs.org/) , [G2](https://antv.vision) 等封装方法都是大同小异差不多的，这里就不展开了。
