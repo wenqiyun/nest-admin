@@ -8,7 +8,7 @@ export class MenuEntity {
   public id: string
 
   @ApiProperty({ description: '父级菜单id' })
-  @Column({ name: 'parent_id' })
+  @Column({ name: 'parent_id', type: 'bigint' })
   public parentId: string
 
   @ApiProperty({ description: '菜单名称' })

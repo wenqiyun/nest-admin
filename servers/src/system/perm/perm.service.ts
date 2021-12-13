@@ -10,10 +10,10 @@ import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { ResultData } from '../../common/utils/result'
 import { getRedisKey } from '../../common/utils/utils'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
-import { IRoute } from '../../common/interfaces/route.interface'
 import { UserType } from '../../common/enums/user.enum'
 
 import { MenuEntity } from '../menu/menu.entity'
+import { RouteDto } from './dto/route.dto';
 
 @Injectable()
 export class PermService {
@@ -46,7 +46,7 @@ export class PermService {
    * @param userId
    * @returns
    */
-  async findUserPerms(userId: string): Promise<IRoute[]> {
+  async findUserPerms(userId: string): Promise<RouteDto[]> {
     // mp.menu_id != 1 去掉 有些角色可能没有菜单， 查询的时候 为 null, 不能直接 ！null
     const redisKey = getRedisKey(RedisKeyPrefix.USER_PERM, userId)
     const result = await this.redisService.get(redisKey)
@@ -119,7 +119,7 @@ export class PermService {
     return ResultData.ok(routes)
   }
 
-  async findAppAllRoutesBySwaggerApi(): Promise<IRoute[]> {
+  async findAppAllRoutesBySwaggerApi(): Promise<RouteDto[]> {
     // 暂时这样
     const { data } = await lastValueFrom(this.http.get(`http://localhost:${this.config.get('app.port')}/api/docs-json`))
     const routes = []

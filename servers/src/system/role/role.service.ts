@@ -13,7 +13,6 @@ import { RoleEntity } from './role.entity'
 import { RoleMenuEntity } from './role-menu.entity'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { FindRoleListDto } from './dto/find-role-list.dto'
 import { UserEntity } from '../user/user.entity';
 
 

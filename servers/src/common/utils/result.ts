@@ -1,5 +1,4 @@
-import { ApiResponseProperty } from '@nestjs/swagger'
-
+import { ApiProperty } from '@nestjs/swagger'
 export class ResultData {
   constructor(code = 200, msg?: string, data?: any) {
     this.code = code
@@ -7,13 +6,12 @@ export class ResultData {
     this.data = data || null
   }
 
-  @ApiResponseProperty({ type: 'number' })
+  @ApiProperty({ type: 'number', default: 200 })
   code: number
 
-  @ApiResponseProperty({ type: 'string' })
+  @ApiProperty({ type: 'string', default: 'ok' })
   msg?: string
 
-  @ApiResponseProperty()
   data?: any
 
   static ok(data?: any, msg?: string): ResultData {
