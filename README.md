@@ -38,21 +38,21 @@
 
 #### 效果图
 
-![image](./upload/images/user.png)
+![image](./upload/user.png)
 
 
-![image](./upload/images/dept.png)
+![image](./upload/dept.png)
 
 
-![image](./upload/images/role.png)
+![image](./upload/role.png)
 
 
-![image](./upload/images/menu.png)
+![image](./upload/menu.png)
 
 
-![image](./upload/images/oss.png)
+![image](./upload//oss.png)
 
 
 如果你觉得这个项目帮助到了你，你可以帮作者买一杯果汁表示鼓励
-![image](./upload/images/pay.jpg)
+![image](./upload/pay.jpg)
 
