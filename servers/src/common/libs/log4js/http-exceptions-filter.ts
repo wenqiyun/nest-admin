@@ -1,5 +1,5 @@
-import { Catch, HttpException, ExceptionFilter, ArgumentsHost } from '@nestjs/common';
-import { Logger } from './log4j.util';
+import { Catch, HttpException, ExceptionFilter, ArgumentsHost } from '@nestjs/common'
+import { Logger } from './log4j.util'
 
 @Catch(HttpException)
 export class HttpExceptionsFilter implements ExceptionFilter {

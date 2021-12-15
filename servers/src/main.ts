@@ -4,17 +4,17 @@ import helmet from 'helmet'
 import express from 'express'
 
 import { NestFactory } from '@nestjs/core'
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { ConfigService } from '@nestjs/config'
 
 import { AppModule } from './app.module'
 
 import { logger } from './common/libs/log4js/logger.middleware'
-import { Logger } from './common/libs/log4js/log4j.util';
-import { TransformInterceptor } from './common/libs/log4js/transform.interceptor';
-import { HttpExceptionsFilter } from './common/libs/log4js/http-exceptions-filter';
-import { ExceptionsFilter } from './common/libs/log4js/exceptions-filter';
+import { Logger } from './common/libs/log4js/log4j.util'
+import { TransformInterceptor } from './common/libs/log4js/transform.interceptor'
+import { HttpExceptionsFilter } from './common/libs/log4js/http-exceptions-filter'
+import { ExceptionsFilter } from './common/libs/log4js/exceptions-filter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true })

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, getManager, Like, getConnection } from 'typeorm';
+import { Repository, getManager, Like, getConnection } from 'typeorm'
 import { plainToClass } from 'class-transformer'
 
 import { AppHttpCode } from '../../common/enums/code.enum'
@@ -13,7 +13,7 @@ import { RoleEntity } from './role.entity'
 import { RoleMenuEntity } from './role-menu.entity'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { UserEntity } from '../user/user.entity';
+import { UserEntity } from '../user/user.entity'
 
 
 @Injectable()

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { plainToClass, classToPlain } from 'class-transformer';
+import { plainToClass, classToPlain } from 'class-transformer'
 import { Between, getManager, Repository } from 'typeorm'
 import * as fs from 'fs'
 import * as uuid from 'uuid'
@@ -12,7 +12,7 @@ import { ResultData } from '../../common/utils/result'
 import { AppHttpCode } from '../../common/enums/code.enum'
 
 import { OssEntity } from './oss.entity'
-import { FindOssDto } from './dto/find-oss.dto';
+import { FindOssDto } from './dto/find-oss.dto'
 
 @Injectable()
 export class OssService {

@@ -1,4 +1,4 @@
-import { CanActivate, Inject, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
+import { CanActivate, Inject, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
 import { pathToRegexp } from 'path-to-regexp'
@@ -7,7 +7,7 @@ import { ALLOW_ANON } from '../decorators/allow-anon.decorator'
 import { ALLOW_NO_PERM } from '../decorators/perm.decorator'
 
 import { PermService } from '../../system/perm/perm.service'
-import { UserType } from '../enums/user.enum';
+import { UserType } from '../enums/user.enum'
 
 @Injectable()
 export class RolesGuard implements CanActivate {

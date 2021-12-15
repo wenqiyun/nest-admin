@@ -1,5 +1,5 @@
-import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpCode, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
+import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpCode, Req } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, ApiExtraModels } from '@nestjs/swagger'
 import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'

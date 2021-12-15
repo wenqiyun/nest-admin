@@ -1,13 +1,13 @@
-import { Controller, Get, Post, UploadedFile, UseInterceptors, Query, HttpCode, Body, Req } from '@nestjs/common';
+import { Controller, Get, Post, UploadedFile, UseInterceptors, Query, HttpCode, Body, Req } from '@nestjs/common'
 import { FileInterceptor } from "@nestjs/platform-express"
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
 
 import { OssService } from "./oss.service"
-import { FindOssDto } from './dto/find-oss.dto';
-import { ApiResult } from '../../common/decorators/api-result.decorator';
-import { OssEntity } from './oss.entity';
+import { FindOssDto } from './dto/find-oss.dto'
+import { ApiResult } from '../../common/decorators/api-result.decorator'
+import { OssEntity } from './oss.entity'
 
 @ApiTags('文件存储相关')
 @Controller('oss')

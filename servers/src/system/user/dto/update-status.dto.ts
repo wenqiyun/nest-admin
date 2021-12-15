@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsNotEmpty, IsIn, IsString } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsIn, IsString } from 'class-validator'
 
 export class UpdateStatusDto {
   @ApiProperty({ description: '用户编码' })

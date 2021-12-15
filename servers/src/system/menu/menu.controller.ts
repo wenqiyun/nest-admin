@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Put, Delete, Param, Query } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiExtraModels } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiExtraModels } from '@nestjs/swagger'
 
 import { ApiResult } from '../../common/decorators/api-result.decorator'
 import { ResultData } from '../../common/utils/result'

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { getManager, Repository, In } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
-import { plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer'
 
 import { ResultData } from '../../common/utils/result'
 import { AppHttpCode } from '../../common/enums/code.enum'

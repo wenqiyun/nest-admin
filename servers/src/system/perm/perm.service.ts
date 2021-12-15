@@ -13,7 +13,7 @@ import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { UserType } from '../../common/enums/user.enum'
 
 import { MenuEntity } from '../menu/menu.entity'
-import { RouteDto } from './dto/route.dto';
+import { RouteDto } from './dto/route.dto'
 
 @Injectable()
 export class PermService {

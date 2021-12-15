@@ -1,8 +1,9 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels } from '@nestjs/swagger';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common'
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
-import { AllowAnon } from '../../common/decorators/allow-anon.decorator';
+import { AllowAnon } from '../../common/decorators/allow-anon.decorator'
+import { ApiResult } from '../../common/decorators/api-result.decorator'
 
 import { UserEntity } from './user.entity'
 import { UserService } from './user.service'
@@ -10,7 +11,6 @@ import { UserService } from './user.service'
 import { LoginUser } from './dto/login-user.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { CreateTokenDto } from './dto/create-token.dto'
-import { ApiResult } from '../../common/decorators/api-result.decorator';
 
 @ApiTags('登录注册')
 @ApiExtraModels(ResultData, UserEntity, CreateTokenDto)

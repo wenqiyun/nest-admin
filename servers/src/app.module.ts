@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { RedisModuleOptions } from 'nestjs-redis'
-import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-static';
+import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-static'
 import { APP_GUARD } from '@nestjs/core'
 import path from 'path'
 
