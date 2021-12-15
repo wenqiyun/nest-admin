@@ -1,50 +1,44 @@
-// https://eslint.org/docs/user-guide/configuring
-
-/**
- * 
- * "off"或者0    //关闭规则关闭
- *  "warn"或者1    //在打开的规则作为警告（不影响退出代码）
- * "error"或者2    //把规则作为一个错误（退出代码触发时为1
- */
-
 module.exports = {
   root: true,
-  parserOptions: {
-    parser: 'babel-eslint'
-  },
   env: {
-    browser: true,
+    node: true
   },
   extends: [
-    // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
-    // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
-    'plugin:vue/essential', 
-    // https://github.com/standard/standard/blob/master/docs/RULES-en.md
-    'standard'
+    'plugin:vue/vue3-essential',
+    '@vue/standard',
+    '@vue/typescript/recommended'
   ],
-  // required to lint *.vue files
-  plugins: [
-    'vue'
-  ],
-  // add your custom rules here
+  parserOptions: {
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+      tsx: true
+    },
+    ecmaVersion: 2020
+  },
   rules: {
-    'vue/require-component-is': 'off',
-    'vue/no-parsing-error': [2, { 'x-invalid-end-tag': false }],
-    // allow async-await
-    'generator-star-spacing': 'off',
-    'no-mixed-operators':'off',
-    // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    // 允许 短路求值， if else
-    'no-unused-expressions': [2, { 'allowShortCircuit': true, 'allowTernary': true }],
-    // 驼峰命名法
-    'camelcase': [1, { 'properties': 'always' }],
-    // 允许 a['v'] 表示键 方括号
-    'dot-notation': [0, { 'allowKeywords': false }], 
-    // 允许在条件语句中使用复制语句
-    'no-cond-assign': 0,
-    // 禁用 var 声明变量，使用 let const 代替， 某些外部引入请在文件头申明可使用
-    'no-var': 2,
-    'no-useless-escape': 0 // 正则中需要转义等特殊字符
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    '@typescript-eslint/interface-name-prefix': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/semi': [2, 'never'],
+    '@typescript-eslint/no-unused-vars': 0,
+    'symbol-description': 0,
+    semi: 0,
+    'array-bracket-spacing': [2, 'never'],
+    // 数组和对象键值对最后一个逗号， never参数：不能带末尾的逗号, always参数：必须带末尾的逗号，
+    // always-multiline：多行模式必须带逗号，单行模式不能带逗号
+    // 'comma-dangle': [2, 'never'],
+    // 文件末尾强制换行
+    'eol-last': 2,
+    // vue 组件名 包含多个单词
+    'vue/multi-word-component-names': 0,
+    quotes: [1, 'single'],
+    eqeqeq: [2, 'allow-null'],
+    indent: [2, 2, {
+      SwitchCase: 1
+    }]
   }
 }

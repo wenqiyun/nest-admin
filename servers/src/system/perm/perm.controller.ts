@@ -1,35 +1,40 @@
-import { Controller, Request, Get, UseGuards } from '@nestjs/common'
-import { ApiOperation, ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { Controller, Get, Param, Req } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiExtraModels } from '@nestjs/swagger'
 
-import { Permissions } from '../../common/decorators/permissions.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { ResponseData } from '../../common/interfaces/result.interface'
+import { ApiResult } from '../../common/decorators/api-result.decorator'
+import { ResultData } from '../../common/utils/result'
+
+import { MenuEntity } from '../menu/menu.entity'
 
 import { PermService } from './perm.service'
-import { JwtAuthGuard } from '../auth/auth.guard'
+import { RouteDto } from './dto/route.dto'
 
+@ApiTags('权限路由相关')
 @ApiBearerAuth()
-@ApiTags('基础')
+@ApiExtraModels(ResultData, MenuEntity)
 @Controller('perm')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class PermController {
   constructor(private readonly permService: PermService) {}
 
-  @Get('')
-  @ApiOperation({ summary: '登录之后，查询用户所有菜单按钮权限' })
-  @Permissions('')
-  async getFrontEndPerm(@Request() req): Promise<ResponseData>  {
-    const perms = await this.permService.findUserPerms(req['user'].id)
-    return {
-      statusCode: 200,
-      message: '查询权限成功',
-      data: {
-        dynamicMenu: perms.map((v) => {
-          return { type: v['m_type'], code: v['m_code'] }
-        }),
-        avatar: req['user'].avatar,
-        nickname: req['user'].nickname
-      }
-    }
+  @Get('all')
+  @ApiOperation({ summary: '获取app 所有路由' })
+  async findAppAllRoutes(): Promise<ResultData> {
+    return await this.permService.findAppAllRoutes()
+  }
+
+  @Get('user')
+  @ApiOperation({ summary: '获取用户权限所有接口路由列表'})
+  @ApiResult(RouteDto, true)
+  async findUserRoutes (@Req() req): Promise<ResultData> {
+    const appRoutes = await this.permService.findUserPerms(req.user.id)
+    return ResultData.ok(appRoutes)
+  }
+
+  @Get('menu')
+  @ApiOperation({ summary: '用户权限'})
+  @ApiResult(MenuEntity, true)
+  async findUser (@Req() req): Promise<ResultData> {
+    const menuPerms =  await this.permService.findUserMenus(req.user.id, req.user.type)
+    return ResultData.ok(menuPerms)
   }
 }

@@ -1,68 +1,60 @@
-import { Controller, Get, Param, Body, Post, Put, Delete, UseGuards } from '@nestjs/common'
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
+import { Controller, Post, Body, Get, Put, Delete, Param, Query } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiExtraModels } from '@nestjs/swagger'
 
-import { ResponseData } from '../../common/interfaces/result.interface'
-import { Permissions } from '../../common/decorators/permissions.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { JwtAuthGuard } from '../auth/auth.guard'
+import { ApiResult } from '../../common/decorators/api-result.decorator'
+import { ResultData } from '../../common/utils/result'
 
 import { MenuService } from './menu.service'
+import { MenuEntity } from './menu.entity'
+import { MenuPermEntity } from './menu-perm.entity'
 import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto } from './dto/update-menu.dto'
 
-@ApiBearerAuth()
-@ApiTags('菜单管理')
+@ApiTags('菜单与菜单权限管理')
+@ApiExtraModels(ResultData,MenuEntity,  MenuPermEntity)
 @Controller('menu')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @Get('list/nobtns')
-  @ApiOperation({ summary: '查询所有菜单，不包含按钮，平级结构，用户端转树' })
-  @Permissions('sys_menu:list')
-  async findMenuList(): Promise<ResponseData> {
-    return this.menuService.findMenuList(3)
+  @Get('/all')
+  @ApiOperation({ summary: '得到所有菜单' })
+  @ApiResult(MenuEntity, true)
+  async findAllMenu(@Query('hasBtn') hasBtn: 0 | 1): Promise<ResultData> {
+    return await this.menuService.findAllMenu(!!hasBtn)
   }
 
-  @Get('list')
-  @ApiOperation({ summary: '查询所有菜单，平级结构，用户端转树' })
-  @Permissions('sys_menu:list')
-  async findList(): Promise<ResponseData> {
-    return this.menuService.findMenuList(0)
+  @Get('one/:parentId/btns')
+  @ApiOperation({ summary: '查询单个菜单下的所有按钮' })
+  @ApiResult(MenuEntity, true)
+  async findBtnByParentId(@Param('parentId') parentId: string): Promise<ResultData> {
+    return await this.menuService.findBtnByParentId(parentId)
   }
 
-  @Get(':menuId/btns')
-  @ApiOperation({ summary: '查询菜单下的所属按钮' })
-  @Permissions('sys_menu:list')
-  async findBtnList(@Param('menuId') menuId: number): Promise<ResponseData> {
-    return this.menuService.findBtnList(menuId)
-  }
-
-  @Get(':menuId')
-  @ApiOperation({ summary: '查询菜单详情' })
-  @Permissions('sys_menu:list')
-  async findOne(@Param('menuId') menuId: number): Promise<ResponseData> {
-    return this.menuService.findOne(menuId)
+  @Get('one/:id/menu-perm')
+  @ApiOperation({ summary: '查询单个菜单权限' })
+  @ApiResult(MenuPermEntity, true)
+  async findMenuPerms(@Param('id') id: string): Promise<ResultData> {
+    return await this.menuService.findMenuPerms(id)
   }
 
   @Post()
-  @ApiOperation({ summary: '创建菜单、按钮等' })
-  @Permissions('sys_menu:create')
-  async create(@Body() menuData: CreateMenuDto): Promise<ResponseData> {
-    return this.menuService.create(menuData)
+  @ApiOperation({ summary: '创建菜单' })
+  @ApiResult()
+  async create(@Body() dto: CreateMenuDto): Promise<ResultData> {
+    return await this.menuService.create(dto)
   }
 
   @Put()
-  @ApiOperation({ summary: '更新菜单、按钮信息' })
-  @Permissions('sys_menu:update')
-  async update(@Body() menuData: UpdateMenuDto): Promise<ResponseData> {
-    return this.menuService.update(menuData)
+  @ApiOperation({ summary: '更新菜单' })
+  @ApiResult()
+  async updateMenu(@Body() dto: UpdateMenuDto): Promise<ResultData> {
+    return await this.menuService.updateMenu(dto)
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '删除菜单、按钮信息' })
-  @Permissions('sys_menu:delete')
-  async delete(@Param('id') id: number): Promise<ResponseData> {
-    return this.menuService.delete(id)
+  @ApiOperation({ summary: '删除菜单' })
+  @ApiResult()
+  async delete(@Param('id') id: string): Promise<ResultData> {
+    return await this.menuService.deleteMenu(id)
   }
 }

@@ -1,20 +1,18 @@
 <template>
-  <div class="sidebar-logo-container" :class="{'collapse':collapse}">
-    <transition name="sidebarLogoFade">
-      <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 v-else class="sidebar-title">{{ title }} </h1>
-      </router-link>
-      <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 class="sidebar-title">{{ title }} </h1>
-      </router-link>
-    </transition>
+  <div class="sidebar-logo-container" :class="{ 'collapse': collapse }">
+    <router-link class="sidebar-logo-link" to="/">
+      <img v-if="logo" :src="logo" class="sidebar-logo">
+      <h1 v-if="!collapse || !logo" class="sidebar-title">{{ title }} </h1>
+    </router-link>
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import nestjsLogo from '@/assets/imgs/nest-logo.svg'
+
+export default defineComponent({
   name: 'SidebarLogo',
   props: {
     collapse: {
@@ -25,39 +23,24 @@ export default {
   data () {
     return {
       title: 'nest-admin',
-      logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      logo: nestjsLogo
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>
-.sidebarLogoFade-enter-active {
-  transition: opacity 1.5s;
-}
-
-.sidebarLogoFade-enter,
-.sidebarLogoFade-leave-to {
-  opacity: 0;
-}
 
 .sidebar-logo-container {
   position: relative;
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: #2f3f54;
+  background: #304156;
+  border-bottom: 1px solid rgb(81, 95, 113);
   text-align: center;
   overflow: hidden;
-  &::after {
-    height: 1px;
-    content: " ";
-    width: 100%;
-    display: block;
-    position: absolute;
-    bottom: 0;
-    background: #4c5a6b;
-  }
+
   & .sidebar-logo-link {
     height: 100%;
     width: 100%;
@@ -73,9 +56,8 @@ export default {
       display: inline-block;
       margin: 0;
       color: #fff;
-      font-weight: 600;
       line-height: 50px;
-      font-size: 14px;
+      font-size: 16px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

@@ -1,64 +1,85 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <hamburger id="hamburger-container" class="hamburger-container" :is-active="sidebar.opened" @toggle-click="toggleSideBar"></hamburger>
 
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
 
     <div class="right-menu">
-      <el-dropdown class="avatar-container right-menu-item hover-effect" size="medium">
+      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click" @visible-change="visibleChange">
         <div class="avatar-wrapper">
-          <el-avatar :src="avatar"></el-avatar>
-          <span style="margin-left: 5px;">{{ username }}</span>
-          <!-- <img :src="avatar" class="user-avatar"> -->
-          <i class="el-icon-caret-bottom" />
+          <el-avatar :src="userAvatar" fit="fill" class="user-avatar" shape="circle"></el-avatar>
+          <div class="user-name-wrapper">
+            <span>{{ userAccount }}</span>
+            <svg-icon icon-class="arrow-down" :class="{ 'arrow-down': true, 'arrow-down-show': dropdownShow }"></svg-icon>
+          </div>
         </div>
-        <el-dropdown-menu slot="dropdown">
-          <a target="_blank" href="https://github.com/wenqiyun/nest-admin/">
-            <el-dropdown-item>Github</el-dropdown-item>
-          </a>
-          <el-dropdown-item>
-            <span style="display: block;" @click="updatePw" >修改密码</span>
-          </el-dropdown-item>
-          <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">退出</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <router-link to="/">
+              <el-dropdown-item>首页</el-dropdown-item>
+            </router-link>
+            <a target="_blank" href="https://github.com/wenqiyun/nest-admin">
+              <el-dropdown-item>Github</el-dropdown-item>
+            </a>
+            <el-dropdown-item @click="loginout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
     </div>
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
+<script lang="ts">
+import { computed, defineComponent, ref } from 'vue'
+import { useStore } from '@/store'
+import Hamburger from '_c/Hamburger/index.vue'
+import Breadcrumb from '_c/Breadcrumb/index.vue'
+import { clearAll } from '../../../utils/storage'
+import { ElMessageBox } from 'element-plus'
 
-export default {
-  components: {
-    Breadcrumb,
-    Hamburger
-  },
-  computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar',
-      'username',
-      'device'
-    ])
-  },
-  methods: {
-    updatePw () {
+export default defineComponent({
+  name: 'Navbar',
+  components: { Hamburger, Breadcrumb },
+  setup () {
+    const store = useStore()
 
-    },
-    toggleSideBar () {
-      this.$store.dispatch('app/toggleSideBar')
-    },
-    async logout () {
-      await this.$store.dispatch('user/logout')
-      location.reload()
+    const sidebar = computed(() => store.state.app.sidebar)
+
+    const userAvatar = computed(() => store.state.user.user.avatar)
+
+    const userAccount = computed(() => store.state.user.user.account)
+
+    const toggleSideBar = () => {
+      store.dispatch('app/toggleSideBar')
+    }
+
+    const loginout = () => {
+      ElMessageBox.confirm('是否确认退出当前登录', '提示', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        clearAll()
+        window.location.reload()
+      })
+    }
+
+    const dropdownShow = ref<boolean>(false)
+    const visibleChange = (show: boolean) => {
+      dropdownShow.value = show
+    }
+
+    return {
+      sidebar,
+      userAvatar,
+      userAccount,
+      toggleSideBar,
+      loginout,
+      dropdownShow,
+      visibleChange
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>
@@ -86,12 +107,7 @@ export default {
     float: left;
   }
 
-  .errLog-container {
-    display: inline-block;
-    vertical-align: top;
-  }
-
-  .right-menu {
+  :deep(.right-menu) {
     float: right;
     height: 100%;
     line-height: 50px;
@@ -119,23 +135,27 @@ export default {
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 10px;
 
       .avatar-wrapper {
+        // margin-top: 5px;
+        position: relative;
+        line-height: 50px;
         display: flex;
         align-items: center;
+
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
         }
-        .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -10px;
-          top: 30px;
-          font-size: 12px;
+
+        .user-name-wrapper {
+          margin-left: 10px;
+        }
+        .arrow-down {
+          transition: all .28s;
+        }
+        .arrow-down-show {
+          transform: rotate(180deg);
         }
       }
     }

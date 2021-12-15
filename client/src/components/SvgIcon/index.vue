@@ -1,15 +1,15 @@
 <template>
-  <div v-if="isExternal" :style="styleExternalIcon" class="svg-external-icon svg-icon" v-on="$listeners" />
-  <svg v-else :class="svgClass" aria-hidden="true" v-on="$listeners">
-    <use :href="iconName" />
+  <div v-if="isExternalFlag" :style="styleExternalIcon" class="svg-external-icon svg-icon" v-on="$attrs"></div>
+  <svg v-else :class="svgClass" aria-hidden="true" v-on="$attrs">
+    <use :xlink:href="iconName" />
   </svg>
 </template>
 
-<script>
-// doc: https://panjiachen.github.io/vue-element-admin-site/feature/component/svg-icon.html#usage
+<script lang="ts">
+import { computed, defineComponent, toRefs } from 'vue'
 import { isExternal } from '@/utils/validate'
 
-export default {
+export default defineComponent({
   name: 'SvgIcon',
   props: {
     iconClass: {
@@ -18,34 +18,32 @@ export default {
     },
     className: {
       type: String,
-      default: ''
+      default: '',
+      required: false
     }
   },
-  computed: {
-    isExternal () {
-      return isExternal(this.iconClass)
-    },
-    iconName () {
-      return `#icon-${this.iconClass}`
-    },
-    svgClass () {
-      if (this.className) {
-        return 'svg-icon ' + this.className
-      } else {
-        return 'svg-icon'
-      }
-    },
-    styleExternalIcon () {
+  setup (props) {
+    const { iconClass, className } = toRefs(props)
+    const isExternalFlag = computed(() => isExternal(iconClass.value))
+    const iconName = computed(() => `#icon-${iconClass.value}`)
+    const svgClass = computed(() => className.value ? `svg-icon ${className.value}` : 'svg-icon')
+    const styleExternalIcon = computed(() => {
       return {
-        mask: `url(${this.iconClass}) no-repeat 50% 50%`,
-        '-webkit-mask': `url(${this.iconClass}) no-repeat 50% 50%`
+        mask: `url(${iconClass.value}) no-repeat 50% 50%`,
+        '-webkit-mask': `url(${iconClass.value}) no-repeat 50% 50%`
       }
+    })
+    return {
+      isExternalFlag,
+      iconName,
+      svgClass,
+      styleExternalIcon
     }
   }
-}
+})
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .svg-icon {
   width: 1em;
   height: 1em;
@@ -53,10 +51,9 @@ export default {
   fill: currentColor;
   overflow: hidden;
 }
-
 .svg-external-icon {
   background-color: currentColor;
-  mask-size: cover!important;
+  mask-size: cover !important;
   display: inline-block;
 }
 </style>

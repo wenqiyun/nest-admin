@@ -1,24 +1,12 @@
-# admin
+## 简介
+基于 ```vue``` 和 ```element-plus``` 实现后台前端解决方案
 
-## Project setup
-```
-npm install
-```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
+## 功能
+
+
+## 开发
 ```
 
-### Compiles and minifies for production
-```
-npm run build
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

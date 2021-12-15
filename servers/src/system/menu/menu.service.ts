@@ -1,73 +1,90 @@
 import { Injectable } from '@nestjs/common'
-import { Repository, LessThan } from 'typeorm'
-import { MenuEntity } from './menu.entity'
+import { getManager, Repository, In } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ResponseData } from '../../common/interfaces/result.interface'
+import { plainToClass } from 'class-transformer'
+
+import { ResultData } from '../../common/utils/result'
+import { AppHttpCode } from '../../common/enums/code.enum'
+
+import { MenuEntity } from './menu.entity'
+import { MenuPermEntity } from './menu-perm.entity'
 import { CreateMenuDto } from './dto/create-menu.dto'
+
 import { UpdateMenuDto } from './dto/update-menu.dto'
-import { RoleMenuEntity } from '../relationalEntities/roleMenu/roleMenu.entity'
 
 @Injectable()
 export class MenuService {
   constructor(
     @InjectRepository(MenuEntity)
-    private readonly menuRepository: Repository<MenuEntity>,
-    @InjectRepository(RoleMenuEntity)
-    private readonly roleMenuRepository: Repository<RoleMenuEntity>,
+    private readonly menuRepo: Repository<MenuEntity>,
+    @InjectRepository(MenuPermEntity)
+    private readonly menuPermRepo: Repository<MenuPermEntity>,
   ) {}
 
-  // 查询所有菜单 不包含按钮
-  async findMenuList(type: number): Promise<ResponseData> {
-    const where = type ? { type: LessThan(type) } : {}
-    const result = await this.menuRepository.find({
-      where,
-      order: {
-        orderNum: 'DESC',
-        menuId: 'DESC',
-        name: 'ASC',
-      },
+  async create(dto: CreateMenuDto): Promise<ResultData> {
+    if (dto.parentId !== '0') {
+      // 查询当前父级菜单是否存在
+      const parentMenu = await this.menuRepo.findOne({ id: dto.parentId })
+      if (!parentMenu) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
+    }
+    const menu = await getManager().transaction(async (transactionalEntityManager) => {
+      const menu = await transactionalEntityManager.save<MenuEntity>(plainToClass(MenuEntity, dto))
+      await transactionalEntityManager.save<MenuPermEntity>(
+        plainToClass(
+          MenuPermEntity,
+          dto.menuPermList.map((perm) => {
+            return { menuId: menu.id, ...perm }
+          }),
+        ),
+      )
+      return menu
     })
-    return { statusCode: 200, message: '查询菜单成功', data: result }
+    if (!menu) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单创建失败，请稍后重试')
+    return ResultData.ok()
   }
 
-  // 查询菜单下的按钮集合
-  async findBtnList(menuId): Promise<ResponseData> {
-    const result = await this.menuRepository.find({
-      where: {
-        parentId: menuId,
-        type: 3,
-      },
-      order: {
-        orderNum: 'DESC',
-        menuId: 'DESC',
-        name: 'ASC',
-      },
+  async findAllMenu(hasBtn: boolean): Promise<ResultData> {
+    const where = { ...(!hasBtn ? { type: In([1, 2]) } : null) }
+    const menuList = await this.menuRepo.find({ where })
+    return ResultData.ok(menuList)
+  }
+
+  async findBtnByParentId(parentId: string): Promise<ResultData> {
+    const btnList = await this.menuRepo.find({ where: { parentId } })
+    return ResultData.ok(btnList)
+  }
+
+  async findMenuPerms(menuId: string): Promise<ResultData> {
+    const menuPerms = await this.menuPermRepo.find({ where: { menuId } })
+    return ResultData.ok(menuPerms)
+  }
+
+  async deleteMenu(id: string): Promise<ResultData> {
+    const existing = await this.menuRepo.findOne({ id })
+    if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
+    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.delete(MenuPermEntity, { menuId: id })
+      const result = await transactionalEntityManager.delete<MenuEntity>(MenuEntity, id)
+      return result
     })
-    return { statusCode: 200, message: '查询成功', data: result }
+    if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单删除失败，请稍后重试')
+    return ResultData.ok()
   }
 
-  // 查询菜单详情
-  async findOne(menuId: number): Promise<ResponseData> {
-    const result = await this.menuRepository.findOne({ menuId })
-    return { statusCode: 200, message: '查询成功', data: result }
-  }
-
-  // 创建菜单
-  async create(dto: CreateMenuDto): Promise<ResponseData> {
-    const result = await this.menuRepository.save(dto)
-    return { statusCode: 200, message: '添加成功', data: result }
-  }
-
-  // 更新菜单信息
-  async update(dto: UpdateMenuDto): Promise<ResponseData> {
-    const result = await this.menuRepository.update(dto.menuId, dto)
-    return { statusCode: 200, message: '更新成功', data: result }
-  }
-
-  // 删除菜单, 删除菜单之前将角色与菜单关系删除
-  async delete(menuId: number): Promise<ResponseData> {
-    await this.roleMenuRepository.delete({ menuId })
-    const result = await this.menuRepository.delete(menuId)
-    return { statusCode: 200, message: '删除成功', data: result }
+  async updateMenu(dto: UpdateMenuDto): Promise<ResultData> {
+    const existing = await this.menuRepo.findOne({ id: dto.id })
+    if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
+    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+      // 删除原有接口权限权限
+      await this.menuPermRepo.delete({ menuId: dto.id })
+      // 新的接口权限入库
+      const menuPermDto = plainToClass(MenuPermEntity, dto.menuPermList.map(v => ({ menuId: dto.id, ...v })))
+      await transactionalEntityManager.save<MenuPermEntity>(menuPermDto)
+      delete dto.menuPermList
+      // excludeExtraneousValues true  排除无关属性。 但需要在实体类中 将属性使用 @Expose()
+      return await transactionalEntityManager.update<MenuEntity>(MenuEntity, dto.id, plainToClass(MenuEntity, dto))
+    })
+    if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前菜单更新失败，请稍后重试')
+    return ResultData.ok()
   }
 }

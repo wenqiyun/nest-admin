@@ -1,0 +1,9 @@
+# Ignore everything in this directory
+
+ * 
+
+# Except this file !
+
+/logs
+
+desktop.files.json

@@ -1,30 +1,65 @@
-import { CanActivate, ExecutionContext, Injectable, Inject } from '@nestjs/common'
+import { CanActivate, Inject, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { ConfigService } from '@nestjs/config'
+import { pathToRegexp } from 'path-to-regexp'
+
+import { ALLOW_ANON } from '../decorators/allow-anon.decorator'
+import { ALLOW_NO_PERM } from '../decorators/perm.decorator'
+
 import { PermService } from '../../system/perm/perm.service'
-import { ForbiddenException } from '../exception/forbiddenException'
+import { UserType } from '../enums/user.enum'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector, @Inject('PermService') private readonly permSerivce: PermService) {}
+  private globalWhiteList = []
+  constructor(
+    private readonly reflector: Reflector,
+    @Inject(PermService)
+    private readonly permService: PermService,
+    private readonly config: ConfigService,
+  ) {
+    this.globalWhiteList = [].concat(this.config.get('perm.router.whitelist') || [])
+  }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request = context.switchToHttp().getRequest()
-    const user = req['user']
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    // 首先 无 token 的 是不需要 对比权限
+    const allowAnon = this.reflector.getAllAndOverride<boolean>(ALLOW_ANON, [ctx.getHandler(), ctx.getClass()])
+    if (allowAnon) return true
+    // 全局配置，
+    const req = ctx.switchToHttp().getRequest()
+
+    const i = this.globalWhiteList.findIndex(route => {
+      // 请求方法类型相同
+      if (req.method.toUpperCase() === route.method.toUpperCase()) {
+        // 对比 url
+        return !!pathToRegexp(route.path).exec(req.url)
+      }
+      return false
+    })
+    // 在白名单内 则 进行下一步， i === -1 ，则不在白名单，需要 比对是否有当前接口权限
+    if (i > -1) return true
+    // 函数请求头配置 AllowNoPerm 装饰器 无需验证权限
+    const allowNoPerm = this.reflector.getAllAndOverride<boolean>(ALLOW_NO_PERM, [ctx.getHandler(), ctx.getClass()])
+    if (allowNoPerm) return true
+
+    // 需要比对 该用户所拥有的 接口权限
+    const user = req.user
+    // 没有挈带 token 直接返回 false
     if (!user) return false
-    // 当前请求所需权限
-    const currentPerm = this.reflector.get<string>('permissions', context.getHandler())
-    // 空， 标识不需要权限
-    if (!currentPerm) return true
-    // 根据用户id 查询所拥有的权限
-    const permList = await this.permSerivce.findUserPerms(user.id)
-    const perms: string[] = []
-    for (let i = 0, len = permList.length; i < len; i++) {
-      permList[i]['m_perms'].indexOf(',') > -1 ? perms.push(...permList[i]['m_perms'].split(',')) : perms.push(permList[i]['m_perms'])
-    }
-    // currentPerm 有值，则需对比该用户所有权限
-    // return perms.includes(currentPerm)
-    // nestjs 原生 ForbiddenException 英文，不符合，所以抛出自定义异常
-    if (perms.includes(currentPerm)) return true
-    throw new ForbiddenException()
+    // 超管
+    if (user.type === UserType.SUPER_ADMIN) return true
+
+    const userPermApi = await this.permService.findUserPerms(user.id)
+    const index = userPermApi.findIndex(route => {
+      // 请求方法类型相同
+      if (req.method.toUpperCase() === route.method.toUpperCase()) {
+        // 对比 url
+        const reqUrl = req.url.split('?')[0]
+        return !!pathToRegexp(route.path).exec(reqUrl)
+      }
+      return false
+    })
+    if (index === -1) new ForbiddenException('您无权限访问该接口')
+    return true
   }
 }

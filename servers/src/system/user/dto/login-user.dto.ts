@@ -1,14 +1,14 @@
-import { IsString, IsNotEmpty } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
+import { IsString, IsNotEmpty } from 'class-validator'
 
-export class LoginUserDto {
-  @ApiProperty()
-  @IsString({ message: '不是有效数据' })
-  @IsNotEmpty({ message: '用户名不能为空' })
+export class LoginUser {
+  @ApiProperty({ description: '账号' })
+  @IsString({ message: 'account 类型错误' })
+  @IsNotEmpty({ message: '账号不能为空' })
   readonly account: string
 
-  @ApiProperty()
-  @IsString({ message: '不是有效的数据' })
+  @ApiProperty({ description: '密码' })
+  @IsString({ message: 'password 类型错误' })
   @IsNotEmpty({ message: '密码不能为空' })
   readonly password: string
 }

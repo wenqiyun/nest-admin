@@ -1,149 +1,234 @@
 <template>
   <div>
-    <div class="main-header">
-      <el-select v-model="searchReqTemp.status" clearable style="width: 100px;">
-        <el-option label="使用中" :value="1"></el-option>
-        <el-option label="已禁用" :value="0"></el-option>
-      </el-select>
-      <el-input v-model="searchReqTemp.nickname" clearable style="width: 150px;margin-left: 10px;" placeholder="用户昵称"></el-input>
-      <div class="fr">
+    <div class="filter-container">
+     <div class="filter-item">
+        <el-select v-model="searchReq.status" clearable style="width: 100px;" placeholder="请选择">
+          <el-option label="使用中" :value="1">
+            <k-badge type="primary" content="使用中"></k-badge>
+          </el-option>
+          <el-option label="已禁用" :value="0">
+            <k-badge type="danger" content="已禁用"></k-badge>
+          </el-option>
+        </el-select>
+     </div>
+      <div class="filter-item">
+        <el-input v-model="searchReq.account" placeholder="用户帐号" style="width: 200px;margin-left: 10px;" clearable></el-input>
+      </div>
+
+      <div class="filter-action-wrapper filter-item">
         <el-button type="primary" @click="searchEvent">搜索</el-button>
-        <el-button type="success" @click="reloadEvent">重置</el-button>
+        <el-button type="text" @click="loadingMoreEvent" style="margin-left: 20px;" v-perm="'perm_users:createMultUser'">{{ loadingMore ? '收起' : '更多' }}</el-button>
+      </div>
+
+    </div>
+    <div class="filter-container" v-show="loadingMore" v-perm="'perm_users:createMultUser'">
+      <div class="filter-item">
+        <el-upload style="display: inline-block;margin-right: 20px;" v-bind="uploadConfig" :show-file-list="false">
+          <el-button type="primary">批量上传</el-button>
+        </el-upload>
+        <el-button @click="downloadEvent">下载模板</el-button>
       </div>
     </div>
-    <!-- 列表 -->
-    <el-table :data="userList" size="medium" v-loading="loading">
-      <el-table-column prop="account" label="账号" align="center"></el-table-column>
-      <el-table-column prop="nickname" label="昵称" align="center"></el-table-column>
-      <el-table-column prop="dept.name" label="部门" align="center"></el-table-column>
-      <el-table-column prop="email" label="邮箱" align="center"></el-table-column>
-      <el-table-column prop="phoneNum" label="手机" align="center"></el-table-column>
-      <el-table-column prop="status" label="状态" align="center" width="100">
-        <template slot-scope="scope">
-          <el-badge is-dot :type="scope.row.status ? 'primary' : 'danger'"></el-badge>
-          <span style="margin-left: 8px;">{{ scope.row.status ? '使用中' : '已禁用' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="createDate" label="注册时间" align="center" width="95">
-        <template slot-scope="scope">
-          {{ scope.row.createDate | jsonTimeToDateString }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="updateDate" label="更新日期" align="center" width="95">
-        <template slot-scope="scope">
-          {{ scope.row.updateDate | jsonTimeToDateString }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" v-if="perm.edit || perm.updateStatus">
-        <template slot-scope="scope">
-          <el-button type="primary" plain @click="toEditEvent(scope.row.id)" :disabled="!scope.row.status" v-if="perm.edit">编辑</el-button>
-          <el-button :type="scope.row.status ? 'danger' : 'warning'" plain @click="updateStatusEvent(scope.row.id, scope.row.status ? 0 : 1 )" v-if="perm.updateStatus">{{ scope.row.status ? '禁用' : '启用' }}</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <!-- 分页 -->
-    <el-pagination background :current-page="page.pageNum" :page-size="page.pageSize" layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50]" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange"></el-pagination>
+    <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading" border stripe current-row-key="id" style="width: 100%">
+      <template #avatar="{row}">
+        <el-avatar :src="row.avatar" shape="circle" :size="60"></el-avatar>
+      </template>
+      <template #status="{row}">
+        <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
+      </template>
+      <template  #actions="{ row }">
+        <el-button type="primary" plain @click="showUserEditEvent(row)" v-if="row.status === 1" v-perm="'perm_users:edit'">编辑</el-button>
+        <el-button :type="row.status ? 'danger' : 'success'" plain @click="forbiddenEvent(row)" v-perm="'perm_users:updateStatus'">{{ row.status ? '禁用' : '启用' }}</el-button>
+        <el-button type="warning" plain @click="resetPasswordEvent(row)" v-if="row.status === 1" v-perm="'perm_users:resetPw'">重置密码</el-button>
+      </template>
+    </k-table>
 
-    <!-- 编辑等 -->
-    <edit-user :visible.sync="isShowUserEdit" :userId="currentUserId"></edit-user>
+    <!-- 编辑用户 -->
+    <edit-user v-model="showUserEdit" :curr-id="currId" @change="updateUserSuccess"></edit-user>
+    <!-- 批量导入用户 有报错 -->
+    <upload-err v-model="showUploadErr" v-bind="uploadErrData"></upload-err>
   </div>
 </template>
 
-<script>
-import EditUser from './components/EditUser'
-import { getUserList, updateUserStatus } from '@/api/permission.js'
+<script lang="ts">
+import EditUser from './components/Edit.vue'
+import UploadErr from './components/UploadErr.vue'
+import { defineComponent, ref } from 'vue'
+import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult, dowmloadUserTemplate } from '@/api/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { downLoad, jsonTimeFormat } from '@/utils/index'
+import { ListResultData, Pagination } from '@/common/types/apiResult.type'
+import { IKTableColumn, IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+import appConfig from '@/config/index'
+import { getToken } from '@/utils/storage'
+import hasPerm from '@/utils/perm'
 
-export default {
-  components: { EditUser },
-  data () {
-    const perm = {
-      edit: this.hasPermission({ code: 'permission_users:edit' }),
-      updateStatus: this.hasPermission({ code: 'permission_users:updateStatus' })
+export default defineComponent({
+  components: { EditUser, UploadErr },
+  setup () {
+    const hasActionPerm = hasPerm('perm_users:edit') || hasPerm('perm_users:updateStatus') || hasPerm('perm_users:resetPw')
+
+    const userData = ref<IKTableProps<UserApiResult>>({
+      mode: 'config',
+      data: { list: [], total: 0 },
+      auto: true,
+      isPager: true,
+      columns: [
+        { label: '头像', prop: 'avatar', slot: true },
+        { label: '帐号', prop: 'account' },
+        { label: '手机号', prop: 'phoneNum', default: '--' },
+        { label: '邮箱', prop: 'email', default: '--' },
+        { label: '状态', prop: 'status', slot: true, width: '90' },
+        { label: '注册时间', prop: 'createDate', width: '90', formatter: (row: UserApiResult) => jsonTimeFormat(row.createDate as string) }
+      ],
+      index: true
+    })
+
+    hasActionPerm && userData.value.columns.push({ label: '操作', prop: 'actions', slot: true, width: '250', fixed: 'right' })
+
+    const loading = ref<boolean>(false)
+
+    const searchReq = ref<QueryUserList>({
+      page: 1,
+      size: 10,
+      status: '',
+      account: ''
+    })
+    // 查询表格事件
+    const queryReq = ref<QueryUserList>({ page: 1, size: 10 })
+    const getUserListFn = async ({ page, size }: Pagination) => {
+      loading.value = true
+      const res = await getUserList({ ...queryReq.value, page, size } as QueryUserList)
+      loading.value = false
+      if (res.code === 200) {
+        const data = res.data as ListResultData<UserApiResult>
+        userData.value.data = data
+      } else {
+        ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
+      }
     }
-    return {
-      perm,
-      isShowUserEdit: false,
-      currentUserId: '',
-      searchReqTemp: { nickname: '', status: '' },
-      searchReq: { },
-      loading: false,
-      userList: [],
-      page: {
-        pageSize: 10,
-        pageNum: 1
+
+    // 编辑用户相关
+    const showUserEdit = ref<boolean>(false)
+    const currId = ref<string>()
+    const showUserEditEvent = (row: ICreateOrUpdateUser) => {
+      currId.value = row.id
+      showUserEdit.value = true
+    }
+
+    const userTableRef = ref()
+    const updateUserSuccess = (newPage = {}) => {
+      // 在当前页 重新加载数据
+      userTableRef.value.refreshData(newPage)
+    }
+
+    const searchEvent = () => {
+      queryReq.value = Object.assign({}, searchReq.value)
+      updateUserSuccess({ page: 1, size: 10 })
+    }
+
+    const resetPasswordEvent = async (row: UserApiResult) => {
+      try {
+        await ElMessageBox.confirm(`是否确认重置用户【${row.account}】密码？`, '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        const res = await resetPassword(row.id as string)
+        if (res?.code === 200) {
+          ElMessage({ type: 'success', message: `重置用户【${row.account}】密码成功` })
+        } else {
+          ElMessage({ type: 'error', message: res?.msg || '重置密码失败，请稍后尝试！' })
+        }
+      } catch (error) {}
+    }
+
+    const forbiddenEvent = async (row: UserApiResult) => {
+      try {
+        await ElMessageBox.confirm(`是否确认将用户【${row.account}】${row.status === 1 ? '禁用' : '恢复正常使用'}吗？`, '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        loading.value = true
+        const res = await updateStatus({ id: row.id, status: row.status === 1 ? 0 : 1 })
+        loading.value = false
+        if (res?.code === 200) {
+          ElMessage({ type: 'success', message: `${row.status === 1 ? '禁用' : '启用'}成功` })
+          updateUserSuccess()
+        } else {
+          ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试！' })
+        }
+      } catch (error) {}
+    }
+
+    const loadingMore = ref<boolean>(false)
+
+    const loadingMoreEvent = () => {
+      loadingMore.value = !loadingMore.value
+    }
+
+    const downloadEvent = async () => {
+      loading.value = true
+      const res = await dowmloadUserTemplate()
+      loading.value = false
+      downLoad(res, '用户批量导入模板.xlsx')
+    }
+
+    const showUploadErr = ref<boolean>(false)
+    const uploadErrData = ref({})
+    const acceptFileType = 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    const uploadConfig = {
+      action: `${appConfig.api.baseUrl}/user/import`,
+      headers: {
+        Authorization: getToken()
       },
-      total: 0
+      accept: acceptFileType,
+      beforeUpload: (file: any) => {
+        if (acceptFileType.indexOf(file.type) === -1) {
+          ElMessage({ type: 'error', message: '文件类型错误，请上传 .xlsx 或 .xls 文件' })
+          return false
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          ElMessage({ type: 'error', message: '文件大小超过，最大支持 5M' })
+        }
+        return true
+      },
+      onSuccess: (res: any) => {
+        if (res?.code === 200) {
+          ElMessage({ type: 'success', message: '导入成功' })
+        } else {
+          if (res?.data) {
+            uploadErrData.value = { errMsg: res.msg, errData: res.data }
+            showUploadErr.value = true
+          } else {
+            ElMessage({ type: 'error', message: res.msg || '网络异常，请稍后重试' })
+          }
+        }
+      }
     }
-  },
-  created () {
-    this.getUserListFn()
-  },
-  methods: {
-    updateStatusEvent (id, status) {
-      this.$confirm(`${status ? '恢复启用后' : '禁用用户后，不可操作本站'}, 是否继续?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.updateUserStatusFn(id, status)
-      }).catch(() => {})
-    },
-    toEditEvent (id) {
-      this.currentUserId = id
-      this.isShowUserEdit = true
-    },
-    reloadEvent () {
-      this.searchReqTemp = { nickname: '', status: '' }
-      this.searchEvent()
-    },
-    searchEvent () {
-      this.page.pageNum = 1
-      this.searchReq = Object.assign({}, this.searchReqTemp)
-      this.getUserListFn()
-    },
-    async getUserListFn () {
-      this.loading = true
-      const req = Object.assign({}, this.page, {
-        ...(this.searchReq.nickname ? { nickname: this.searchReq.nickname } : null),
-        ...(this.searchReq.status !== '' ? { status: this.searchReq.status } : null)
-      })
-      const res = await getUserList(req)
-      this.loading = false
-      if (res.statusCode === 200) {
-        this.userList = res.data.list
-        this.total = res.data.total
-      } else {
-        this.$message.info(res.message)
-      }
-    },
-    // status 修改后的状态、 0 1
-    async updateUserStatusFn (id, status) {
-      const res = await updateUserStatus(id, status)
-      if (res.statusCode === 200) {
-        this.$message.success(`${status ? '恢复启用' : '禁用'}用户成功`)
-        this.getUserListFn()
-      } else {
-        this.$message.info(res.message)
-      }
-    },
-    handleSizeChange (size) {
-      this.page = { pageSize: size, pageNum: 1 }
-      this.getUserListFn()
-    },
-    handleCurrentChange (current) {
-      this.page.pageNum = current
-      this.getUserListFn()
+
+    return {
+      loading,
+      searchReq,
+      userData,
+      searchEvent,
+      getUserListFn,
+      // 编辑用户相关
+      currId,
+      showUserEdit,
+      showUserEditEvent,
+      userTableRef,
+      updateUserSuccess,
+      resetPasswordEvent,
+      forbiddenEvent,
+      loadingMore,
+      loadingMoreEvent,
+      downloadEvent,
+      uploadConfig,
+      showUploadErr,
+      uploadErrData
     }
   }
-}
+})
 </script>
-
-<style lang="scss" scoped>
-/deep/ .el-badge__content {
-  position: initial;
-  border: 0;
-}
-/deep/ .el-badge {
-  vertical-align: initial;
-}
-</style>

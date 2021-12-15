@@ -1,128 +1,132 @@
 <template>
-  <div class="user-layout-wrapper">
-    <div class="login-container">
-      <div class="top">
-        <span>nest-admin 权限管理系统</span>
-      </div>
-      <div class="main">
-        <el-form ref="loginForm" :model="loginForm" :rules="rules">
+  <div class="login-container">
+    <div class="login-wrapper">
+      <div class="form-wrapper" >
+        <h3 class="form-title">
+          <span class="nest-logo"></span>
+          <span>登 录</span>
+        </h3>
+        <el-form ref="loginFormRef" :disabled="loading" style="width: 100%;" :model="formData" :rules="loginFormRules" >
           <el-form-item prop="account">
-            <el-input placeholder="账号" prefix-icon="el-icon-user-solid" v-model.trim="loginForm.account"></el-input>
+            <el-input v-model.trim="formData.account" placeholder="帐号/邮箱/手机号"></el-input>
           </el-form-item>
-          <el-form-item prop="password">
-            <el-input placeholder="密码" type="password" prefix-icon="el-icon-lock" v-model="loginForm.password" @keyup.enter.native="confirmLoginEvent"></el-input>
+          <el-form-item  prop="password">
+            <el-input type="password" v-model="formData.password" placeholder="密码"  @keyup.enter="loginEvent"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <div class="action-wrapper">
+              <el-checkbox v-model="autoLogin">自动登录</el-checkbox>
+              <el-button type="text">忘记密码</el-button>
+            </div>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" style="width: 100%;" @click="loginEvent" :loading="loading">登&nbsp;&nbsp;&nbsp;录</el-button>
           </el-form-item>
         </el-form>
-        <el-button type="primary" :loading="loading" @click="confirmLoginEvent" style="width: 100%;margin-top: 24px;">登&nbsp;&nbsp;录</el-button>
-      </div>
-      <div class="footer">
-        <span>©2020</span>
-        <span>&nbsp;|&nbsp;</span>
-        <a href="http://beian.miit.gov.cn" target="_blank">赣ICP备17000521号-1</a>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ResultData } from '@/common/types/apiResult.type'
+import { UserLogin, login as loginApi, LoginResult } from '@/api/user'
+
+import { setToken } from '@/utils/storage'
 
 export default {
-  data () {
+  setup () {
+    const formData = ref<UserLogin>({ account: '', password: '' })
+    const autoLogin = ref<boolean>(false)
+
+    const loginFormRules = ref({
+      account: [
+        { required: true, message: '请输入帐号/邮箱/手机号', trigger: 'blur' }
+      ],
+      password: [
+        { required: true, message: '请输入密码', trigger: 'blur' }
+      ]
+    })
+
+    const router = useRouter()
+    const route = useRoute()
+    const loginFormRef = ref()
+
+    const loading = ref<boolean>(false)
+    // 登录事件
+    const loginEvent = () => {
+      if (loginFormRef.value) {
+        loginFormRef.value.validate(async (valid: boolean) => {
+          if (valid) {
+            loading.value = true
+            const res: ResultData<LoginResult> = await loginApi(formData.value)
+            loading.value = false
+            if (res?.code === 200) {
+              const data = res.data as LoginResult
+              setToken(data.accessToken, data.refreshToken)
+              router.replace((route.query?.redirect || '/') as string)
+            } else {
+              ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
+            }
+          }
+        })
+      }
+    }
+
     return {
-      loading: false,
-      loginForm: {
-        account: '',
-        password: ''
-      },
-      rules: {
-        account: [
-          { required: true, message: '请输入账号', trigger: 'blur' },
-          { min: 3, message: '用户名至少需要三位', trigger: 'blur' }
-        ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ]
-      },
-      otherQuery: {},
-      redirect: ''
-    }
-  },
-  watch: {
-    $route: {
-      handler: function (route) {
-        // const query = route.query
-        // if (query) {
-        //   this.redirect = query.redirect
-        //   this.otherQuery = this.getOtherQuery(query)
-        // }
-      },
-      immediate: true
-    }
-  },
-  methods: {
-    confirmLoginEvent () {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.loading = false
-              this.$router.push({ path: '/' })
-              // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-            })
-            .catch(msg => {
-              this.$message.error(msg)
-              this.loading = false
-            })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
-    getOtherQuery (query) {
-      return Object.keys(query).reduce((acc, cur) => {
-        if (cur !== 'redirect') {
-          acc[cur] = query[cur]
-        }
-        return acc
-      }, {})
+      autoLogin,
+      formData,
+      loginFormRef,
+      loginFormRules,
+      loginEvent,
+      loading
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.user-layout-wrapper{
+.login-container {
+  width: 100%;
   height: 100vh;
-  .login-container {
-    width: 100%;
-    min-height: 100%;
-    background: #f0f2f5 url(/static/img/login-bg.png) no-repeat 50%;
-    background-size: 100%;
-    padding: 220px 0 144px;
-    position: relative;
-  }
-  .top {
-    text-align: center;
-    height: 77px;
-    font-size: 33px;
-    font-weight: 600;
-    color: rgba(0,0,0,.85);
-  }
-  .main {
-    vertical-align: middle;
-    min-width: 260px;
-    width: 368px;
-    margin: 0 auto;
-  }
-  .footer {
+  position: relative;
+
+  .login-wrapper {
     position: absolute;
-    bottom: 10px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 14px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .form-wrapper {
+    .form-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin: 30px 0;
+
+      .nest-logo {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+        background: url(~@/assets/imgs/nest-logo.svg) no-repeat center / 100% 100% ;
+      }
+    }
+    .action-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
   }
 }
 </style>

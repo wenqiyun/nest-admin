@@ -1,88 +1,92 @@
-import { Controller, UseGuards, Get, Post, Body, Put, Param, Query, Delete, Request } from '@nestjs/common'
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
+import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpCode, Req } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, ApiExtraModels } from '@nestjs/swagger'
+import { FileInterceptor } from '@nestjs/platform-express'
 
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Permissions } from '../../common/decorators/permissions.decorator'
-import { ResponseData } from '../../common/interfaces/result.interface'
-
-import { JwtAuthGuard } from '../auth/auth.guard'
 import { UserService } from './user.service'
+import { UserEntity } from './user.entity'
+
+import { ResultData } from '../../common/utils/result'
+import { ApiResult } from '../../common/decorators/api-result.decorator'
+
+import { FindUserListDto } from './dto/find-user-list.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { CreateUserRoleDto } from '../relationalEntities/userRole/dto/create-userRole.dto'
-import { UpdatePwDto } from './dto/update-pw-dto'
+import { CreateOrUpdateRoleUsersDto } from './dto/createupdate-role-users.dto'
+import { UpdateStatusDto } from './dto/update-status.dto'
 
-
-@ApiBearerAuth()
-@ApiTags('用户管理')
+@ApiTags('用户账号相关')
+@ApiExtraModels(ResultData, UserEntity)
 @Controller('user')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('list')
   @ApiOperation({ summary: '查询用户列表' })
-  @ApiOkResponse({ description: '返回用户列表和用户总数' })
-  @Permissions('sys_user:list')
-  async findList(@Query() query): Promise<ResponseData> {
-    // @Query('pageSize', new ParseIntPipe()) pageSize: number, @Query('pageNum', new ParseIntPipe()) pageNum: number
-    // @Query() query  console.log(query)
-    return this.userService.findList(query)
+  @ApiResult(UserEntity, true, true)
+  async findList (@Query() dto: FindUserListDto): Promise<ResultData> {
+    return await this.userService.findList(dto)
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: '查询用户信息' })
-  @Permissions('sys_user:list')
-  async findOne(@Param('id') id: number): Promise<ResponseData> {
-    return this.userService.findOne(id)
+  @Get('one/info')
+  @ApiOperation({ summary: '根据id查询用户信息' })
+  @ApiQuery({ name: 'id' })
+  @ApiResult(UserEntity)
+  async findOne (@Query('id') id: string, @Req() req): Promise<ResultData> {
+    return await this.userService.findOne(id || req.user.id)
   }
 
-  @Get('list/notRole')
-  @ApiOperation({ summary: '查询没有关联当前角色的用户列表' })
-  @Permissions('sys_user:roleList')
-  async findUserListNotInRoleId(@Query() query: { pageSize: number; pageNum: number; roleId: number }): Promise<ResponseData> {
-    return this.userService.findUserListNotInRoleId(query)
+  @Get(':id/role')
+  @ApiOperation({ summary: '查询用户角色id集合' })
+  @ApiResult(Number, true)
+  async findUserRole (@Param('id') id: string): Promise<ResultData> {
+    return await this.userService.findUserRole(id)
   }
 
-  @Post('role')
-  @ApiOperation({ summary: '创建用户与角色关联' })
-  @Permissions('sys_user:createRole')
-  async createUserRoleRelation(@Body() userRoles: CreateUserRoleDto[]): Promise<ResponseData> {
-    return this.userService.createUserRoleRelation(userRoles)
+  @Post('role/update')
+  @ApiOperation({ summary: '角色添加/取消关联用户' })
+  @ApiResult()
+  async createOrCancelUserRole (@Body() dto: CreateOrUpdateRoleUsersDto): Promise<ResultData> {
+    return await this.userService.createOrCancelUserRole(dto.userIds, dto.roleId, dto.type)
   }
 
   @Put()
-  @ApiOperation({ summary: '根据用户id更新用户信息信息' })
-  @ApiOkResponse({ description: '根据用户id更新用户信息', type: UpdateUserDto })
-  @Permissions('sys_user:update')
-  async update(@Body() userData: UpdateUserDto): Promise<ResponseData> {
-    return await this.userService.update(userData)
+  @ApiOperation({ summary: '更新用户信息' })
+  @ApiResult()
+  async update (@Body() dto: UpdateUserDto): Promise<ResultData> {
+    return await this.userService.update(dto)
   }
 
-  @Put('update-pw')
-  @ApiOperation({ summary: '修改自身密码' })
-  async updatePW(@Body() updatePwData: UpdatePwDto, @Request() req): Promise<ResponseData> {
-    return this.userService.updatePw(Object.assign(updatePwData, req['user'].id))
+  @Put('/status/change')
+  @ApiOperation({ summary: '更改用户可用状态' })
+  @ApiResult()
+  async updateStatus (@Body() dto: UpdateStatusDto, @Req() req): Promise<ResultData> {
+    return await this.userService.updateStatus(dto.id, dto.status, req.user.id)
   }
 
-  @Put(':id/:status')
-  @ApiOperation({ summary: '根据用户id 删除用户' })
-  @ApiOkResponse({ description: '根据用户id删除用户' })
-  @Permissions('sys_user:updateStatus')
-  async updateStatus(@Param('id') id: number, @Param('status') status: string): Promise<ResponseData> {
-    return this.userService.updateStatus(id, status)
+  @Put('/password/reset/:userId')
+  @ApiOperation({ summary: '重置用户密码' })
+  @ApiResult()
+  async resetPassword (@Param('userId') userId: string): Promise<ResultData> {
+    return await this.userService.updatePassword(userId, '', true)
   }
 
-  @Put('update-pw/:id')
-  @ApiOperation({ summary: '根据用户ID重置用户密码' })
-  @Permissions('sys_user:update')
-  async resetPossword(@Param('id') id: number): Promise<ResponseData> {
-    return await this.userService.resetPossword(id)
-  }
-
-  @Delete('role/:userId')
-  @ApiOperation({ summary: '根据用户id删除用户与角色关系' })
-  @Permissions('sys_user:updateRole')
-  async cancelUserRoleRelation(@Param('userId') userId: number): Promise<ResponseData> {
-    return this.userService.cancelUserRoleRelation(userId)
+  @Post('/import')
+  @ApiOperation({ summary: 'excel 批量导入用户' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiResult(UserEntity, true)
+  async importUsers (@UploadedFile() file: Express.Multer.File): Promise<ResultData> {
+    return await this.userService.importUsers(file)
   }
 }

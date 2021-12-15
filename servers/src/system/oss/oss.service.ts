@@ -1,61 +1,69 @@
 import { Injectable } from '@nestjs/common'
-import { Repository, Like } from 'typeorm'
-import { OssEntity } from './oss.entity'
-import { InjectRepository } from '@nestjs/typeorm'
-import { ResponseData } from 'src/common/interfaces/result.interface'
-import { CreateOssDto } from './dto/create-oss.dto'
-import * as fs from 'fs'
 import { ConfigService } from '@nestjs/config'
-import { classToPlain } from 'class-transformer'
+import { InjectRepository } from '@nestjs/typeorm'
+import { plainToClass, classToPlain } from 'class-transformer'
+import { Between, getManager, Repository } from 'typeorm'
+import * as fs from 'fs'
+import * as uuid from 'uuid'
+import path from 'path'
+import mime from 'mime-types'
+
+import { ResultData } from '../../common/utils/result'
+import { AppHttpCode } from '../../common/enums/code.enum'
+
+import { OssEntity } from './oss.entity'
+import { FindOssDto } from './dto/find-oss.dto'
 
 @Injectable()
 export class OssService {
+  private readonly productLocation = process.cwd()
+  private isAbsPath = false
+
   constructor(
-    @InjectRepository(OssEntity)
-    private readonly ossRepository: Repository<OssEntity>,
     private readonly config: ConfigService,
-  ) {}
-  // 将上传文件的信息入库
-  async create(files): Promise<ResponseData> {
+    @InjectRepository(OssEntity)
+    private readonly ossRepo: Repository<OssEntity>
+  ) {
+    this.isAbsPath = path.isAbsolute(this.config.get<string>('app.file.location'))
+  }
+
+  async create (files: Express.Multer.File[], business: string, user: { id: string, account: string }): Promise<ResultData> {
     const ossList = files.map(file => {
-      // 重命名， multer 上传的文件没有后缀名，在这重命名加上后缀名
-      const originalnameArr = file.originalname.split('.')
-      fs.renameSync(file.path, `${file.path}.${originalnameArr[originalnameArr.length - 1]}`)
-      const url = `${this.config.get('upload.www')}/${file.filename}.${originalnameArr[originalnameArr.length - 1]}`
-      return new CreateOssDto(url, file.mimetype, `${file.path}.${originalnameArr[originalnameArr.length - 1]}`, file.size, file.originalname)
+      // 重新命名文件， uuid, 根据 mimeType 决定 文件扩展名， 直接拿后缀名不可靠
+      const newFileName = `${uuid.v4().replace(/-/g, '')}.${mime.extension(file.mimetype)}`
+      // const newFileName = `${uuid.v4().replace(/-/g, '')}.${file.originalname.split('.').pop().toLowerCase()}`
+      // 文件存储路径
+      const fileLocation = path.normalize(this.isAbsPath ? `${this.config.get<string>('file.location')}/${newFileName}` : path.join(this.productLocation, `${this.config.get<string>('app.file.location')}`, newFileName))
+      // fs 创建文件写入流
+      const writeFile = fs.createWriteStream(fileLocation)
+      // 写入文件
+      writeFile.write(file.buffer)
+      // 千万别忘记了 关闭流
+      writeFile.close()
+      const ossFile = {
+        url: `${this.config.get<string>('app.file.domain')}${this.config.get<string>('app.file.serveRoot') || ''}/${newFileName}`,
+        size: file.size,
+        type: file.mimetype,
+        location: fileLocation,
+        business: business || '',
+        userId: user.id,
+        userAccount: user.account
+      }
+      return plainToClass(OssEntity, ossFile)
     })
-    const result = await this.ossRepository.save(ossList)
-    if (!result) return { statusCode: 200, message: '上传失败' }
-    const data = result.map(v => v.url)
-    return { statusCode: 200, message: '上传成功', data: files.length > 1 ? data : data[0] }
-  }
-
-  // // 删除文件并删除库
-  async delete(id: number): Promise<ResponseData> {
-    const file = await this.ossRepository.findOne(id)
-    try {
-      fs.unlinkSync(file['location'])
-    } catch (error) {
-      return { statusCode: 500, message: '删除失败' }
+    const result = await getManager().transaction(async (transactionalEntityManager) => {
+      return await transactionalEntityManager.save<OssEntity>(ossList)
+    })
+    if(!result) {
+      return ResultData.fail(AppHttpCode.SERVICE_ERROR, '文件存储失败，请稍后重新上传')
     }
-    // 删除文件
-    const result = await this.ossRepository.delete({ id })
-    if (!result) return { statusCode: 500, message: '删除失败' }
-    return { statusCode: 200, message: '删除成功' }
+    return ResultData.ok(classToPlain(result))
   }
 
-  async findList(pageSize: number, pageNum: number, oldName: string): Promise<ResponseData> {
-    const where = oldName ? { oldName: Like(`%${oldName}%`) } : {}
-    const files = await this.ossRepository
-      .createQueryBuilder('oss')
-      .where(where)
-      .orderBy({
-        'oss.id': 'DESC',
-        'oss.create_date': 'DESC'
-      })
-      .skip(pageSize * (pageNum - 1))
-      .take(pageSize)
-      .getManyAndCount()
-    return { statusCode: 200, message: '查询成功', data: { list: classToPlain(files[0]), total: files[1] } }
+  async findList (search: FindOssDto): Promise<ResultData> {
+    const { size, page, startDay, endDay } = search
+    const where = startDay && endDay ? { createDate: Between(`${startDay} 00:00:00`, `${endDay} 23:59:59`) } : {}
+    const res = await this.ossRepo.findAndCount({ order: { id: 'DESC' }, skip: size * (page - 1), take: size, where })
+    return ResultData.ok({ list: classToPlain(res[0]), total: res[1] })
   }
 }

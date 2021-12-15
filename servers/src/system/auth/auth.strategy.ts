@@ -1,8 +1,10 @@
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, ExtractJwt } from 'passport-jwt'
-import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { AuthService } from './auth.service'
 import { ConfigService } from '@nestjs/config'
+import { UnauthorizedException, Injectable } from '@nestjs/common'
+
+import { AuthService } from './auth.service'
+
 @Injectable()
 export class AuthStrategy extends PassportStrategy(Strategy) {
   /**
@@ -12,7 +14,7 @@ export class AuthStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get('JWT.secretKey')
+      secretOrKey: config.get('jwt.secretkey'),
     })
   }
 
@@ -22,7 +24,7 @@ export class AuthStrategy extends PassportStrategy(Strategy) {
    * 当用户不存在时，说明令牌有误，可能是被伪造了，此时需抛出 UnauthorizedException 未授权异常。
    * 当用户存在时，会将 user 对象添加到 req 中，在之后的 req 对象中，可以使用 req.user 获取当前登录用户。
    */
-  async validate(payload: { id: number }) {
+  async validate(payload: { id: string }) {
     const user = await this.authService.validateUser(payload)
     // 如果用用户信息，代表 token 没有过期，没有则 token 已失效
     if (!user) throw new UnauthorizedException()

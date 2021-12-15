@@ -1,7 +1,17 @@
-import mysql from './mysql'
-import jwt from './jwt'
-import uploadConfig from './upload'
-import redisConfig from './redis'
-const appConfig = [mysql, redisConfig, jwt, uploadConfig]
+import { readFileSync } from 'fs'
+import yaml from 'js-yaml'
+import { join } from 'path'
 
-export default appConfig
+const configFileNameObj = {
+  development :'dev',
+  test: 'test',
+  production: 'prod'
+}
+
+const env = process.env.NODE_ENV
+
+
+
+export default () => {
+  return yaml.load(readFileSync(join(__dirname, `./${configFileNameObj[env]}.yml`), 'utf8')) as Record<string, any>
+}

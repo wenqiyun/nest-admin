@@ -1,34 +1,43 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsString, IsNotEmpty } from 'class-validator'
+import { IsNumber, IsNotEmpty, IsString, Length, IsIn, Min, IsArray, IsOptional } from 'class-validator'
+import { MenuPermDto } from './menu-perm.dto'
 
 export class UpdateMenuDto {
-  @ApiProperty({ description: '菜单ID', uniqueItems: true })
-  @IsNumber()
-  readonly menuId: number
+  @ApiProperty({ description: '菜单id', required: false })
+  @IsString({ message: 'id 类型错误' })
+  @IsNotEmpty()
+  id: string
 
-  @ApiProperty({ description: '上级菜单ID, 无则默认为 0', uniqueItems: true })
-  @IsNumber()
-  readonly parentId: number
+  @ApiProperty({ description: '父级菜单', required: false })
+  @IsString({ message: 'parentId 类型错误' })
+  @IsNotEmpty({ message: 'parentId 必须填入值' })
+  @IsOptional()
+  readonly parentId?: number
 
-  @ApiProperty({ description: '菜单名称' })
-  @IsString({ message: '不是有效数据' })
-  @IsNotEmpty({ message: '菜单名称不能为空' })
-  readonly name: string
+  @ApiProperty({ description: '菜单名称', required: false })
+  @IsString({ message: 'name 类型错误' })
+  @Length(2, 20, { message: 'name 字符长度在 2~20' })
+  @IsOptional()
+  readonly name?: string
 
-  @ApiProperty({ description: '权限标识' })
-  @IsString({ message: '不是有效数据' })
-  readonly perms: string
+  @ApiProperty({ description: '菜单唯一标识，前端控制页面显隐', required: false })
+  @IsString({ message: 'code 类型错误' })
+  @IsOptional()
+  readonly code?: string
 
-  @ApiProperty({ description: '菜单类型， 1. 菜单/目录 2 tabs 3 按钮' })
-  @IsNumber()
-  @IsNotEmpty({ message: '菜单类型不能为空' })
-  readonly type: number
+  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮', required: false })
+  @IsNumber({}, { message: 'type 类型错误' })
+  @IsIn([1, 2, 3], { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
+  @IsOptional()
+  readonly type?: 1 | 2 | 3
 
-  @ApiProperty({ description: '菜单按钮唯一标识' })
-  @IsString({ message: '不是有效数据' })
-  readonly code: string
+  @ApiProperty({ description: '排序', required: false })
+  @IsNumber({}, { message: '排序传值错误' })
+  @Min(0)
+  @IsOptional()
+  readonly orderNum?: number
 
-  @ApiProperty({ description: '排序' })
-  @IsNumber()
-  readonly orderNum: number
+  @ApiProperty({ description: '菜单接口权限' })
+  @IsArray({ message: 'menuPerms 类型错误' })
+  menuPermList: MenuPermDto[]
 }
