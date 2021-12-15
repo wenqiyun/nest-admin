@@ -116,7 +116,7 @@ export class UserService {
     const phoneMap = new Map()
     const emailMap = new Map()
     // 从 1 开始是去掉 excel 帐号等文字提示
-    for (let i = 1, len = workSheet[0].data.length i < len i++) {
+    for (let i = 1, len = workSheet[0].data.length; i < len; i++) {
       const dataArr = workSheet[0].data[i]
       if (dataArr.length === 0) break
       const [ account, phone, email, avatar ] = dataArr
