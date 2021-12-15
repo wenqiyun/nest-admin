@@ -17,3 +17,21 @@
 
 > [!WARNING]
 > 本项目中表关联关系采用业务逻辑关联，没有使用外键！
+
+#### 关于主键使用 bigint 类型
+
+```javascript``` 对数据库中的 ```int``` 和 ```bigint``` 区别对待
+
+
+刚开始开发中，测试数据库 ```id``` 字段采用 ```int``` ， 数据库 ```SELECT``` 返回结果是 ```number``` 类型，但是使用 ```bigint``` 数据库返回的是 ```string``` ，初步猜想是因为 ```bigint``` 的值会超过 ```number``` 的范围，所以采用 ```string```
+
+经查 ```TypeOrm``` 文档， 解决方案是在数据库连接配置
+```javascript
+{
+  ...
+  supportBigNumbers: true
+  bigNumberStrings: true
+}
+```
+
+

@@ -25,16 +25,44 @@
 
 
 #### 本地开发
-1. 通过 git 下载源码
-2. 执行 db/kapok.sql 文件，初始化数据
-3. 修改 config/dev.yml 文件， 更改 mysql 账号和密码，库
-4. 分别在 client servers 目录下，执行 npm i （servers npm i 安装不成功， 请使用 pnpm）
-5. 安装完依赖，servers 目录下执行 npm run start:dev； client 目录下执行 npm run serve 即可启动项目
-6. 浏览器访问 http://localhost:9540 即可打开页面， swagger 文档地址 http://localhost:8081/api/docs
-7. 可测试的账号密码： admin/admin
 
+下载源码
 
-> 本地开启了 nestjs 静态服务，作为图片服务器，默认上传到总项目根目录 upload 目录，线上建议使用 nginx
+```sh
+git clone https://github.com/wenqiyun/nest-admin.git
+# 或
+git clone https://gitee.com/wenqiyun/nest-admin.git
+```
+
+前端
+
+```sh
+# 打开前端根目录
+cd nest-admin/client
+# 安装依赖包
+npm i
+# 本地运行开发
+npm run serve
+```
+
+后端
+
+本项目使用 ```TypeOrm``` 连接 ```MySql``` 数据库， 运行前请在 ```servers/src/config/dev.yml``` 文件中配置好数据库连接
+
+```MySql``` 数据库文件在 ```nest-admin/db/kapok.sql``` ，可以通过 ```MySQL WorkBench``` 或 ``` Navicat``` 等工具软件导入。
+
+```sh
+# 打开后端根目录
+cd nest-admin/servers
+# 如果 安装不成功，建议使用 pnpm i
+npm i
+# 本地运行开发
+npm run start:dev
+```
+
+启动好前、后端后，浏览器访问 http://localhost:9540 即可打开页面， swagger 文档地址 http://localhost:8081/api/docs
+
+测试帐号密码： admin/admin
 
 #### 效果图
 
@@ -54,5 +82,6 @@
 
 
 如果你觉得这个项目帮助到了你，你可以帮作者买一杯果汁表示鼓励
+
 ![image](./upload/pay.jpg)
 
