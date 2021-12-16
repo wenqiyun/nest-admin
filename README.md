@@ -21,8 +21,12 @@
 #### 项目说明
 ```Nest Admin``` 管理系统，是基于 ```Nestjs```，```Vue``` 打造出的一站式 RBAC 管理平台。
 
-核心模块包括： 用户、角色、菜单、日志、文件管理等功能。
+核心模块包括： 用户、角色、菜单、日志、文件管理等功能。提供了丰富的功能组件，它可以帮助您快速搭建企业级中后台产品原型。
 
+* [github](https://github.com/wenqiyun/nest-admin)
+* [gitee](https://gitee.com/wenqiyun/nest-admin)
+* [文档](https://wenqiyun.github.io/nest-admin)
+* [国内文档](https://wenqiyun.gitee.io/nest-admin)
 
 #### 本地开发
 
@@ -46,6 +50,8 @@ npm run serve
 ```
 
 后端
+
+> 后端需要 ```MySql``` 、```Redis``` 环境
 
 本项目使用 ```TypeOrm``` 连接 ```MySql``` 数据库， 运行前请在 ```servers/src/config/dev.yml``` 文件中配置好数据库连接
 
