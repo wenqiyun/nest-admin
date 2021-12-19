@@ -99,7 +99,7 @@ export class RolesGuard implements CanActivate {
 ```
 
 > [!WARNING]
-> 当前全局守卫是按顺序执行的，也就是说先验证 token ，
+> 当前全局守卫是按顺序执行的，也就是说先验证 token ，再去验证用户是否有当前请求的权限
 
 
 ```allNoPerm``` 装饰器

@@ -12,7 +12,7 @@ hidden: true
 alwayShow: true
 
 // 设置路由的名字，一定要填写且唯一，不填写使用 keep-alive 时会出现各种问题
-// 建议规则，比如 父级路由是 perm ， 那自己路由 name 可设置为 perm_xxx
+// 建议规则，比如 父级路由是 perm ， 那子路由 name 可设置为 perm_xxx
 name: 'router-name'
 
 meta: {
