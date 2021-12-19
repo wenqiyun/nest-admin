@@ -11,7 +11,7 @@
  Target Server Version : 80027
  File Encoding         : 65001
 
- Date: 02/12/2021 22:18:54
+ Date: 19/12/2021 22:03:09
 */
 
 SET NAMES utf8mb4;
@@ -23,35 +23,35 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE `sys_menu`  (
   `id` bigint(0) NOT NULL AUTO_INCREMENT,
-  `parent_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单名称',
   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单/按钮唯一标识，由前端路由name,用于控制菜单按钮显隐',
   `type` int(0) NOT NULL COMMENT '菜单类型， 1-菜单/目录 2-tabs 3-按钮',
   `order_num` int(0) NOT NULL DEFAULT 0 COMMENT '排序',
+  `parent_id` bigint(0) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
 -- ----------------------------
-INSERT INTO `sys_menu` VALUES (1, '0', '首页', 'dashboard', 1, 0);
-INSERT INTO `sys_menu` VALUES (2, '0', '权限管理', 'perm', 1, 0);
-INSERT INTO `sys_menu` VALUES (3, '2', '用户管理', 'perm_users', 1, 0);
-INSERT INTO `sys_menu` VALUES (4, '2', '角色管理', 'perm_roles', 1, 0);
-INSERT INTO `sys_menu` VALUES (5, '0', '系统设置', 'system', 1, 0);
-INSERT INTO `sys_menu` VALUES (6, '5', '资源管理', 'system_menus', 1, 0);
-INSERT INTO `sys_menu` VALUES (7, '5', '文件列表', 'system_oss', 1, 0);
-INSERT INTO `sys_menu` VALUES (8, '3', '编辑', 'perm_users:edit', 3, 0);
-INSERT INTO `sys_menu` VALUES (9, '3', '启用/禁用', 'perm_users:updateStatus', 3, 0);
-INSERT INTO `sys_menu` VALUES (10, '3', '重置密码', 'perm_users:resetPw', 3, 0);
-INSERT INTO `sys_menu` VALUES (11, '3', '批量导入', 'perm_users:createMultUser', 3, 0);
-INSERT INTO `sys_menu` VALUES (12, '4', '新增', 'perm_roles:create', 3, 0);
-INSERT INTO `sys_menu` VALUES (13, '4', '编辑', 'perm_roles:edit', 3, 0);
-INSERT INTO `sys_menu` VALUES (14, '4', '删除', 'perm_roles:del', 3, 0);
-INSERT INTO `sys_menu` VALUES (15, '4', '关联用户/解除关联', 'perm_roles:bind', 3, 0);
-INSERT INTO `sys_menu` VALUES (16, '6', '添加', 'system_menus:create', 3, 0);
-INSERT INTO `sys_menu` VALUES (17, '6', '编辑', 'system_menus:edit', 3, 0);
-INSERT INTO `sys_menu` VALUES (18, '6', '删除', 'system_menus:del', 3, 0);
+INSERT INTO `sys_menu` VALUES (1, '首页', 'dashboard', 1, 0, 0);
+INSERT INTO `sys_menu` VALUES (2, '权限管理', 'perm', 1, 0, 0);
+INSERT INTO `sys_menu` VALUES (3, '用户管理', 'perm_users', 1, 0, 2);
+INSERT INTO `sys_menu` VALUES (4, '角色管理', 'perm_roles', 1, 0, 2);
+INSERT INTO `sys_menu` VALUES (5, '系统设置', 'system', 1, 0, 0);
+INSERT INTO `sys_menu` VALUES (6, '资源管理', 'system_menus', 1, 0, 5);
+INSERT INTO `sys_menu` VALUES (7, '文件列表', 'system_oss', 1, 0, 5);
+INSERT INTO `sys_menu` VALUES (8, '编辑', 'perm_users:edit', 3, 0, 3);
+INSERT INTO `sys_menu` VALUES (9, '启用/禁用', 'perm_users:updateStatus', 3, 0, 3);
+INSERT INTO `sys_menu` VALUES (10, '重置密码', 'perm_users:resetPw', 3, 0, 3);
+INSERT INTO `sys_menu` VALUES (11, '批量导入', 'perm_users:createMultUser', 3, 0, 3);
+INSERT INTO `sys_menu` VALUES (12, '新增', 'perm_roles:create', 3, 0, 4);
+INSERT INTO `sys_menu` VALUES (13, '编辑', 'perm_roles:edit', 3, 0, 4);
+INSERT INTO `sys_menu` VALUES (14, '删除', 'perm_roles:del', 3, 0, 4);
+INSERT INTO `sys_menu` VALUES (15, '关联用户/解除关联', 'perm_roles:bind', 3, 0, 4);
+INSERT INTO `sys_menu` VALUES (16, '添加', 'system_menus:create', 3, 0, 6);
+INSERT INTO `sys_menu` VALUES (17, '编辑', 'system_menus:edit', 3, 0, 6);
+INSERT INTO `sys_menu` VALUES (18, '删除', 'system_menus:del', 3, 0, 6);
 
 -- ----------------------------
 -- Table structure for sys_menu_perm
@@ -105,6 +105,13 @@ CREATE TABLE `sys_oss`  (
   `user_account` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '上传用户帐号',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of sys_oss
+-- ----------------------------
+INSERT INTO `sys_oss` VALUES (1, 'http://localhost:8081/347811e1f6da4221a09cee7f3c7b03ce.jpeg', 59975, 'image/jpeg', 'D:\\programmeWork\\kapok\\nest-admin\\upload\\347811e1f6da4221a09cee7f3c7b03ce.jpeg', '2021-11-23 21:13:01.820103', '头像', 1, 'admin');
+INSERT INTO `sys_oss` VALUES (2, 'http://localhost:8081/aa96fb05de9945f690e6d4b8a0f9b5e4.jpeg', 59767, 'image/jpeg', 'D:\\programmeWork\\kapok\\nest-admin\\upload\\aa96fb05de9945f690e6d4b8a0f9b5e4.jpeg', '2021-11-24 19:51:01.567326', '头像', 1, 'admin');
+INSERT INTO `sys_oss` VALUES (3, 'http://localhost:8081/static/67f57d2058984103afc54d164aff5648.jpeg', 59516, 'image/jpeg', 'D:\\programmeWork\\kapok\\nest-admin\\upload\\67f57d2058984103afc54d164aff5648.jpeg', '2021-11-24 20:31:04.633617', '头像', 1, 'admin');
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -179,7 +186,7 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, '$2a$10$JChCYKwJYbVV4ANalu2tBenViaF3fuQGAJ1NSBOtR8HJNCV7H710i', '$2a$10$JChCYKwJYbVV4ANalu2tBe', 'admin', '18374914568', '123@qq.com', 1, 'http://localhost:8081/static/59f38c077c758158297d70061431429b.jpg', 1, '2021-11-16 00:09:23.000000', '2021-11-16 00:09:23.000000');
+INSERT INTO `sys_user` VALUES (1, '$2a$10$JChCYKwJYbVV4ANalu2tBenViaF3fuQGAJ1NSBOtR8HJNCV7H710i', '$2a$10$JChCYKwJYbVV4ANalu2tBe', 'admin', '18374914568', '123@qq.com', 1, 'http://localhost:8081/static/67f57d2058984103afc54d164aff5648.jpeg', 1, '2021-11-16 00:09:23.000000', '2021-11-16 00:09:23.000000');
 
 -- ----------------------------
 -- Table structure for sys_user_role
