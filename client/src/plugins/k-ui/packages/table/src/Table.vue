@@ -10,7 +10,7 @@
         <el-table-column type="index" :label="indexLabel" align="center" width="50" v-if="index" :index="indexMethodFn" ></el-table-column>
         <el-table-column v-bind="column"  v-for="(column, index) in columns" :align="column.align || 'center'" :key="`${column.label}_${index}`" >
           <template #default="scope" v-if="!!column.slot">
-            <slot :name="column.prop" v-bind="{ ...scope, $index: indexMethodFn(index) }"  >{{ scope.row[column.prop] || column.default  || '' }}</slot>
+            <slot :name="column.prop" v-bind="{ ...scope, $index: indexMethodFn(index) }"  >{{ scope.row[column.prop] }}</slot>
           </template>
         </el-table-column>
       </template>
@@ -109,8 +109,18 @@ export default defineComponent({
   },
   inheritAttrs: false,
   setup (props) {
-    // 表格
-    const list = computed(() => props.data.list)
+    // 表格,
+    // 默认值
+    const list = computed(() => props.data.list.map(v => {
+      if (props.mode === 'config') {
+        props.columns.forEach(column => {
+          if (!v[column.prop]) {
+            v[column.prop] = column.default || ''
+          }
+        })
+      }
+      return v
+    }))
     const total = computed(() => props.data.total)
     const elTableRef = ref()
     // 继承 el-table methods
@@ -138,6 +148,7 @@ export default defineComponent({
       if (!props.continuousIndex) return index + 1
       return (pager.value.page - 1) * pager.value.size + index + 1
     }
+    console.log(props, 890)
     return {
       list,
       total,
