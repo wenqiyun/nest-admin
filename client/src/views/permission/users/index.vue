@@ -23,7 +23,7 @@
     </div>
     <div class="filter-container" v-show="loadingMore" v-perm="'perm_users:createMultUser'">
       <div class="filter-item">
-        <el-upload style="display: inline-block;margin-right: 20px;" v-bind="uploadConfig" :show-file-list="false">
+        <el-upload v-bind="uploadConfig">
           <el-button type="primary">批量上传</el-button>
         </el-upload>
         <el-button @click="downloadEvent">下载模板</el-button>
@@ -56,6 +56,7 @@ import UploadErr from './components/UploadErr.vue'
 import { defineComponent, ref } from 'vue'
 import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult, dowmloadUserTemplate } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { MyUploadFile } from '@/common/types/upload-file'
 import { downLoad, jsonTimeFormat } from '@/utils/index'
 import { ListResultData, Pagination } from '@/common/types/apiResult.type'
 import { IKTableColumn, IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
@@ -183,8 +184,10 @@ export default defineComponent({
       headers: {
         Authorization: getToken()
       },
+      style: 'display: inline-block;margin-right: 20px;',
       accept: acceptFileType,
-      beforeUpload: (file: any) => {
+      showFileList: false,
+      beforeUpload: (file: MyUploadFile) => {
         if (acceptFileType.indexOf(file.type) === -1) {
           ElMessage({ type: 'error', message: '文件类型错误，请上传 .xlsx 或 .xls 文件' })
           return false
