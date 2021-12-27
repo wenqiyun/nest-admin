@@ -11,7 +11,7 @@ import { RouteDto } from './dto/route.dto'
 
 @ApiTags('权限路由相关')
 @ApiBearerAuth()
-@ApiExtraModels(ResultData, MenuEntity)
+@ApiExtraModels(ResultData, MenuEntity, RouteDto)
 @Controller('perm')
 export class PermController {
   constructor(private readonly permService: PermService) {}
