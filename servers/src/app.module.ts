@@ -47,7 +47,7 @@ import { OssModule } from './system/oss/oss.module'
       useFactory: (config: ConfigService) => {
         return {
           type: 'mysql',
-          entities: ['dist/**/*.entity{.ts,.js}'],
+          entities: [`${__dirname}/**/*.entity{.ts,.js}`],
           keepConnectionAlive: true,
           ...config.get('db.mysql'),
           // cache: {
