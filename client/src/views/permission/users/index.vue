@@ -44,25 +44,30 @@
     </k-table>
 
     <!-- 编辑用户 -->
-    <edit-user v-model="showUserEdit" :curr-id="currId" @change="updateUserSuccess"></edit-user>
+    <edit-user v-model="showUserEdit" :curr-id="currId" :all-roles="allRoles" @change="updateUserSuccess"></edit-user>
     <!-- 批量导入用户 有报错 -->
     <upload-err v-model="showUploadErr" v-bind="uploadErrData"></upload-err>
   </div>
 </template>
 
 <script lang="ts">
+import { defineComponent, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 import EditUser from './components/Edit.vue'
 import UploadErr from './components/UploadErr.vue'
-import { defineComponent, ref } from 'vue'
-import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult, dowmloadUserTemplate } from '@/api/user'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { MyUploadFile } from '@/common/types/upload-file'
-import { downLoad, jsonTimeFormat } from '@/utils/index'
-import { ListResultData, Pagination } from '@/common/types/apiResult.type'
-import { IKTableColumn, IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+
 import appConfig from '@/config/index'
 import { getToken } from '@/utils/storage'
 import hasPerm from '@/utils/perm'
+import { downLoad, jsonTimeFormat } from '@/utils/index'
+
+import { MyUploadFile } from '@/common/types/upload-file'
+import { ListResultData, Pagination } from '@/common/types/apiResult.type'
+import { IKTableProps } from '@/plugins/k-ui/packages/table/src/Table.type'
+
+import { getUserList, ICreateOrUpdateUser, QueryUserList, resetPassword, updateStatus, UserApiResult, dowmloadUserTemplate } from '@/api/user'
+import { getRoleList, RoleApiResult } from '@/api/role'
 
 export default defineComponent({
   components: { EditUser, UploadErr },
@@ -95,6 +100,7 @@ export default defineComponent({
       status: '',
       account: ''
     })
+
     // 查询表格事件
     const queryReq = ref<QueryUserList>({ page: 1, size: 10 })
     const getUserListFn = async ({ page, size }: Pagination) => {
@@ -108,7 +114,15 @@ export default defineComponent({
         ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
       }
     }
-
+    // 查询所有角色
+    const allRoles = ref<RoleApiResult[]>([])
+    const getAllRoles = async () => {
+      const res = await getRoleList()
+      if (res?.code === 200) {
+        allRoles.value = res.data as RoleApiResult[]
+      }
+    }
+    getAllRoles()
     // 编辑用户相关
     const showUserEdit = ref<boolean>(false)
     const currId = ref<string>()
@@ -217,6 +231,7 @@ export default defineComponent({
       userData,
       searchEvent,
       getUserListFn,
+      allRoles,
       // 编辑用户相关
       currId,
       showUserEdit,

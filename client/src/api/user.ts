@@ -19,6 +19,7 @@ export interface UserApiResult extends BaseResult {
 
 export interface ICreateOrUpdateUser extends UserApiResult {
   password?: string
+  roleIds?: number[]
 }
 
 export interface QueryUserList extends Pagination {
@@ -100,6 +101,13 @@ export function updateStatus (data: ICreateOrUpdateUser): Promise<ResultData<nul
     url: `${config.api.baseUrl}/user/status/change`,
     method: ApiMethodContants.PUT,
     data
+  })
+}
+
+export function getUserRoleIds (id: string): Promise<ResultData<number[]>> {
+  return http.request<ResultData<number[]>>({
+    url: `${config.api.baseUrl}/user/${id}/role`,
+    method: ApiMethodContants.GET
   })
 }
 

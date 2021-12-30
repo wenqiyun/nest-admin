@@ -13,6 +13,11 @@
       <el-form-item label="邮箱" prop="email">
         <el-input v-model.trim="userForm.email"></el-input>
       </el-form-item>
+      <el-form-item label="角色" prop="roleIds">
+        <el-select v-model="userForm.roleIds" placeholder="请选择角色" multiple clearable>
+          <el-option v-for="role in allRoles" :key="role.id" :label="role.name" :value="role.id"></el-option>
+        </el-select>
+      </el-form-item>
     </el-form>
 
     <!-- 头像编辑 -->
@@ -25,12 +30,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, PropType, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
 import { UPDATE_MODEL_EVENT } from '@/common/contants'
-import { ICreateOrUpdateUser, getUserInfo as getUserInfoApi, updateUser } from '@/api/user'
 import { validPhone, validEmail } from '@/utils/validate'
+
+import { ICreateOrUpdateUser, getUserInfo as getUserInfoApi, updateUser, getUserRoleIds as getUserRoleIdsApi } from '@/api/user'
+import { RoleApiResult } from '@/api/role'
 
 import AvatarCropper from './AvatarCropper.vue'
 
@@ -47,6 +54,10 @@ export default defineComponent({
       default: () => {
         return null
       }
+    },
+    allRoles: {
+      type: Array as PropType<RoleApiResult[]>,
+      default: () => []
     }
   },
   emits: [UPDATE_MODEL_EVENT, 'change'],
@@ -56,10 +67,12 @@ export default defineComponent({
     const loading = ref(false)
     // 表单
     const userForm = ref<ICreateOrUpdateUser>({
+      id: '',
       account: '',
       phoneNum: '',
       email: '',
-      avatar: ''
+      avatar: '',
+      roleIds: []
     })
 
     // dialog
@@ -68,10 +81,12 @@ export default defineComponent({
       visible.value = val
       if (val) {
         userForm.value = {
+          id: '',
           account: '',
           phoneNum: '',
           email: '',
-          avatar: ''
+          avatar: '',
+          roleIds: []
         }
       }
     })
@@ -107,6 +122,9 @@ export default defineComponent({
       email: [
         { required: true, message: '请输入邮箱', trigger: 'blur' },
         { validator: validEmailFn, trigger: 'blur' }
+      ],
+      roleIds: [
+        { type: 'array', required: true, message: '请至少选择一个角色', trigger: 'blur' }
       ]
     }
 
@@ -116,6 +134,13 @@ export default defineComponent({
       loading.value = false
       if (res?.code === 200) {
         userForm.value = res.data as ICreateOrUpdateUser
+      }
+    }
+
+    const getUserRoleIds = async (currId: string) => {
+      const res = await getUserRoleIdsApi(currId)
+      if (res?.code === 200) {
+        userForm.value.roleIds = res.data as number[]
       }
     }
 
@@ -137,7 +162,10 @@ export default defineComponent({
     }
 
     watch(() => props.modelValue, (val: boolean) => {
-      val && props.currId && getUserInfo(props.currId)
+      if (val && props.currId) {
+        getUserInfo(props.currId)
+        getUserRoleIds(props.currId)
+      }
     })
     // 头像编辑
     const showAvatarCropper = ref<boolean>(false)

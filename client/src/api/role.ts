@@ -2,7 +2,7 @@ import http from '@/utils/request'
 import config from '@/config/index'
 import { BaseResult, Pagination, ResultData, ApiMethodContants } from '@/common/types/apiResult.type'
 
-export interface QueryRoleList extends Pagination {
+export interface QueryRoleList {
  name?: string
 }
 
@@ -24,11 +24,11 @@ export interface ICreateOrUpdateRole {
   menuIds?: string[]
 }
 
-export function getRoleList (params: QueryRoleList): Promise<ResultData<RoleApiResult[]>> {
+export function getRoleList (params?: QueryRoleList): Promise<ResultData<RoleApiResult[]>> {
   return http.request<ResultData<RoleApiResult[]>>({
     url: `${config.api.baseUrl}/role/list`,
     method: ApiMethodContants.GET,
-    params
+    ...{ params }
   })
 }
 

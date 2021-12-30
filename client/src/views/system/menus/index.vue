@@ -2,7 +2,7 @@
   <div class="menu-container">
     <div class="menu-tree-wrapper">
       <el-scrollbar>
-        <el-tree :data="menuTree" :props="{ label: 'name' }" node-key="id" highlight-current default-expand-all @node-click="menuClickEvent"></el-tree>
+        <el-tree :data="menuTree" :props="{ label: 'name', children: 'children', disabled: 'disabled' }" node-key="id" highlight-current default-expand-all @node-click="menuClickEvent"></el-tree>
       </el-scrollbar>
     </div>
     <div class="menu-content">

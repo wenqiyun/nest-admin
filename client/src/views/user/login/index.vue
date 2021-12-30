@@ -30,14 +30,14 @@
 
 <script lang="ts">
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ResultData } from '@/common/types/apiResult.type'
 import { UserLogin, login as loginApi, LoginResult } from '@/api/user'
 
 import { setToken } from '@/utils/storage'
 
-export default {
+export default defineComponent({
   setup () {
     const formData = ref<UserLogin>({ account: '', password: '' })
     const autoLogin = ref<boolean>(false)
@@ -85,7 +85,7 @@ export default {
       loading
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>

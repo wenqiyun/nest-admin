@@ -206,7 +206,11 @@ export class UserService {
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
     if (existing.status === 0) return ResultData.fail(AppHttpCode.USER_ACCOUNT_FORBIDDEN, '当前用户已被禁用，不可更新用户信息')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
-      return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, dto)
+      const roleIds = dto.roleIds || []
+      await this.createOrUpdateUserRole({ userId: dto.id, roleIds })
+      const userInfo = classToPlain(dto)
+      delete userInfo.roleIds
+      return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, userInfo)
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后重试')
     await this.redisService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), dto)

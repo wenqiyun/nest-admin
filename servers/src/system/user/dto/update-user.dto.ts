@@ -30,4 +30,9 @@ export class  UpdateUserDto {
   @IsString({ message: 'avatar 类型错误，正确类型 string' })
   @IsOptional()
   readonly avatar?: string
+
+  @ApiProperty({ description: '角色 id 集合', required: false })
+  @IsString( { each: true, message: '角色id集合中存在类型错误，正确类型 string[]' })
+  @IsOptional()
+  readonly roleIds?: string[]
 }

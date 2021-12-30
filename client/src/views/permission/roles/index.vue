@@ -40,7 +40,7 @@ export default defineComponent({
   setup () {
     const loading = ref<boolean>(false)
     const roleData = ref<Array<RoleApiResult>>([])
-    const currRole = ref<RoleApiResult>({ name: '', remark: '' })
+    const currRole = ref<RoleApiResult>({ id: '', name: '', remark: '' })
 
     const roleClickEvent = (role: RoleApiResult) => {
       currRole.value = role
@@ -52,13 +52,13 @@ export default defineComponent({
       loading.value = false
       if (res.code === 200) {
         roleData.value = res.data as RoleApiResult[]
-        if (req.page === 1 && roleData.value?.length > 0) {
+        if (roleData.value?.length > 0) {
           roleClickEvent(roleData.value[0])
         }
       }
     }
 
-    getRoleListFn({ size: 10, page: 1 })
+    getRoleListFn({})
 
     // 新增
     const roleInfoRef = ref()
@@ -67,7 +67,7 @@ export default defineComponent({
     }
 
     const roleChange = (type: 'edit' | 'del') => {
-      getRoleListFn({ size: 10, page: 1 })
+      getRoleListFn({})
     }
 
     return {
