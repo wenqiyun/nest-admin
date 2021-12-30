@@ -205,15 +205,15 @@ export class UserService {
     const existing = await this.findOneById(dto.id)
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
     if (existing.status === 0) return ResultData.fail(AppHttpCode.USER_ACCOUNT_FORBIDDEN, '当前用户已被禁用，不可更新用户信息')
+    const roleIds = dto.roleIds || []
+    const userInfo = classToPlain(dto)
+    delete userInfo.roleIds
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
-      const roleIds = dto.roleIds || []
       await this.createOrUpdateUserRole({ userId: dto.id, roleIds })
-      const userInfo = classToPlain(dto)
-      delete userInfo.roleIds
       return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, userInfo)
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后重试')
-    await this.redisService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), dto)
+    await this.redisService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), userInfo)
     // redis 更新用户信息
     return ResultData.ok()
   }
@@ -315,7 +315,10 @@ export class UserService {
         return await transactionalEntityManager.delete(UserRoleEntity, { roleId, userId: userIds })
       }
     })
-    if (res) return ResultData.ok()
+    if (res) {
+      await this.redisService.del(userIds.map(userId => getRedisKey(RedisKeyPrefix.USER_ROLE, userId)))
+      return ResultData.ok()
+    }
     else return ResultData.fail(AppHttpCode.SERVICE_ERROR, `${createOrCancel === 'create' ? '添加' : '取消'}用户关联失败`)
   }
 

@@ -14,7 +14,8 @@
         <el-input v-model.trim="userForm.email"></el-input>
       </el-form-item>
       <el-form-item label="角色" prop="roleIds">
-        <el-select v-model="userForm.roleIds" placeholder="请选择角色" multiple clearable>
+        <!-- 编辑框打开过一次，当用户角色id集合为[]时，下拉框选中不重置，使用 v-if 修复 -->
+        <el-select v-if='visible' v-model="userForm.roleIds" placeholder="请选择角色" multiple clearable>
           <el-option v-for="role in allRoles" :key="role.id" :label="role.name" :value="role.id"></el-option>
         </el-select>
       </el-form-item>
