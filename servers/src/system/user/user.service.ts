@@ -213,7 +213,8 @@ export class UserService {
       return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, userInfo)
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后重试')
-    await this.redisService.hmset(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id), userInfo)
+
+    const num = await this.redisService.del(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id))
     // redis 更新用户信息
     return ResultData.ok()
   }

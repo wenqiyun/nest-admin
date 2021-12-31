@@ -44,6 +44,7 @@ export class RedisUtilService {
 
   async del(keys: string | string[]): Promise<number> {
     if (!keys || keys === '*') return 0
+    if (typeof keys === 'string') keys = [keys]
     return await this.client.del(...keys)
   }
 
