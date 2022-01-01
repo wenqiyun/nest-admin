@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Like, Repository, getManager, getConnection, In } from 'typeorm'
+import { Like, Repository, getManager, In } from 'typeorm'
 import { classToPlain, plainToClass } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt'
@@ -14,10 +14,13 @@ import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { AppHttpCode } from '../../common/enums/code.enum'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { validPhone, validEmail } from '../../common/utils/validate'
-import { UserType } from '../../common/enums/user.enum'
+import { UserType } from '../../common/enums/common.enum'
+
+import { UserRoleService } from './user-role.service'
 
 import { UserEntity } from './user.entity'
 import { UserRoleEntity } from './user-role.entity'
+
 
 import { CreateUserDto } from './dto/create-user.dto'
 import { FindUserListDto } from './dto/find-user-list.dto'
@@ -30,11 +33,10 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-    @InjectRepository(UserRoleEntity)
-    private readonly userRoleRepo: Repository<UserRoleEntity>,
     private readonly config: ConfigService,
     private readonly redisService: RedisUtilService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly userRoleService: UserRoleService
   ) {}
 
   async findOneById(id: string): Promise<UserEntity> {
@@ -277,7 +279,7 @@ export class UserService {
   async findList(dto: FindUserListDto): Promise<ResultData> {
     const { page, size, account, status, roleId, hasCurrRole = 0 } = dto
     if (roleId) {
-      const result = await this.findUserByRoleId(roleId, page, size, !!Number(hasCurrRole))
+      const result = await this.userRoleService.findUserByRoleId(roleId, page, size, !!Number(hasCurrRole))
       return result
     }
     const where = {
@@ -295,78 +297,6 @@ export class UserService {
     return ResultData.ok(classToPlain(user))
   }
 
-  /** 查询单个用户所拥有的角色 id */
-  async findUserRole(id: string): Promise<ResultData> {
-    const roleIds = await this.findUserRoleByUserId(id)
-    return ResultData.ok(roleIds)
-  }
-
-  /** 生成用户角色关系, 单个角色， 多个用户 */
-  async createOrCancelUserRole(userIds: string[], roleId: string, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
-    const res = await getManager().transaction(async (transactionalEntityManager) => {
-      if (createOrCancel === 'create') {
-        const dto = plainToClass(
-          UserRoleEntity,
-          userIds.map((userId) => {
-            return { roleId, userId }
-          }),
-        )
-        return await transactionalEntityManager.save<UserRoleEntity>(dto)
-      } else {
-        return await transactionalEntityManager.delete(UserRoleEntity, { roleId, userId: userIds })
-      }
-    })
-    if (res) {
-      await this.redisService.del(userIds.map(userId => getRedisKey(RedisKeyPrefix.USER_ROLE, userId)))
-      return ResultData.ok()
-    }
-    else return ResultData.fail(AppHttpCode.SERVICE_ERROR, `${createOrCancel === 'create' ? '添加' : '取消'}用户关联失败`)
-  }
-
-  /**
-   * @param roleId 角色 id
-   * @param isCorrelation 是否相关联， true 查询拥有当前 角色的用户， false 查询无当前角色的用户
-   */
-  private async findUserByRoleId(roleId: string, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
-    let res
-    if (isCorrelation) {
-      res = await getConnection()
-        .createQueryBuilder('sys_user', 'su')
-        .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = su.id')
-        .where('su.status = 1 and ur.role_id = :roleId', { roleId })
-        .skip(size * (page - 1))
-        .take(size)
-        .getManyAndCount()
-    } else {
-      res = await getConnection()
-        .createQueryBuilder('sys_user', 'su')
-        .where((qb: any) => {
-          const subQuery = qb.subQuery()
-            .select(['sur.user_id'])
-            .from('sys_user_role', 'sur')
-            .where('sur.role_id = :roleId', { roleId })
-            .getQuery()
-          return `su.status = 1 and su.id not in ${subQuery}`
-        })
-        .skip(size * (page - 1))
-        .take(size)
-        .getManyAndCount()
-    }
-    return ResultData.ok({ list: classToPlain(res[0]), total: res[1] })
-  }
-
-  /** 根据用户id 查询角色 id 集合 */
-  async findUserRoleByUserId(id: string): Promise<number[]> {
-    const userRoleKey = getRedisKey(RedisKeyPrefix.USER_ROLE, id)
-    const result = await this.redisService.get(userRoleKey)
-    if (result) return JSON.parse(result)
-    else {
-      const roles = await this.userRoleRepo.find({ select: ['roleId'], where: { userId: id } })
-      const roleIds = roles.map((v) => v.roleId)
-      await this.redisService.set(userRoleKey, JSON.stringify(roleIds))
-      return roleIds
-    }
-  }
 
   /**
    * 生成 token 与 刷新 token

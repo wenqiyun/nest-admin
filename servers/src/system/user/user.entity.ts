@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
 
-import { UserType, UserStatus } from '../../common/enums/user.enum'
+import { UserType, StatusValue } from '../../common/enums/common.enum'
 
 @Entity('sys_user')
 export class UserEntity {
@@ -30,16 +30,16 @@ export class UserEntity {
   @Column({ type: 'varchar', comment: '邮箱地址', default: '' })
   public email: string
 
-  @ApiProperty({ type: String, description: '所属状态: 1-有效，0-禁用' })
-  @Column({ type: 'tinyint', default: 1, comment: '所属状态: 1-有效，0-禁用' })
-  public status: UserStatus
+  @ApiProperty({ type: String, description: '所属状态: 1-有效，0-禁用', enum: StatusValue })
+  @Column({ type: 'tinyint', default: StatusValue.NORMAL, comment: '所属状态: 1-有效，0-禁用' })
+  public status: StatusValue
 
   @ApiProperty({ type: String, description: '头像url' })
   @Column({ type: 'varchar', comment: '头像地址' })
   public avatar: string
 
-  @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户' })
-  @Column({ type: 'tinyint', default: 1, comment: '帐号类型：0-超管， 1-普通用户' })
+  @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户', enum: UserType })
+  @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '帐号类型：0-超管， 1-普通用户' })
   public type: UserType
 
   @ApiProperty({ type: Date, description: '创建时间' })

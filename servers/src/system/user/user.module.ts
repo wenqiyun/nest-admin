@@ -5,11 +5,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 
 import { AuthModule } from '../auth/auth.module'
 
-import { BaseController } from './base.controller'
 import { UserEntity } from './user.entity'
-import { UserService } from './user.service'
-import { UserController } from './user.controller'
 import { UserRoleEntity } from './user-role.entity'
+
+import { UserRoleService } from './user-role.service'
+import { UserService } from './user.service'
+
+import { BaseController } from './base.controller'
+import { UserController } from './user.controller'
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity, UserRoleEntity]),
@@ -25,7 +28,7 @@ import { UserRoleEntity } from './user-role.entity'
       inject: [ConfigService],
     }),
   ],
-  providers: [UserService],
+  providers: [UserService, UserRoleService],
   controllers: [BaseController, UserController],
   exports: [UserService],
 })

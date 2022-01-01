@@ -1,15 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsNotEmpty, IsString, Length, IsIn, Min, IsArray, IsOptional } from 'class-validator'
+import { IsNumber, IsNotEmpty, IsString, Length, IsIn, Min, IsArray, IsOptional, IsNumberString } from 'class-validator';
+
+import { MenuType } from '../../../common/enums/common.enum'
+
 import { MenuPermDto } from './menu-perm.dto'
 
 export class UpdateMenuDto {
   @ApiProperty({ description: '菜单id', required: false })
-  @IsString({ message: 'id 类型错误' })
+  @IsNumberString({}, { message: 'id 类型错误' })
   @IsNotEmpty()
   id: string
 
   @ApiProperty({ description: '父级菜单', required: false })
-  @IsString({ message: 'parentId 类型错误' })
+  @IsNumberString({}, { message: 'parentId 类型错误' })
   @IsNotEmpty({ message: 'parentId 必须填入值' })
   @IsOptional()
   readonly parentId?: number
@@ -25,11 +28,11 @@ export class UpdateMenuDto {
   @IsOptional()
   readonly code?: string
 
-  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮', required: false })
+  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮', enum: MenuType, required: false })
   @IsNumber({}, { message: 'type 类型错误' })
-  @IsIn([1, 2, 3], { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
+  @IsIn([MenuType.MENU, MenuType.TAB, MenuType.BUTTON], { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
   @IsOptional()
-  readonly type?: 1 | 2 | 3
+  readonly type?: MenuType
 
   @ApiProperty({ description: '排序', required: false })
   @IsNumber({}, { message: '排序传值错误' })

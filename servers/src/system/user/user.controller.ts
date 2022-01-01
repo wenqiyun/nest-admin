@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, A
 import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'
+import { UserRoleService } from './user-role.service'
 import { UserEntity } from './user.entity'
 
 import { ResultData } from '../../common/utils/result'
@@ -17,7 +18,10 @@ import { UpdateStatusDto } from './dto/update-status.dto'
 @ApiExtraModels(ResultData, UserEntity)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userRoleService: UserRoleService
+  ) {}
 
   @Get('list')
   @ApiOperation({ summary: '查询用户列表' })
@@ -38,14 +42,14 @@ export class UserController {
   @ApiOperation({ summary: '查询用户角色id集合' })
   @ApiResult(Number, true)
   async findUserRole (@Param('id') id: string): Promise<ResultData> {
-    return await this.userService.findUserRole(id)
+    return await this.userRoleService.findUserRole(id)
   }
 
   @Post('role/update')
   @ApiOperation({ summary: '角色添加/取消关联用户' })
   @ApiResult()
   async createOrCancelUserRole (@Body() dto: CreateOrUpdateRoleUsersDto): Promise<ResultData> {
-    return await this.userService.createOrCancelUserRole(dto.userIds, dto.roleId, dto.type)
+    return await this.userRoleService.createOrCancelUserRole(dto.userIds, dto.roleId, dto.type)
   }
 
   @Put()

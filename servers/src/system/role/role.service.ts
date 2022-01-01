@@ -4,7 +4,7 @@ import { Repository, getManager, Like, getConnection } from 'typeorm'
 import { plainToClass } from 'class-transformer'
 
 import { AppHttpCode } from '../../common/enums/code.enum'
-import { UserType } from '../../common/enums/user.enum'
+import { UserType } from '../../common/enums/common.enum'
 import { ResultData } from '../../common/utils/result'
 
 import { UserRoleEntity } from '../user/user-role.entity'

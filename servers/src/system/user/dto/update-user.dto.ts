@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsMobilePhone, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, IsIn, IsNumberString } from 'class-validator'
+import { StatusValue } from '../../../common/enums/common.enum';
 
 export class  UpdateUserDto {
   @ApiProperty({ description: '用户编码' })
@@ -7,11 +8,11 @@ export class  UpdateUserDto {
   @IsNotEmpty({ message: 'id 不能为空' })
   readonly id: string
 
-  @ApiProperty({ description: '所属状态: 1-有效，0-禁用', required: false })
+  @ApiProperty({ description: '所属状态: 1-有效，0-禁用', enum: StatusValue, required: false })
   @IsNumber({}, { message: 'status 类型错误，正确类型 number' })
   @IsOptional()
-  @IsIn([0, 1], { message: 'status 可选值0/1，分别表示有效禁用' })
-  readonly status?: 1 | 0
+  @IsIn([StatusValue.NORMAL, StatusValue.FORBIDDEN], { message: 'status 可选值0/1，分别表示有效禁用' })
+  readonly status?: StatusValue
 
   @ApiProperty({ description: '手机号', required: false })
   @IsString({ message: 'phoneNum 类型错误，正确类型 string' })

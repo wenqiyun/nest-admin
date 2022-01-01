@@ -7,7 +7,7 @@ import { ALLOW_ANON } from '../decorators/allow-anon.decorator'
 import { ALLOW_NO_PERM } from '../decorators/perm.decorator'
 
 import { PermService } from '../../system/perm/perm.service'
-import { UserType } from '../enums/user.enum'
+import { UserType } from '../enums/common.enum'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
