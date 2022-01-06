@@ -40,17 +40,17 @@
 import { computed, defineComponent, nextTick, ref } from 'vue'
 // import TableColumn from './TableColumn'
 
-const methodArr = [
-  'clearSelection',
-  'toggleRowSelection',
-  'toggleAllSelection',
-  'toggleRowExpansion',
-  'setCurrentRow',
-  'clearSort',
-  'clearFilter',
-  'doLayout',
-  'sort'
-]
+// const methodArr = [
+//   'clearSelection',
+//   'toggleRowSelection',
+//   'toggleAllSelection',
+//   'toggleRowExpansion',
+//   'setCurrentRow',
+//   'clearSort',
+//   'clearFilter',
+//   'doLayout',
+//   'sort'
+// ]
 export default defineComponent({
   name: 'KTable',
   // components: { TableColumn },
@@ -109,12 +109,11 @@ export default defineComponent({
   },
   inheritAttrs: false,
   setup (props) {
-    // 表格,
     // 默认值
     const list = computed(() => props.data.list.map(v => {
       if (props.mode === 'config') {
         props.columns.forEach(column => {
-          if (!v[column.prop]) {
+          if ([null, undefined, ''].includes(v[column.prop])) {
             v[column.prop] = column.default || ''
           }
         })
@@ -123,17 +122,6 @@ export default defineComponent({
     }))
     const total = computed(() => props.data.total)
     const elTableRef = ref()
-    // 继承 el-table methods
-    const methodObj = {} // 存储方法
-    nextTick(() => {
-      if (elTableRef.value) {
-        methodArr.forEach(m => {
-          methodObj[m] = (...args) => {
-            elTableRef.value[m].apply(elTableRef, ...args)
-          }
-        })
-      }
-    })
     // 分页逻辑
     const pager = ref({ page: props.pageNum, size: props.pageSize })
     // 刷新， 用户分页 / 暴露给父组件
@@ -148,14 +136,13 @@ export default defineComponent({
       if (!props.continuousIndex) return index + 1
       return (pager.value.page - 1) * pager.value.size + index + 1
     }
-    console.log(props, 890)
+
     return {
       list,
       total,
       pager,
       elTableRef,
       indexMethodFn,
-      ...methodObj,
       refreshData
     }
   }

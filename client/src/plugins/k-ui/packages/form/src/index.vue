@@ -45,12 +45,12 @@ import { defineComponent, nextTick, ref, watch } from 'vue'
  * 而 radio checkbox select checkboxButton 一般在表单中都使用 xxx组，所以这些需要单独处理
  */
 // 表单方法
-const methodArr = [
-  'validate',
-  'validateField',
-  'resetFields',
-  'clearValidate'
-]
+// const methodArr = [
+//   'validate',
+//   'validateField',
+//   'resetFields',
+//   'clearValidate'
+// ]
 export default defineComponent({
   name: 'KForm',
   props: {
@@ -78,16 +78,6 @@ export default defineComponent({
   setup (props, { emit }) {
     // 表单本身
     const elFormRef = ref(null)
-    const methodObj = {}
-    nextTick(() => {
-      if (elFormRef.value) {
-        methodArr.forEach(m => {
-          methodObj[m] = (...args) => {
-            elFormRef.value[m].apply(elFormRef, ...args)
-          }
-        })
-      }
-    })
     // 处理 form-item
     const formItemsTmp = ref(null)
     watch(() => props.formItems, (val) => {
@@ -109,9 +99,9 @@ export default defineComponent({
       emit('update:modelValue', val)
     })
     return {
+      elFormRef,
       modelValueTmp,
-      formItemsTmp,
-      ...methodObj
+      formItemsTmp
     }
   }
 })
