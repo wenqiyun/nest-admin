@@ -89,7 +89,7 @@ const getUserListFn = async ({ page, size }: Pagination) => {
 |refreshData|在 auto 为 true 且设置了 callback 时，调用此方法可重新加载数据|可传参数 { page, size }, 不传时 page 默认当前页||
 
 > [!TIP]
-> table 方法和事件除本文档特殊说明外，其他方法和事件则完全兼容 el-table 方法事件，具体请查看 [el-table](https://element-plus.gitee.io/zh-CN/component/table.html#table-%E4%BA%8B%E4%BB%B6)
+> el-table 原生方法调用如： ``` k-table(ref 实例).elTableRef.sort() ```, el-table 方法具体请查看 [el-table](https://element-plus.gitee.io/zh-CN/component/table.html#table-%E4%BA%8B%E4%BB%B6)
 
 #### column
 |属性|说明|类型|是否必须|默认值|
