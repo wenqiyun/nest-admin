@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsArray, IsIn, IsNumber, IsString, Min, IsNotEmpty, Length, IsNumberString } from 'class-validator';
+import { $enum } from 'ts-enum-util'
 
 import { MenuType } from '../../../common/enums/common.enum'
 
@@ -21,9 +22,9 @@ export class CreateMenuDto {
   readonly code: string
 
 
-  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮', enum: MenuType, required: false })
+  @ApiProperty({ description: '菜单类型 1-菜单/目录 2-tabs 3-按钮', enum: $enum(MenuType).getValues(), required: false })
   @IsNumber({}, { message: 'type 类型错误' })
-  @IsIn([MenuType.MENU, MenuType.TAB, MenuType.BUTTON], { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
+  @IsIn($enum(MenuType).getValues(), { message: 'type 的值只能是 1/2/3，且分别表示菜单/tabs/按钮' })
   readonly type: MenuType
 
   @ApiProperty({ description: '排序', required: false })

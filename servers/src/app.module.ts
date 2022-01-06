@@ -18,6 +18,8 @@ import { MenuModule } from './system/menu/menu.module'
 import { RoleModule } from './system/role/role.module'
 import { PermModule } from './system/perm/perm.module'
 import { OssModule } from './system/oss/oss.module'
+import { DeptModule } from './system/dept/dept.module'
+import { PostModule } from './system/post/post.module'
 
 @Module({
   imports: [
@@ -73,6 +75,8 @@ import { OssModule } from './system/oss/oss.module'
     MenuModule,
     RoleModule,
     PermModule,
+    DeptModule,
+    PostModule,
     OssModule
     // 业务功能模块
   ],

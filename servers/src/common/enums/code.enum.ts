@@ -25,5 +25,11 @@ export enum AppHttpCode {
   /** 角色不可删除 */
   ROLE_NOT_DEL = 300005,
   /** 菜单未找到 */
-  MENU_NOT_FOUND = 400004
+  MENU_NOT_FOUND = 400004,
+  /** 部门不存在 */
+  DEPT_NOT_FOUND = 500004,
+  /** 岗位已存在 */
+  POST_REPEAT = 600001,
+  /** 岗位不存在 */
+  POST_NOT_FOUND = 600004
 }

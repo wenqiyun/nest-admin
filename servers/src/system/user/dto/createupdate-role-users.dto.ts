@@ -11,7 +11,7 @@ export class CreateOrUpdateRoleUsersDto {
   @IsNotEmpty({ message: 'roleId 不能为空' })
   roleId: string
 
-  @ApiProperty({ description: 'create/cancel' })
+  @ApiProperty({ description: 'create/cancel', enum: ['create', 'cancel'] })
   @IsString({ message: 'type 类型错误，正确类型 string' })
   @IsIn(['create', 'cancel'], { message: '可选值为 create / cancel' })
   type: 'create' | 'cancel'

@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Put, Delete, Param, Query } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiExtraModels } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiExtraModels, ApiBearerAuth } from '@nestjs/swagger';
 
 import { ApiResult } from '../../common/decorators/api-result.decorator'
 import { ResultData } from '../../common/utils/result'
@@ -11,6 +11,7 @@ import { CreateMenuDto } from './dto/create-menu.dto'
 import { UpdateMenuDto } from './dto/update-menu.dto'
 
 @ApiTags('菜单与菜单权限管理')
+@ApiBearerAuth()
 @ApiExtraModels(ResultData,MenuEntity,  MenuPermEntity)
 @Controller('menu')
 export class MenuController {

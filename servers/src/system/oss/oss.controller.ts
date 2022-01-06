@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UploadedFile, UseInterceptors, Query, HttpCode, Body, Req } from '@nestjs/common'
 import { FileInterceptor } from "@nestjs/platform-express"
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiExtraModels, ApiBearerAuth } from '@nestjs/swagger';
 
 import { ResultData } from '../../common/utils/result'
 
@@ -9,9 +9,10 @@ import { FindOssDto } from './dto/find-oss.dto'
 import { ApiResult } from '../../common/decorators/api-result.decorator'
 import { OssEntity } from './oss.entity'
 
-@ApiTags('文件存储相关')
-@Controller('oss')
+@ApiTags('文件存储')
+@ApiBearerAuth()
 @ApiExtraModels(ResultData, OssEntity)
+@Controller('oss')
 export class OssController {
   constructor(private readonly ossService: OssService) {}
 

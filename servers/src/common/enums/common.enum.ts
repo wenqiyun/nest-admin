@@ -6,10 +6,10 @@ export enum UserType {
 }
 
 export enum StatusValue {
-  /** 正常使用 */
-  NORMAL = 1,
   /** 禁用 */
-  FORBIDDEN = 0
+  FORBIDDEN = 0,
+  /** 正常使用 */
+  NORMAL = 1
 }
 
 export enum MenuType {

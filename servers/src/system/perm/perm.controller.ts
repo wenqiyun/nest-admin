@@ -9,7 +9,7 @@ import { MenuEntity } from '../menu/menu.entity'
 import { PermService } from './perm.service'
 import { RouteDto } from './dto/route.dto'
 
-@ApiTags('权限路由相关')
+@ApiTags('权限路由')
 @ApiBearerAuth()
 @ApiExtraModels(ResultData, MenuEntity, RouteDto)
 @Controller('perm')
@@ -18,6 +18,7 @@ export class PermController {
 
   @Get('all')
   @ApiOperation({ summary: '获取app 所有路由' })
+  @ApiResult(RouteDto)
   async findAppAllRoutes(): Promise<ResultData> {
     return await this.permService.findAppAllRoutes()
   }

@@ -1,5 +1,5 @@
 import { Controller, Query, Get, Param, Put, Body, Post, UseInterceptors, UploadedFile, HttpCode, Req } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, ApiExtraModels } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, ApiExtraModels, ApiBearerAuth } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'
@@ -14,7 +14,8 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { CreateOrUpdateRoleUsersDto } from './dto/createupdate-role-users.dto'
 import { UpdateStatusDto } from './dto/update-status.dto'
 
-@ApiTags('用户账号相关')
+@ApiTags('用户账号')
+@ApiBearerAuth()
 @ApiExtraModels(ResultData, UserEntity)
 @Controller('user')
 export class UserController {

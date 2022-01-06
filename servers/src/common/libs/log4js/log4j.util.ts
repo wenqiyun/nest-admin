@@ -33,7 +33,7 @@ export class ContextTrace {
   ) {}
 }
 
-Log4js.addLayout('nest-admin', (logConfig: any) => {
+Log4js.addLayout('Nest-Admin', (logConfig: any) => {
   return (logEvent: Log4js.LoggingEvent): string => {
     let moduleName: string = ''
     let position: string = ''
@@ -60,8 +60,8 @@ Log4js.addLayout('nest-admin', (logConfig: any) => {
     // 日志组成部分
     const messageOutput: string = messageList.join(' ')
     const positionOutput: string = position ? ` [${position}]` : ''
-    const typeOutput = `[${logConfig.type}] ${logEvent.pid.toString()}   - `
-    const dateOutput = `${dayjs(logEvent.startTime).format('YYYY-MM-DD HH:mm:ss')}`
+    const typeOutput = `[${logConfig.type}] ${logEvent.pid.toString()} - `
+    const dateOutput = `${dayjs(logEvent.startTime).format('YYYY/MM/DD HH:mm:ss')}`
     const moduleOutput: string = moduleName ? `[${moduleName}] ` : '[LoggerService] '
     let levelOutput = `[${logEvent.level}] ${messageOutput}`
 
@@ -95,7 +95,8 @@ Log4js.addLayout('nest-admin', (logConfig: any) => {
 Log4js.configure({
   appenders: {
     console: {
-      type: 'console'
+      type: 'console',
+      layout: { type: 'Nest-Admin' }
     },
     access: {
       type: 'dateFile',

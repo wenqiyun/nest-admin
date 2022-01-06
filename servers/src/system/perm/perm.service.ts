@@ -90,7 +90,14 @@ export class PermService {
         .getRawMany()
     }
     const menus = userType === UserType.SUPER_ADMIN ?
-      menusResult : menusResult.map(v => ({
+      menusResult.map(v => ({
+        id: v.id,
+        parentId: v.parent_id,
+        name: v.name,
+        type: v.type,
+        code: v.code,
+        orderNum: v.order_num
+      })) : menusResult.map(v => ({
         id: v.m_id,
         parentId: v.m_parent_id,
         name: v.m_name,

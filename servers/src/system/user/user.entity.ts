@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
+import { $enum } from 'ts-enum-util'
 
 import { UserType, StatusValue } from '../../common/enums/common.enum'
 
@@ -30,7 +31,7 @@ export class UserEntity {
   @Column({ type: 'varchar', comment: '邮箱地址', default: '' })
   public email: string
 
-  @ApiProperty({ type: String, description: '所属状态: 1-有效，0-禁用', enum: StatusValue })
+  @ApiProperty({ type: String, description: '所属状态: 1-有效，0-禁用', enum: $enum(StatusValue).getValues() })
   @Column({ type: 'tinyint', default: StatusValue.NORMAL, comment: '所属状态: 1-有效，0-禁用' })
   public status: StatusValue
 
@@ -38,7 +39,7 @@ export class UserEntity {
   @Column({ type: 'varchar', comment: '头像地址' })
   public avatar: string
 
-  @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户', enum: UserType })
+  @ApiProperty({ type: Number, description: '帐号类型：0-超管， 1-普通用户', enum: $enum(UserType).getValues() })
   @Column({ type: 'tinyint', default: UserType.ORDINARY_USER, comment: '帐号类型：0-超管， 1-普通用户' })
   public type: UserType
 
