@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { computed, defineComponent, nextTick, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 // import TableColumn from './TableColumn'
 
 // const methodArr = [

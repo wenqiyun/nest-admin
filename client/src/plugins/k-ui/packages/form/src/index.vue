@@ -1,9 +1,9 @@
 <template>
-  <el-form ref="elFormRef" :model="modelValue" :inline="inline" :style="inline ? 'display: inline-block' : ''" v-bind="$attrs">
-    <slot v-if="mode === render"></slot>
+  <el-form ref="elFormRef" :model="modelValue" :inline="inline" v-bind="$attrs">
+    <slot v-if="mode === 'render'"></slot>
     <template v-else>
       <el-form-item v-for="(item, index) in formItemsTmp" :label="item.label" :prop="item.prop" :key="index">
-        <template v-if="item.mode !== 'slot'">
+        <template v-if="!item.slot">
           <!-- 输入框，文本域 -->
           <el-input v-if="item.component === 'el-input'" v-model.trim="modelValueTmp[item.prop]" v-bind="item"></el-input>
           <!-- 选择器 -->
@@ -28,8 +28,8 @@
         </template>
       </el-form-item>
     </template>
+    <slot name="footer"></slot>
   </el-form>
-  <slot name="footer"></slot>
 </template>
 
 <script>
