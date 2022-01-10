@@ -1,6 +1,8 @@
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 
+import { mw as requestIpMw } from 'request-ip'
+
 import express from 'express'
 
 import { NestFactory } from '@nestjs/core'
@@ -61,6 +63,9 @@ async function bootstrap() {
   // 防止跨站请求伪造
   // 设置 csrf 保存 csrfToken
   // app.use(csurf())
+
+  // 获取真实 ip
+  app.use(requestIpMw({ attributeName: 'ip' }))
 
   // 全局验证
   app.useGlobalPipes(
