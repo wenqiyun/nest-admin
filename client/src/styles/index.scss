@@ -31,11 +31,14 @@
 .filter-container {
   padding-bottom: 10px;
 
-  .filter-item:not(:last-child) {
+  .filter-item {
     display: inline-block;
     vertical-align: middle;
     margin-bottom: 10px;
-    margin-right: 10px;
+
+    &:not(:last-child) {
+      margin-right: 10px;
+    }
   }
 
   .filter-action-wrapper {

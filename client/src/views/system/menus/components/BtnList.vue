@@ -5,14 +5,14 @@
         <el-button @click="addOrEditEvent('add')" :disabled="!currMenu?.id" v-perm="'system_menus:create'">添加</el-button>
       </div>
     </div>
-    <k-table :data="{ list: btnList }" :loading="loading" :is-pager="false" mode="render" border stripe size="mini">
+    <k-table :data="{ list: btnList }" :loading="loading" :is-pager="false" mode="render" border stripe>
       <el-table-column label="按钮名称" prop="name" align="center"></el-table-column>
       <el-table-column label="唯一编码" prop="code" align="center"></el-table-column>
       <el-table-column label="排序" prop="orderNum" align="center"></el-table-column>
       <el-table-column label="操作" align="center" width="200" v-if="isActionPerm">
         <template #default="{ row }">
-          <el-button type="primary" plain size="mini" @click="addOrEditEvent('edit', row)" v-perm="'system_menus:edit'">编辑</el-button>
-          <el-button type="danger" plain size="mini" @click="delBtnFn(row)" v-perm="'system_menus:del'">删除</el-button>
+          <el-button type="primary" size="small" plain @click="addOrEditEvent('edit', row)" v-perm="'system_menus:edit'">编辑</el-button>
+          <el-button type="danger" size="small" plain @click="delBtnFn(row)" v-perm="'system_menus:del'">删除</el-button>
         </template>
       </el-table-column>
     </k-table>
@@ -43,7 +43,7 @@ export default defineComponent({
       loading.value = true
       const res = await getOneMenuBtns(id)
       loading.value = false
-      if (res.code === 200) {
+      if (res?.code === 200) {
         btnList.value = res.data as Array<MenuApiResult>
       }
     }
@@ -63,7 +63,7 @@ export default defineComponent({
         loading.value = true
         const res = await delMenu(row.id as string)
         loading.value = false
-        if (res.code === 200) {
+        if (res?.code === 200) {
           ElMessage({ message: `按钮【${row.name}】删除成功`, type: 'success' })
           getOneMenuBtnsFn(props.currMenu.id)
         } else {
@@ -105,7 +105,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .btn-list-wrapper {
   width: 100%;
-  height: calc(100% - 430px);
+  height: calc(100% - 420px);
   margin-top: 10px;
   padding: 10px;
   background: #fff;

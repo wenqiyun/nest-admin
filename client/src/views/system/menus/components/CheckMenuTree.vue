@@ -1,6 +1,6 @@
 <template>
   <el-dialog title="选择上级菜单" v-model="visible" top="5vh" width="350px" :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-tree :data="menuTree" highlight-current default-expand-all node-key="id" :props="{ label: 'name' }" @node-click="checkedParent"></el-tree>
+    <el-tree :data="menuTree" highlight-current default-expand-all node-key="id" :props="{ label: 'name', children: 'children', disabled: 'disabled'}" @node-click="checkedParent"></el-tree>
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
       <el-button type="primary" @click="confirmEvent">确定</el-button>

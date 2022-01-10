@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { getManager, Repository, In } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
-import { plainToClass } from 'class-transformer'
+import { plainToInstance } from 'class-transformer'
 
 import { ResultData } from '../../common/utils/result'
 import { AppHttpCode } from '../../common/enums/code.enum'
@@ -28,9 +28,9 @@ export class MenuService {
       if (!parentMenu) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
     }
     const menu = await getManager().transaction(async (transactionalEntityManager) => {
-      const menu = await transactionalEntityManager.save<MenuEntity>(plainToClass(MenuEntity, dto))
+      const menu = await transactionalEntityManager.save<MenuEntity>(plainToInstance(MenuEntity, dto))
       await transactionalEntityManager.save<MenuPermEntity>(
-        plainToClass(
+        plainToInstance(
           MenuPermEntity,
           dto.menuPermList.map((perm) => {
             return { menuId: menu.id, ...perm }
@@ -45,12 +45,12 @@ export class MenuService {
 
   async findAllMenu(hasBtn: boolean): Promise<ResultData> {
     const where = { ...(!hasBtn ? { type: In([1, 2]) } : null) }
-    const menuList = await this.menuRepo.find({ where })
+    const menuList = await this.menuRepo.find({ where, order: { orderNum: 'DESC', id: 'DESC' } })
     return ResultData.ok(menuList)
   }
 
   async findBtnByParentId(parentId: string): Promise<ResultData> {
-    const btnList = await this.menuRepo.find({ where: { parentId } })
+    const btnList = await this.menuRepo.find({ where: { parentId }, order: { orderNum: 'DESC', id: 'DESC' } })
     return ResultData.ok(btnList)
   }
 
@@ -78,11 +78,11 @@ export class MenuService {
       // 删除原有接口权限权限
       await this.menuPermRepo.delete({ menuId: dto.id })
       // 新的接口权限入库
-      const menuPermDto = plainToClass(MenuPermEntity, dto.menuPermList.map(v => ({ menuId: dto.id, ...v })))
+      const menuPermDto = plainToInstance(MenuPermEntity, dto.menuPermList.map(v => ({ menuId: dto.id, ...v })))
       await transactionalEntityManager.save<MenuPermEntity>(menuPermDto)
       delete dto.menuPermList
       // excludeExtraneousValues true  排除无关属性。 但需要在实体类中 将属性使用 @Expose()
-      return await transactionalEntityManager.update<MenuEntity>(MenuEntity, dto.id, plainToClass(MenuEntity, dto))
+      return await transactionalEntityManager.update<MenuEntity>(MenuEntity, dto.id, plainToInstance(MenuEntity, dto))
     })
     if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前菜单更新失败，请稍后重试')
     return ResultData.ok()

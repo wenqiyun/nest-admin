@@ -7,7 +7,7 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click" @visible-change="visibleChange">
         <div class="avatar-wrapper">
-          <el-avatar :src="userAvatar" fit="fill" class="user-avatar" shape="circle"></el-avatar>
+          <el-avatar :src="userAvatar" fit="fill" :size="40" class="user-avatar" shape="circle"></el-avatar>
           <div class="user-name-wrapper">
             <span>{{ userAccount }}</span>
             <svg-icon icon-class="arrow-down" :class="{ 'arrow-down': true, 'arrow-down-show': dropdownShow }"></svg-icon>

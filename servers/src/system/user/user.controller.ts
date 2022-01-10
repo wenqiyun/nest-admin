@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiOkResponse, ApiBody, ApiConsumes, ApiQuery, A
 import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'
-import { UserRoleService } from './user-role.service'
+import { UserRoleService } from './role/user-role.service'
 import { UserEntity } from './user.entity'
 
 import { ResultData } from '../../common/utils/result'
@@ -41,7 +41,7 @@ export class UserController {
 
   @Get(':id/role')
   @ApiOperation({ summary: '查询用户角色id集合' })
-  @ApiResult(Number, true)
+  @ApiResult(String, true)
   async findUserRole (@Param('id') id: string): Promise<ResultData> {
     return await this.userRoleService.findUserRole(id)
   }

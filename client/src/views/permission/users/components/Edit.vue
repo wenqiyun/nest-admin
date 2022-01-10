@@ -66,31 +66,16 @@ export default defineComponent({
     const userFormRef = ref()
 
     const loading = ref(false)
-    // 表单
-    const userForm = ref<ICreateOrUpdateUser>({
+    const userFormDefault = {
       id: '',
       account: '',
       phoneNum: '',
       email: '',
       avatar: '',
       roleIds: []
-    })
-
-    // dialog
-    const visible = ref<boolean>(false)
-    watch(() => props.modelValue, (val) => {
-      visible.value = val
-      if (val) {
-        userForm.value = {
-          id: '',
-          account: '',
-          phoneNum: '',
-          email: '',
-          avatar: '',
-          roleIds: []
-        }
-      }
-    })
+    }
+    // 表单
+    const userForm = ref<ICreateOrUpdateUser>({ ...userFormDefault })
 
     const handleClose = () => {
       emit(UPDATE_MODEL_EVENT, false)
@@ -162,12 +147,6 @@ export default defineComponent({
       })
     }
 
-    watch(() => props.modelValue, (val: boolean) => {
-      if (val && props.currId) {
-        getUserInfo(props.currId)
-        getUserRoleIds(props.currId)
-      }
-    })
     // 头像编辑
     const showAvatarCropper = ref<boolean>(false)
     const avatarClickEvent = () => {
@@ -177,6 +156,19 @@ export default defineComponent({
     const uploadSuccess = (url: string) => {
       userForm.value.avatar = url
     }
+
+    // dialog
+    const visible = ref<boolean>(false)
+    watch(() => props.modelValue, (val: boolean) => {
+      visible.value = val
+      if (val) {
+        userForm.value = { ...userFormDefault }
+      }
+      if (val && props.currId) {
+        getUserInfo(props.currId)
+        getUserRoleIds(props.currId)
+      }
+    })
 
     return {
       loading,

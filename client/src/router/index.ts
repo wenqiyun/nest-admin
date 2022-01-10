@@ -9,6 +9,13 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     hidden: true,
     component: () => import('@/views/user/login/index.vue'),
     meta: { title: '登录' }
+  },
+  {
+    path: '/',
+    component: Layout,
+    children: [
+      { path: 'depts', component: () => import('@/views/permission/depts/index.vue'), name: 'perm_posts', meta: { title: '部门管理' } }
+    ]
   }
 ]
 
@@ -34,7 +41,9 @@ export const asyncRoutes: Array<AppRouteRecordRaw> = [
     redirect: '/perm/users',
     children: [
       { path: 'users', component: () => import('@/views/permission/users/index.vue'), name: 'perm_users', meta: { title: '用户管理' } },
-      { path: 'roles', component: () => import('@/views/permission/roles/index.vue'), name: 'perm_roles', meta: { title: '角色管理' } }
+      { path: 'roles', component: () => import('@/views/permission/roles/index.vue'), name: 'perm_roles', meta: { title: '角色管理' } },
+      { path: 'depts', component: () => import('@/views/permission/depts/index.vue'), name: 'perm_posts', meta: { title: '部门管理' } },
+      { path: 'posts', component: () => import('@/views/permission/posts/index.vue'), name: 'perm_posts', meta: { title: '岗位管理' } }
     ]
   },
   {

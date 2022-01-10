@@ -46,7 +46,7 @@ export default defineComponent({
     const currRolePermMenus = ref<Array<string>>([])
     const getRolePermsFn = async (id: string) => {
       const res = await getRolePerms(id)
-      if (res.code === 200) {
+      if (res?.code === 200) {
         currRolePermMenus.value = res.data as string[]
       }
     }
@@ -87,12 +87,12 @@ export default defineComponent({
       } else {
         res = await createRole(req)
       }
-      if (res.code === 200) {
+      if (res?.code === 200) {
         ElMessage({ message: `${req.id ? '更新' : '创建'}成功`, type: 'success' })
         emit('change')
         handleClose()
       } else {
-        ElMessage({ message: res.msg, type: 'error' })
+        ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
       }
     }
 

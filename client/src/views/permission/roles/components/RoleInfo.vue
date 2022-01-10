@@ -88,7 +88,7 @@ export default defineComponent({
 
     const getMenuList = async () => {
       const res = await getCurrUserMenuPerms()
-      if (res.code === 200) {
+      if (res?.code === 200) {
         menuList.value = res.data as MenuApiResult[]
       }
     }

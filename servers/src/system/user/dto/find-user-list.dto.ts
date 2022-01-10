@@ -16,4 +16,10 @@ export class FindUserListDto extends ReqListQuery {
 
   @ApiProperty({ description: '当 roleId 不为空时有效，查询用户是否有当前权限 0-无当前角色 1-有当前角色', enum: [0, 1], required: false })
   hasCurrRole?: 0 | 1
+
+  @ApiProperty({ description: '部门id', required: false })
+  deptId?: string
+
+  @ApiProperty({ description: '当 deptId 不为空时有效，查询用户是否在当前部门 0-不在当前部门 1-在当前部门', enum: [0, 1], required: false })
+  hasCurrDept?: 0 | 1
 }

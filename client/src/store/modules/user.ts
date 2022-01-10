@@ -108,7 +108,7 @@ const actions: ActionTree<UserState, RootState> & UserAction = {
   getAllApiPerms: async ({ commit, state }: AugmentedActionContext): Promise<Array<PermApiResult>> => {
     if (state.allApiPerms.length > 0) return state.allApiPerms
     const res = await getAllApiPerms()
-    if (res.code === 200) {
+    if (res?.code === 200) {
       const apiPerms = res.data as Array<PermApiResult>
       commit(UserMutationContants.SET_ALLAPIPERMS, apiPerms)
       return apiPerms

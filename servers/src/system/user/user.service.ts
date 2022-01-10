@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Like, Repository, getManager, In } from 'typeorm'
-import { classToPlain, plainToClass } from 'class-transformer'
+import { instanceToPlain, plainToInstance } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt'
 import xlsx from 'node-xlsx'
@@ -16,10 +16,10 @@ import { RedisUtilService } from '../../common/libs/redis/redis.service'
 import { validPhone, validEmail } from '../../common/utils/validate'
 import { UserType } from '../../common/enums/common.enum'
 
-import { UserRoleService } from './user-role.service'
+import { UserRoleService } from './role/user-role.service'
 
 import { UserEntity } from './user.entity'
-import { UserRoleEntity } from './user-role.entity'
+import { UserRoleEntity } from './role/user-role.entity'
 
 
 import { CreateUserDto } from './dto/create-user.dto'
@@ -42,12 +42,12 @@ export class UserService {
   async findOneById(id: string): Promise<UserEntity> {
     const redisKey = getRedisKey(RedisKeyPrefix.USER_INFO, id)
     const result = await this.redisService.hGetAll(redisKey)
-    // plainToClass 去除 password slat
-    let user = plainToClass(UserEntity, result, { enableImplicitConversion: true })
+    // plainToInstance 去除 password slat
+    let user = plainToInstance(UserEntity, result, { enableImplicitConversion: true })
     if (!user?.id) {
       user = await this.userRepo.findOne(id)
-      user = plainToClass(UserEntity, { ...user }, { enableImplicitConversion: true })
-      await this.redisService.hmset(redisKey, classToPlain(user), ms(this.config.get<string>('jwt.expiresin')) / 1000)
+      user = plainToInstance(UserEntity, { ...user }, { enableImplicitConversion: true })
+      await this.redisService.hmset(redisKey, instanceToPlain(user), ms(this.config.get<string>('jwt.expiresin')) / 1000)
     }
     user.password = ''
     user.salt = ''
@@ -68,12 +68,12 @@ export class UserService {
     // 防止重复创建 end
     const salt = await genSalt()
     dto.password = await hash(dto.password, salt)
-    // plainToClass  忽略转换 @Exclude 装饰器
-    const user = plainToClass(UserEntity, { salt, ...dto }, { ignoreDecorators: true })
+    // plainToInstance  忽略转换 @Exclude 装饰器
+    const user = plainToInstance(UserEntity, { salt, ...dto }, { ignoreDecorators: true })
     const result = await getManager().transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.save<UserEntity>(user)
     })
-    return ResultData.ok(classToPlain(result))
+    return ResultData.ok(instanceToPlain(result))
   }
 
   /**
@@ -197,9 +197,9 @@ export class UserService {
       v['salt'] = salt
     })
     const result =  await getManager().transaction(async (transactionalEntityManager) => {
-      return await transactionalEntityManager.save<UserEntity>(plainToClass(UserEntity, userArr, { ignoreDecorators: true }))
+      return await transactionalEntityManager.save<UserEntity>(plainToInstance(UserEntity, userArr, { ignoreDecorators: true }))
     })
-    return ResultData.ok(classToPlain(result))
+    return ResultData.ok(instanceToPlain(result))
   }
 
   /** 更新用户信息 */
@@ -208,7 +208,7 @@ export class UserService {
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
     if (existing.status === 0) return ResultData.fail(AppHttpCode.USER_ACCOUNT_FORBIDDEN, '当前用户已被禁用，不可更新用户信息')
     const roleIds = dto.roleIds || []
-    const userInfo = classToPlain(dto)
+    const userInfo = instanceToPlain(dto)
     delete userInfo.roleIds
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       await this.createOrUpdateUserRole({ userId: dto.id, roleIds })
@@ -259,7 +259,7 @@ export class UserService {
 
   /** 创建 or 更新用户-角色 */
   async createOrUpdateUserRole(dto: CreateOrUpdateUserRolesDto): Promise<ResultData> {
-    const userRoleList = plainToClass(
+    const userRoleList = plainToInstance(
       UserRoleEntity,
       dto.roleIds.map((roleId) => {
         return { roleId, userId: dto.userId }
@@ -275,9 +275,9 @@ export class UserService {
     return ResultData.ok()
   }
 
-  /** 查询用户列表 */
+  /** 查询用户列表, 需要重新写， 包含查询 角色、部门等 */
   async findList(dto: FindUserListDto): Promise<ResultData> {
-    const { page, size, account, status, roleId, hasCurrRole = 0 } = dto
+    const { page, size, account, status, roleId, hasCurrRole = 0, deptId, hasCurrDept = 0 } = dto
     if (roleId) {
       const result = await this.userRoleService.findUserByRoleId(roleId, page, size, !!Number(hasCurrRole))
       return result
@@ -287,14 +287,14 @@ export class UserService {
       ...(account ? { account: Like(`%${account}%`) } : null),
     }
     const users = await this.userRepo.findAndCount({ where, order: { id: 'DESC' }, skip: size * (page - 1), take: size })
-    return ResultData.ok({ list: classToPlain(users[0]), total: users[1] })
+    return ResultData.ok({ list: instanceToPlain(users[0]), total: users[1] })
   }
 
   /** 查询单个用户 */
   async findOne(id: string): Promise<ResultData> {
     const user = await this.findOneById(id)
     if (!user) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '该用户不存在或已删除')
-    return ResultData.ok(classToPlain(user))
+    return ResultData.ok(instanceToPlain(user))
   }
 
 

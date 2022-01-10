@@ -65,7 +65,7 @@ export default defineComponent({
       loading.value = true
       const res = await getOneMenuPerms(id)
       loading.value = false
-      if (res.code === 200) {
+      if (res?.code === 200) {
         const permList = res.data as Array<MenuPermApiResult>
         currApiPerms.value = permList.map(perm => `${perm.apiMethod.toUpperCase()},${perm.apiUrl}`)
       }
@@ -114,7 +114,7 @@ export default defineComponent({
         res = await createMenu(req)
       }
       loading.value = false
-      if (res.code === 200) {
+      if (res?.code === 200) {
         ElMessage({ message: `${req.id ? '更新' : '创建'}成功`, type: 'success' })
         emit('change')
         handleClose()

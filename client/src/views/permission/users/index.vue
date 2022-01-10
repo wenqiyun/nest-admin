@@ -31,15 +31,15 @@
     </div>
     <k-table ref="userTableRef" v-bind="userData" :callback="getUserListFn" :loading="loading" border stripe current-row-key="id" style="width: 100%">
       <template #avatar="{row}">
-        <el-avatar :src="row.avatar" shape="circle" :size="60"></el-avatar>
+        <el-avatar :src="row.avatar" shape="circle" :size="40"></el-avatar>
       </template>
       <template #status="{row}">
         <k-badge :type="row.status === 1 ? 'primary' : 'danger'" :content="row.status === 1 ? '使用中' : '已禁用'"></k-badge>
       </template>
       <template  #actions="{ row }">
-        <el-button type="primary" plain @click="showUserEditEvent(row)" v-if="row.status === 1" v-perm="'perm_users:edit'">编辑</el-button>
-        <el-button :type="row.status ? 'danger' : 'success'" plain @click="forbiddenEvent(row)" v-perm="'perm_users:updateStatus'">{{ row.status ? '禁用' : '启用' }}</el-button>
-        <el-button type="warning" plain @click="resetPasswordEvent(row)" v-if="row.status === 1" v-perm="'perm_users:resetPw'">重置密码</el-button>
+        <el-button type="primary" plain size="small" @click="showUserEditEvent(row)" v-if="row.status === 1" v-perm="'perm_users:edit'">编辑</el-button>
+        <el-button :type="row.status ? 'danger' : 'success'" plain size="small" @click="forbiddenEvent(row)" v-perm="'perm_users:updateStatus'">{{ row.status ? '禁用' : '启用' }}</el-button>
+        <el-button type="warning" plain size="small" @click="resetPasswordEvent(row)" v-if="row.status === 1" v-perm="'perm_users:resetPw'">重置密码</el-button>
       </template>
     </k-table>
 
@@ -85,7 +85,7 @@ export default defineComponent({
         { label: '手机号', prop: 'phoneNum', default: '--' },
         { label: '邮箱', prop: 'email', default: '--' },
         { label: '状态', prop: 'status', slot: true, width: '90' },
-        { label: '注册时间', prop: 'createDate', width: '90', formatter: (row: UserApiResult) => jsonTimeFormat(row.createDate as string) }
+        { label: '注册时间', prop: 'createDate', width: '100', formatter: (row: UserApiResult) => jsonTimeFormat(row.createDate as string) }
       ],
       index: true
     })
@@ -107,7 +107,7 @@ export default defineComponent({
       loading.value = true
       const res = await getUserList({ ...queryReq.value, page, size } as QueryUserList)
       loading.value = false
-      if (res.code === 200) {
+      if (res?.code === 200) {
         const data = res.data as ListResultData<UserApiResult>
         userData.value.data = data
       } else {

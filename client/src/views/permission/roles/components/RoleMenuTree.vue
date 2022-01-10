@@ -31,6 +31,7 @@ export default defineComponent({
     const menuTree = ref<Array<MenuApiResult>>([])
     // 从页面组件中拿取所拥有的菜单
     const menuList = inject<Ref<Array<MenuApiResult>>>('menus', ref([]))
+    console.log(menuList.value, 345)
     watch(() => menuList.value, (val) => {
       menuTree.value = arrToTree(val, { root: '0', pidKey: 'parentId' }) as MenuApiResult[]
     }, { immediate: true })

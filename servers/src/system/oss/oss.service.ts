@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { plainToClass, classToPlain } from 'class-transformer'
+import { plainToInstance, instanceToPlain } from 'class-transformer'
 import { Between, getManager, Repository } from 'typeorm'
 import * as fs from 'fs'
 import * as uuid from 'uuid'
@@ -49,7 +49,7 @@ export class OssService {
         userId: user.id,
         userAccount: user.account
       }
-      return plainToClass(OssEntity, ossFile)
+      return plainToInstance(OssEntity, ossFile)
     })
     const result = await getManager().transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.save<OssEntity>(ossList)
@@ -57,13 +57,13 @@ export class OssService {
     if(!result) {
       return ResultData.fail(AppHttpCode.SERVICE_ERROR, '文件存储失败，请稍后重新上传')
     }
-    return ResultData.ok(classToPlain(result))
+    return ResultData.ok(instanceToPlain(result))
   }
 
   async findList (search: FindOssDto): Promise<ResultData> {
     const { size, page, startDay, endDay } = search
     const where = startDay && endDay ? { createDate: Between(`${startDay} 00:00:00`, `${endDay} 23:59:59`) } : {}
     const res = await this.ossRepo.findAndCount({ order: { id: 'DESC' }, skip: size * (page - 1), take: size, where })
-    return ResultData.ok({ list: classToPlain(res[0]), total: res[1] })
+    return ResultData.ok({ list: instanceToPlain(res[0]), total: res[1] })
   }
 }

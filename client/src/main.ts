@@ -32,12 +32,8 @@ app.component('svg-icon', SvgIcon)
 
 app.use(ELementPlus, {
   locale: zhCn,
-  size: 'small'
+  size: 'default'
 }).use(store, key).use(router)
-
-// for (const iconName in ElIconModules) {
-//   app.component(`${iconName}`, ElIconModules[iconName])
-// }
 
 app.use(KUI)
 

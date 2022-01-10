@@ -38,6 +38,7 @@ export interface ICreateOrUpdateMenu {
   type?: string | 1 | 2 | 3
   orderNum?: string | number
   menuPermList?: Array<MenuPermApiResult>
+  children?: ICreateOrUpdateMenu[]
 }
 
 export function getAllMenu (hasBtn?: 0 | 1): Promise<ResultData<Array<MenuApiResult>>> {

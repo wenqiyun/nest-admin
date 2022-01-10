@@ -1,6 +1,6 @@
 <template>
   <div class="menu-container">
-    <div class="menu-tree-wrapper">
+    <div class="menu-tree-wrapper" v-loading="loading">
       <el-scrollbar>
         <el-tree :data="menuTree" :props="{ label: 'name', children: 'children', disabled: 'disabled' }" node-key="id" highlight-current default-expand-all @node-click="menuClickEvent"></el-tree>
       </el-scrollbar>
@@ -29,7 +29,7 @@ export default defineComponent({
     const getAllMenuList = async () => {
       loading.value = true
       const res = await getAllMenu()
-      if (res.code === 200) {
+      if (res?.code === 200) {
         allMenu.value = res.data as MenuApiResult[]
         menuTree.value = arrToTree(allMenu.value, { root: '0', pidKey: 'parentId' }) as MenuApiResult[]
       }
@@ -51,6 +51,7 @@ export default defineComponent({
     }
 
     return {
+      loading,
       menuTree,
       menuClickEvent,
       allMenu,

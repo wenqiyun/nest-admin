@@ -10,7 +10,7 @@
         <el-input v-model.trim="menuForm.name" placeholder="请输入菜单名称"></el-input>
       </el-form-item>
       <el-form-item label="上级菜单" prop="">
-        <el-button type="text" @click="isShowChecked = true">{{ menuObj[menuForm.parentId]?.name || '无' }}</el-button>
+        <el-button type="text" @click="isShowChecked = true">{{ menuObj[menuForm.parentId as string]?.name || '无' }}</el-button>
       </el-form-item>
       <el-form-item label="唯一编码" prop="code">
         <el-input v-model.trim="menuForm.code" placeholder="唯一标识"></el-input>
@@ -80,7 +80,7 @@ export default defineComponent({
     const menuPermObj = ref<Record<string, Array<string>>>({})
     const getOneMenuPermsFn = async (id: string) => {
       const res = await getOneMenuPerms(id)
-      if (res.code === 200) {
+      if (res?.code === 200) {
         const permList = res.data as Array<MenuPermApiResult>
         menuPermObj.value[String(id)] = permList.map(perm => `${perm.apiMethod.toUpperCase()},${perm.apiUrl}`)
         currApiPerms.value = menuPermObj.value[String(id)]
@@ -128,11 +128,12 @@ export default defineComponent({
       req.parentId = req.parentId || '0'
       let res
       if (req.id) {
+        delete req.children
         res = await updateMenu(req)
       } else {
         res = await createMenu(req)
       }
-      if (res.code === 200) {
+      if (res?.code === 200) {
         ElMessage({ message: `${req.id ? '更新' : '创建'}成功`, type: 'success' })
         isEditStatus.value = false
         emit('change')
@@ -149,7 +150,7 @@ export default defineComponent({
           type: 'warning'
         })
         const res = await delMenu(props.currMenu.id as string)
-        if (res.code === 200) {
+        if (res?.code === 200) {
           ElMessage({ message: `菜单【${props.currMenu.name}】删除成功`, type: 'success' })
           emit('change')
         } else {
@@ -198,7 +199,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .menu-form-wrapper {
   width: 100%;
-  height: 420px;
+  height: 410px;
   background: #fff;
 
   .menu-action {

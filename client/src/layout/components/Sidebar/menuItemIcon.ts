@@ -14,7 +14,7 @@ export default defineComponent({
     const vnodes: VNode[] = []
 
     if (icon.value) {
-      vnodes.push(h(SvgIcon, { iconClass: icon.value, style: 'font-size: 20px; vertical-align: middle;' }))
+      vnodes.push(h(SvgIcon, { iconClass: icon.value, style: 'font-size: 18px; vertical-align: middle;' }))
     }
     return () => vnodes
   }

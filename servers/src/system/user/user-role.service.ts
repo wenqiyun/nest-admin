@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { getManager, getConnection, Repository } from 'typeorm'
-import { plainToClass, classToPlain } from 'class-transformer'
+import { plainToInstance, instanceToPlain } from 'class-transformer'
 
 import { ResultData } from '../../common/utils/result'
 import { RedisUtilService } from '../../common/libs/redis/redis.service'
@@ -23,7 +23,7 @@ export class UserRoleService {
 
   /** 创建 or 更新用户-角色 */
   async createOrUpdateUserRole(dto: CreateOrUpdateUserRolesDto): Promise<ResultData> {
-    const userRoleList = plainToClass(
+    const userRoleList = plainToInstance(
       UserRoleEntity,
       dto.roleIds.map((roleId) => {
         return { roleId, userId: dto.userId }
@@ -43,7 +43,7 @@ export class UserRoleService {
   async createOrCancelUserRole(userIds: string[], roleId: string, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
     const res = await getManager().transaction(async (transactionalEntityManager) => {
       if (createOrCancel === 'create') {
-        const dto = plainToClass(
+        const dto = plainToInstance(
           UserRoleEntity,
           userIds.map((userId) => {
             return { roleId, userId }
@@ -96,7 +96,7 @@ export class UserRoleService {
         .take(size)
         .getManyAndCount()
     }
-    return ResultData.ok({ list: classToPlain(res[0]), total: res[1] })
+    return ResultData.ok({ list: instanceToPlain(res[0]), total: res[1] })
   }
 
   /** 根据用户id 查询角色 id 集合 */

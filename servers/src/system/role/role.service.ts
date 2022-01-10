@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, getManager, Like, getConnection } from 'typeorm'
-import { plainToClass } from 'class-transformer'
+import { plainToInstance } from 'class-transformer'
 
 import { AppHttpCode } from '../../common/enums/code.enum'
 import { UserType } from '../../common/enums/common.enum'
 import { ResultData } from '../../common/utils/result'
 
-import { UserRoleEntity } from '../user/user-role.entity'
+import { UserRoleEntity } from '../user/role/user-role.entity'
 
 import { RoleEntity } from './role.entity'
 import { RoleMenuEntity } from './role-menu.entity'
@@ -28,11 +28,11 @@ export class RoleService {
   ) {}
 
   async create(dto: CreateRoleDto, user: UserEntity): Promise<ResultData> {
-    const role = plainToClass(RoleEntity, dto)
+    const role = plainToInstance(RoleEntity, dto)
     const res = await getManager().transaction(async (transactionalEntityManager) => {
-      const result = await transactionalEntityManager.save<RoleEntity>(plainToClass(RoleEntity, role))
+      const result = await transactionalEntityManager.save<RoleEntity>(plainToInstance(RoleEntity, role))
       if (result) {
-        const roleMenus = plainToClass(
+        const roleMenus = plainToInstance(
           RoleMenuEntity,
           dto.menuIds.map((menuId) => {
             return { menuId, roleId: result.id }
@@ -42,7 +42,7 @@ export class RoleService {
         if (user.type === UserType.ORDINARY_USER) {
           // 如果是 一般用户，则需要将 他创建的角色绑定他自身， 超管用户因为可以查看所有角色，则不需要绑定
           const userRole = { userId: user.id, roleId: result.id }
-          await transactionalEntityManager.save<UserRoleEntity>(plainToClass(UserRoleEntity, userRole))
+          await transactionalEntityManager.save<UserRoleEntity>(plainToInstance(UserRoleEntity, userRole))
         }
       }
       return result
@@ -59,7 +59,7 @@ export class RoleService {
         await transactionalEntityManager.delete(RoleMenuEntity, { roleId: dto.id })
         await transactionalEntityManager.save(
           RoleMenuEntity,
-          plainToClass(
+          plainToInstance(
             RoleMenuEntity,
             dto.menuIds?.map((menuId) => {
               return { menuId, roleId: dto.id }
@@ -68,7 +68,7 @@ export class RoleService {
         )
       }
       const updateRole = { id: dto.id, ...(dto.name ? { name: dto.name } : null), ...(dto.remark ? { remark: dto.remark } : null) }
-      const result = await transactionalEntityManager.update<RoleEntity>(RoleEntity, dto.id, plainToClass(RoleEntity, updateRole))
+      const result = await transactionalEntityManager.update<RoleEntity>(RoleEntity, dto.id, plainToInstance(RoleEntity, updateRole))
       return result
     })
     if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前角色更新失败，请稍后尝试')

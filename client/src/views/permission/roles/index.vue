@@ -4,7 +4,7 @@
       <h3 class="roles__tip">
         <span>全部角色</span>
         <span class="fr clearfix tip-action">
-          <el-button size="mini" @click="addRoleEvent" v-perm="'perm_roles:create'">新增</el-button>
+          <el-button @click="addRoleEvent" v-perm="'perm_roles:create'">新增</el-button>
         </span>
       </h3>
       <el-scrollbar wrap-class="scrollbar-list" v-loading="loading">
@@ -50,7 +50,7 @@ export default defineComponent({
       loading.value = true
       const res = await getRoleList(req)
       loading.value = false
-      if (res.code === 200) {
+      if (res?.code === 200) {
         roleData.value = res.data as RoleApiResult[]
         if (roleData.value?.length > 0) {
           roleClickEvent(roleData.value[0])
