@@ -9,13 +9,6 @@ export const constantRoutes: Array<AppRouteRecordRaw> = [
     hidden: true,
     component: () => import('@/views/user/login/index.vue'),
     meta: { title: '登录' }
-  },
-  {
-    path: '/',
-    component: Layout,
-    children: [
-      { path: 'depts', component: () => import('@/views/permission/depts/index.vue'), name: 'perm_posts', meta: { title: '部门管理' } }
-    ]
   }
 ]
 
