@@ -24,7 +24,7 @@ export class MenuService {
   async create(dto: CreateMenuDto): Promise<ResultData> {
     if (dto.parentId !== '0') {
       // 查询当前父级菜单是否存在
-      const parentMenu = await this.menuRepo.findOne({ id: dto.parentId })
+      const parentMenu = await this.menuRepo.findOne({ where: { id: dto.parentId } })
       if (!parentMenu) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
     }
     const menu = await getManager().transaction(async (transactionalEntityManager) => {
@@ -60,7 +60,7 @@ export class MenuService {
   }
 
   async deleteMenu(id: string): Promise<ResultData> {
-    const existing = await this.menuRepo.findOne({ id })
+    const existing = await this.menuRepo.findOne({ where: { id } })
     if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.delete(MenuPermEntity, { menuId: id })
@@ -72,7 +72,7 @@ export class MenuService {
   }
 
   async updateMenu(dto: UpdateMenuDto): Promise<ResultData> {
-    const existing = await this.menuRepo.findOne({ id: dto.id })
+    const existing = await this.menuRepo.findOne({ where: { id: dto.id } })
     if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       // 删除原有接口权限权限

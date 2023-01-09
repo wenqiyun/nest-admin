@@ -38,5 +38,5 @@ export class OssEntity {
 
   @ApiProperty({ description: '上传时间' })
   @CreateDateColumn({ type: 'timestamp', name: 'create_date', comment: '创建时间' })
-  createDate: Date
+  createDate: Date | string
 }

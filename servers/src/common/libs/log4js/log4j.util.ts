@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Path from 'path'
-import * as Log4js from 'log4js'
-import * as Util from 'util'
+import Log4js from 'log4js'
+import Util from 'util'
 import dayjs from 'dayjs' // 处理时间的工具
 import * as StackTrace from 'stacktrace-js'
 import Chalk from 'chalk'
@@ -8,7 +9,9 @@ import config from '../../../config/index'
 
 const appLogDirConfig = config().app.logger.dir
 
-const baseLogPath = Path.normalize(Path.isAbsolute(appLogDirConfig) ? appLogDirConfig : Path.join(process.cwd(), appLogDirConfig))
+const baseLogPath = Path.normalize(
+  Path.isAbsolute(appLogDirConfig) ? appLogDirConfig : Path.join(process.cwd(), appLogDirConfig)
+)
 
 // 日志级别
 export enum LoggerLevel {
@@ -20,7 +23,7 @@ export enum LoggerLevel {
   WARN = 'WARN',
   ERROR = 'ERROR',
   FATAL = 'FATAL',
-  OFF = 'OFF',
+  OFF = 'OFF'
 }
 
 // 内容跟踪类
@@ -29,14 +32,14 @@ export class ContextTrace {
     public readonly context: string,
     public readonly path?: string,
     public readonly lineNumber?: number,
-    public readonly columnNumber?: number,
+    public readonly columnNumber?: number
   ) {}
 }
 
 Log4js.addLayout('Nest-Admin', (logConfig: any) => {
   return (logEvent: Log4js.LoggingEvent): string => {
-    let moduleName: string = ''
-    let position: string = ''
+    let moduleName = ''
+    let position = ''
 
     // 日志组装
     const messageList: string[] = []
@@ -106,7 +109,7 @@ Log4js.configure({
       daysToKeep: 60,
       numBackups: 3,
       category: 'http',
-      keepFileExt: true,
+      keepFileExt: true
     },
     app: {
       type: 'dateFile',
@@ -114,14 +117,14 @@ Log4js.configure({
       alwaysIncludePattern: true,
       layout: {
         type: 'pattern',
-        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}',
+        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}'
       },
       // 日志文件按日期（天）切割
       pattern: 'yyyyMMdd',
       daysToKeep: 60,
       // maxLogSize: 10485760,
       numBackups: 3,
-      keepFileExt: true,
+      keepFileExt: true
     },
     errorFile: {
       type: 'dateFile',
@@ -129,32 +132,32 @@ Log4js.configure({
       alwaysIncludePattern: true,
       layout: {
         type: 'pattern',
-        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}',
+        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}'
       },
       // 日志文件按日期（天）切割
       pattern: 'yyyyMMdd',
       daysToKeep: 60,
       // maxLogSize: 10485760,
       numBackups: 3,
-      keepFileExt: true,
+      keepFileExt: true
     },
     errors: {
       type: 'logLevelFilter',
       level: 'ERROR',
-      appender: 'errorFile',
-    },
+      appender: 'errorFile'
+    }
   },
   categories: {
     default: {
       appenders: ['console', 'app', 'errors'],
-      level: 'DEBUG',
+      level: 'DEBUG'
     },
     info: { appenders: ['console', 'app', 'errors'], level: 'info' },
     access: { appenders: ['console', 'app', 'errors'], level: 'info' },
-    http: { appenders: ['access'], level: 'DEBUG' },
+    http: { appenders: ['access'], level: 'DEBUG' }
   },
   pm2: true, // 使用 pm2 来管理项目时，打开
-  pm2InstanceVar: 'INSTANCE_ID', // 会根据 pm2 分配的 id 进行区分，以免各进程在写日志时造成冲突
+  pm2InstanceVar: 'INSTANCE_ID' // 会根据 pm2 分配的 id 进行区分，以免各进程在写日志时造成冲突
 })
 
 // 实例化
@@ -200,7 +203,7 @@ export class Logger {
   }
 
   // 日志追踪，可以追溯到哪个文件、第几行第几列
-  static getStackTrace(deep: number = 2): string {
+  static getStackTrace(deep = 2): string {
     const stackList: StackTrace.StackFrame[] = StackTrace.getSync()
     const stackInfo: StackTrace.StackFrame = stackList[deep]
 

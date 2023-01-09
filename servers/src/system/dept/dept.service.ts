@@ -20,7 +20,7 @@ export class DeptService {
   async create (dto: CreateDeptDto): Promise<ResultData> {
     // 查询父部门是否存在
     if (dto.parentId !== '0') {
-      const existing = await this.deptRepo.findOne(dto.parentId)
+      const existing = await this.deptRepo.findOne({ where: { parentId: dto.parentId } })
       if (!existing) return ResultData.fail(AppHttpCode.DEPT_NOT_FOUND, '上级部门不存在或已被删除，请修改后重新添加')
     }
     const dept = plainToInstance(DeptEntity, dto)
@@ -33,7 +33,7 @@ export class DeptService {
 
   /** 更新部门 */
   async update (dto: UpdateDeptDto): Promise<ResultData> {
-    const existing = await this.deptRepo.findOne(dto.id)
+    const existing = await this.deptRepo.findOne({ where: { id: dto.id } })
     if (!existing) return ResultData.fail(AppHttpCode.DEPT_NOT_FOUND, '部门不存在或已被删除，请修改后重新添加')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.update<DeptEntity>(DeptEntity, dto.id, dto)
@@ -44,7 +44,7 @@ export class DeptService {
 
   /** 删除部门 */
   async delete (id: string): Promise<ResultData> {
-    const existing = await this.deptRepo.findOne(id)
+    const existing = await this.deptRepo.findOne({ where: { id } })
     if (!existing) return ResultData.fail(AppHttpCode.DEPT_NOT_FOUND, '部门不存在或已被删除')
     const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.delete<DeptEntity>(DeptEntity, { parentId: id })

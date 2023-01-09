@@ -1,33 +1,29 @@
+import { RedisModule as liaoliaoRedisModule, RedisModuleAsyncOptions } from '@liaoliaots/nestjs-redis'
 import { DynamicModule, Global, Module } from '@nestjs/common'
-import { RedisModule, RedisModuleAsyncOptions, RedisModuleOptions } from 'nestjs-redis'
-import { RedisUtilService } from './redis.service'
 
-/**
- * redis module
- *
- * 当前模块是对 nest-redis 的一个简单封装
- */
+import { RedisService } from './redis.service'
+
 @Global()
 @Module({
-  providers: [RedisUtilService],
-  exports: [RedisUtilService],
+  providers: [RedisService],
+  exports: [RedisService]
 })
-export class RedisUtilModule {
-  static register(options: RedisModuleOptions | RedisModuleOptions[]): DynamicModule {
+export class RedisModule {
+  static forRoot(options: RedisModuleAsyncOptions, isGlobal = true): DynamicModule {
     return {
-      module: RedisUtilModule,
-      imports: [RedisModule.register(options)],
-      providers: [RedisUtilService],
-      exports: [RedisUtilService],
+      module: RedisModule,
+      imports: [liaoliaoRedisModule.forRootAsync(options, isGlobal)],
+      providers: [RedisService],
+      exports: [RedisService]
     }
   }
 
-  static forRootAsync(options: RedisModuleAsyncOptions): DynamicModule {
+  static forRootAsync(options: RedisModuleAsyncOptions, isGlobal = true): DynamicModule {
     return {
-      module: RedisUtilModule,
-      imports: [RedisModule.forRootAsync(options)],
-      providers: [RedisUtilService],
-      exports: [RedisUtilService],
+      module: RedisModule,
+      imports: [liaoliaoRedisModule.forRootAsync(options, isGlobal)],
+      providers: [RedisService],
+      exports: [RedisService]
     }
   }
 }

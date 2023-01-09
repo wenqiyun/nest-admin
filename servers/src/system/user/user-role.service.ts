@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { getManager, getConnection, Repository } from 'typeorm'
+import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { plainToInstance, instanceToPlain } from 'class-transformer'
 
 import { ResultData } from '../../common/utils/result'
-import { RedisUtilService } from '../../common/libs/redis/redis.service'
+import { RedisService } from '../../common/libs/redis/redis.service'
 import { getRedisKey } from '../../common/utils/utils'
 import { AppHttpCode } from '../../common/enums/code.enum'
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
@@ -18,7 +18,10 @@ export class UserRoleService {
   constructor(
     @InjectRepository(UserRoleEntity)
     private readonly userRoleRepo: Repository<UserRoleEntity>,
-    private readonly redisService: RedisUtilService,
+    @InjectEntityManager()
+    private readonly userRoleManager: EntityManager,
+    private readonly redisService: RedisService,
+    private readonly dataSource: DataSource
   ) {}
 
   /** 创建 or 更新用户-角色 */
@@ -29,7 +32,7 @@ export class UserRoleService {
         return { roleId, userId: dto.userId }
       }),
     )
-    const res = await getManager().transaction(async (transactionalEntityManager) => {
+    const res = await this.userRoleManager.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.delete(UserRoleEntity, { userId: dto.userId })
       const result = await transactionalEntityManager.save<UserRoleEntity>(userRoleList)
       return result
@@ -41,7 +44,7 @@ export class UserRoleService {
 
   /** 生成用户角色关系, 单个角色， 多个用户 */
   async createOrCancelUserRole(userIds: string[], roleId: string, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
-    const res = await getManager().transaction(async (transactionalEntityManager) => {
+    const res = await this.userRoleManager.transaction(async (transactionalEntityManager) => {
       if (createOrCancel === 'create') {
         const dto = plainToInstance(
           UserRoleEntity,
@@ -71,10 +74,10 @@ export class UserRoleService {
    * @param roleId 角色 id
    * @param isCorrelation 是否相关联， true 查询拥有当前 角色的用户， false 查询无当前角色的用户
    */
-   async findUserByRoleId(roleId: string, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
+  async findUserByRoleId(roleId: string, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
     let res
     if (isCorrelation) {
-      res = await getConnection()
+      res = await this.dataSource
         .createQueryBuilder('sys_user', 'su')
         .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = su.id')
         .where('su.status = 1 and ur.role_id = :roleId', { roleId })
@@ -82,7 +85,7 @@ export class UserRoleService {
         .take(size)
         .getManyAndCount()
     } else {
-      res = await getConnection()
+      res = await this.dataSource
         .createQueryBuilder('sys_user', 'su')
         .where((qb: any) => {
           const subQuery = qb.subQuery()
@@ -100,7 +103,7 @@ export class UserRoleService {
   }
 
   /** 根据用户id 查询角色 id 集合 */
-  async findUserRoleByUserId(id: string): Promise<number[]> {
+  async findUserRoleByUserId(id: string): Promise<string[]> {
     const userRoleKey = getRedisKey(RedisKeyPrefix.USER_ROLE, id)
     const result = await this.redisService.get(userRoleKey)
     if (result) return JSON.parse(result)

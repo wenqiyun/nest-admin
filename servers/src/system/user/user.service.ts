@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Like, Repository, getManager, In } from 'typeorm'
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
+import { Like, Repository, In, EntityManager } from 'typeorm'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 import { genSalt, hash, compare, genSaltSync, hashSync } from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt'
@@ -12,7 +12,8 @@ import { ResultData } from '../../common/utils/result'
 import { getRedisKey } from '../../common/utils/utils'
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { AppHttpCode } from '../../common/enums/code.enum'
-import { RedisUtilService } from '../../common/libs/redis/redis.service'
+import { RedisService } from '../../common/libs/redis/redis.service'
+
 import { validPhone, validEmail } from '../../common/utils/validate'
 import { UserType } from '../../common/enums/common.enum'
 
@@ -33,8 +34,10 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    @InjectEntityManager()
+    private readonly userManager: EntityManager,
     private readonly config: ConfigService,
-    private readonly redisService: RedisUtilService,
+    private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
     private readonly userRoleService: UserRoleService
   ) {}
@@ -45,7 +48,7 @@ export class UserService {
     // plainToInstance 去除 password slat
     let user = plainToInstance(UserEntity, result, { enableImplicitConversion: true })
     if (!user?.id) {
-      user = await this.userRepo.findOne(id)
+      user = await this.userRepo.findOne({ where: { id } })
       user = plainToInstance(UserEntity, { ...user }, { enableImplicitConversion: true })
       await this.redisService.hmset(redisKey, instanceToPlain(user), ms(this.config.get<string>('jwt.expiresin')) / 1000)
     }
@@ -55,7 +58,7 @@ export class UserService {
   }
 
   async findOneByAccount(account: string): Promise<UserEntity> {
-    return await this.userRepo.findOne({ account })
+    return await this.userRepo.findOne({ where: { account } })
   }
 
   /** 创建用户 */
@@ -63,14 +66,14 @@ export class UserService {
     if (dto.password !== dto.confirmPassword) return ResultData.fail(AppHttpCode.USER_PASSWORD_INVALID, '两次输入密码不一致，请重试')
     // 防止重复创建 start
     if (await this.findOneByAccount(dto.account)) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '帐号已存在，请调整后重新注册！')
-    if (await this.userRepo.findOne({ phoneNum: dto.phoneNum })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前手机号已存在，请调整后重新注册')
-    if (await this.userRepo.findOne({ email: dto.email })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前邮箱已存在，请调整后重新注册')
+    if (await this.userRepo.findOne({ where: { phoneNum: dto.phoneNum } })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前手机号已存在，请调整后重新注册')
+    if (await this.userRepo.findOne({ where: { email: dto.email } })) return ResultData.fail(AppHttpCode.USER_CREATE_EXISTING, '当前邮箱已存在，请调整后重新注册')
     // 防止重复创建 end
     const salt = await genSalt()
     dto.password = await hash(dto.password, salt)
     // plainToInstance  忽略转换 @Exclude 装饰器
     const user = plainToInstance(UserEntity, { salt, ...dto }, { ignoreDecorators: true })
-    const result = await getManager().transaction(async (transactionalEntityManager) => {
+    const result = await this.userManager.transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.save<UserEntity>(user)
     })
     return ResultData.ok(instanceToPlain(result))
@@ -83,9 +86,9 @@ export class UserService {
   async login(account: string, password: string): Promise<ResultData> {
     let user = null
     if (validPhone(account)) { // 手机登录
-      user = await this.userRepo.findOne({ phoneNum: account })
+      user = await this.userRepo.findOne({ where: { phoneNum: account } })
     } else if (validEmail(account)) { // 邮箱
-      user = await this.userRepo.findOne({ email: account })
+      user = await this.userRepo.findOne({ where: { email: account } })
     } else { // 帐号
       user = await this.findOneByAccount(account)
     }
@@ -119,7 +122,7 @@ export class UserService {
     const emailMap = new Map()
     // 从 1 开始是去掉 excel 帐号等文字提示
     for (let i = 1, len = workSheet[0].data.length; i < len; i++) {
-      const dataArr = workSheet[0].data[i]
+      const dataArr = workSheet[0].data[i] as Array<any>
       if (dataArr.length === 0) break
       const [ account, phone, email, avatar ] = dataArr
       userArr.push({ account, phoneNum: phone, email, avatar})
@@ -196,7 +199,7 @@ export class UserService {
       v['password'] = encryptPw
       v['salt'] = salt
     })
-    const result =  await getManager().transaction(async (transactionalEntityManager) => {
+    const result =  await this.userManager.transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.save<UserEntity>(plainToInstance(UserEntity, userArr, { ignoreDecorators: true }))
     })
     return ResultData.ok(instanceToPlain(result))
@@ -210,7 +213,7 @@ export class UserService {
     const roleIds = dto.roleIds || []
     const userInfo = instanceToPlain(dto)
     delete userInfo.roleIds
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.userManager.transaction(async (transactionalEntityManager) => {
       await this.createOrUpdateUserRole({ userId: dto.id, roleIds })
       return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, userInfo)
     })
@@ -232,7 +235,7 @@ export class UserService {
     const existing = await this.findOneById(userId)
     if (!existing) ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
     if (existing.type === UserType.SUPER_ADMIN) return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '超管帐号状态禁止更改')
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.userManager.transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, { id: userId, status })
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后尝试')
@@ -245,12 +248,12 @@ export class UserService {
    * @reset 是否重置, false 则使用传入的 password 更新
    */
   async updatePassword (userId: string, password: string, reset: boolean): Promise<ResultData> {
-    const existing = await this.userRepo.findOne(userId)
+    const existing = await this.userRepo.findOne({ where: { id: userId } })
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, `用户不存在或已删除，${reset ? '重置' : '更新'}失败`)
     if (existing.status === 0) return ResultData.fail(AppHttpCode.USER_ACCOUNT_FORBIDDEN, '当前用户已被禁用，不可重置用户密码')
     const newPassword = reset ? this.config.get<string>('user.initialPassword') : password
     const user = { id: userId, password: await hash(newPassword, existing.salt) }
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.userManager.transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, user)
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, `${reset ? '重置' : '更新'}失败，请稍后重试`)
@@ -265,7 +268,7 @@ export class UserService {
         return { roleId, userId: dto.userId }
       }),
     )
-    const res = await getManager().transaction(async (transactionalEntityManager) => {
+    const res = await this.userManager.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.delete(UserRoleEntity, { userId: dto.userId })
       const result = await transactionalEntityManager.save<UserRoleEntity>(userRoleList)
       return result
@@ -303,7 +306,7 @@ export class UserService {
    * @param payload
    * @returns
    */
-   genToken (payload: { id: string }): CreateTokenDto {
+  genToken (payload: { id: string }): CreateTokenDto {
     const accessToken = `Bearer ${this.jwtService.sign(payload)}`
     const refreshToken = this.jwtService.sign(payload, { expiresIn: this.config.get('jwt.refreshExpiresIn') })
     return { accessToken, refreshToken }

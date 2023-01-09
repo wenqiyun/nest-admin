@@ -1,22 +1,12 @@
+import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
-import { RedisService } from 'nestjs-redis'
 import Redis from 'ioredis'
 
-/**
- * 提供部分 redis 操作；
- *
- * 当 所需 redis 操作 未在 RedisUtilService 提供，可直接用实例调用 redisUtilService.getClient().xxxx ；
- *
- * 也可以在 RedisUtilService 先封装 xxxx 再外部调用 。
- */
 @Injectable()
-export class RedisUtilService {
-  private client: Redis.Redis
-  constructor(private redisService: RedisService) {
-    this.client = this.redisService.getClient()
-  }
+export class RedisService {
+  constructor(@InjectRedis() private readonly client: Redis) {}
 
-  getClient(): Redis.Redis {
+  getClient(): Redis {
     return this.client
   }
 
@@ -72,7 +62,7 @@ export class RedisUtilService {
    * @param data
    * @params expire 单位 秒
    */
-  async hmset(key: string, data: any, expire?: number): Promise<number | any> {
+  async hmset(key: string, data: Record<string, string | number | boolean>, expire?: number): Promise<number | any> {
     if (!key || !data) return 0
     const result = await this.client.hmset(key, data)
     if (expire) {
@@ -174,7 +164,7 @@ export class RedisUtilService {
    */
   async lLeftPush(key: string, ...val: string[]): Promise<number> {
     if (!key) return 0
-    return await this.client.lpush(key, val)
+    return await this.client.lpush(key, ...val)
   }
 
   /**
@@ -184,7 +174,7 @@ export class RedisUtilService {
    */
   async lLeftPushIfPresent(key: string, ...val: string[]): Promise<number> {
     if (!key) return 0
-    return await this.client.lpushx(key, val)
+    return await this.client.lpushx(key, ...val)
   }
 
   /**
@@ -216,7 +206,7 @@ export class RedisUtilService {
    */
   async lRightPush(key: string, ...val: string[]): Promise<number> {
     if (!key) return 0
-    return await this.client.lpush(key, val)
+    return await this.client.lpush(key, ...val)
   }
 
   /**
@@ -226,7 +216,7 @@ export class RedisUtilService {
    */
   async lRightPushIfPresent(key: string, ...val: string[]): Promise<number> {
     if (!key) return 0
-    return await this.client.rpushx(key, val)
+    return await this.client.rpushx(key, ...val)
   }
 
   /**

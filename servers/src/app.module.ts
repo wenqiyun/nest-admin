@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
-import { RedisModuleOptions } from 'nestjs-redis'
+import { RedisClientOptions } from '@liaoliaots/nestjs-redis'
 import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-static'
 import { APP_GUARD } from '@nestjs/core'
 import path from 'path'
 
 import configuration from './config/index'
 
-import { RedisUtilModule } from './common/libs/redis/redis.module'
+import { RedisModule } from './common/libs/redis/redis.module'
 import { JwtAuthGuard } from './common/guards/auth.guard'
 import { RolesGuard } from './common/guards/roles.guard'
 
@@ -49,7 +49,10 @@ import { PostModule } from './system/post/post.module'
       useFactory: (config: ConfigService) => {
         return {
           type: 'mysql',
-          entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+          // 可能不再支持这种方式，entities 将改成接收 实体类的引用
+          //
+          // entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+          autoLoadEntities: true,
           keepConnectionAlive: true,
           ...config.get('db.mysql'),
           // cache: {
@@ -62,13 +65,19 @@ import { PostModule } from './system/post/post.module'
       },
     }),
     // libs redis
-    RedisUtilModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => {
-        return config.get<RedisModuleOptions>('redis')
+    RedisModule.forRootAsync(
+      {
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => {
+          return {
+            closeClient: true,
+            config: config.get<RedisClientOptions>('redis')
+          }
+        }
       },
-      inject: [ConfigService],
-    }),
+      true
+    ),
     // 系统基础模块
     UserModule,
     AuthModule,

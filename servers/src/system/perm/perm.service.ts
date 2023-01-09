@@ -3,13 +3,13 @@ import { HttpService } from '@nestjs/axios'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
 import { Request, Router } from 'express'
-import { getConnection } from 'typeorm'
+import { DataSource } from 'typeorm'
 import ms from 'ms'
 
 import { RedisKeyPrefix } from '../../common/enums/redis-key-prefix.enum'
 import { ResultData } from '../../common/utils/result'
 import { getRedisKey } from '../../common/utils/utils'
-import { RedisUtilService } from '../../common/libs/redis/redis.service'
+import { RedisService } from '../../common/libs/redis/redis.service'
 import { UserType } from '../../common/enums/common.enum'
 
 import { MenuEntity } from '../menu/menu.entity'
@@ -20,7 +20,8 @@ export class PermService {
   constructor(
     private readonly http: HttpService,
     private readonly config: ConfigService,
-    private readonly redisService: RedisUtilService,
+    private readonly redisService: RedisService,
+    private dataSource: DataSource
   ) {}
 
   /**
@@ -52,7 +53,7 @@ export class PermService {
     const result = await this.redisService.get(redisKey)
     if (result) return JSON.parse(result)
     // const
-    const permsResult = await getConnection()
+    const permsResult = await this.dataSource
       .createQueryBuilder()
       .select()
       .from('sys_user_role', 'ur')
@@ -78,9 +79,9 @@ export class PermService {
     if (result) return JSON.parse(result)
     let menusResult
     if (userType === UserType.SUPER_ADMIN) {
-      menusResult = await getConnection().createQueryBuilder().select().from('sys_menu', 'm').getRawMany()
+      menusResult = await this.dataSource.createQueryBuilder().select().from('sys_menu', 'm').getRawMany()
     } else {
-      menusResult = await getConnection()
+      menusResult = await this.dataSource
         .createQueryBuilder()
         .select()
         .from('sys_user_role', 'ur')

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, getManager, Like, getConnection } from 'typeorm'
+import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { plainToInstance } from 'class-transformer'
 
 import { AppHttpCode } from '../../common/enums/code.enum'
@@ -24,12 +24,15 @@ export class RoleService {
     @InjectRepository(RoleMenuEntity)
     private readonly roleMenuRepo: Repository<RoleMenuEntity>,
     @InjectRepository(UserRoleEntity)
-    private readonly userRoleRepo: Repository<UserRoleEntity>
+    private readonly userRoleRepo: Repository<UserRoleEntity>,
+    @InjectEntityManager()
+    private readonly roleManager: EntityManager,
+    private readonly dataSource: DataSource
   ) {}
 
   async create(dto: CreateRoleDto, user: UserEntity): Promise<ResultData> {
     const role = plainToInstance(RoleEntity, dto)
-    const res = await getManager().transaction(async (transactionalEntityManager) => {
+    const res = await this.roleManager.transaction(async (transactionalEntityManager) => {
       const result = await transactionalEntityManager.save<RoleEntity>(plainToInstance(RoleEntity, role))
       if (result) {
         const roleMenus = plainToInstance(
@@ -52,9 +55,9 @@ export class RoleService {
   }
 
   async update(dto: UpdateRoleDto): Promise<ResultData> {
-    const existing = await this.roleRepo.findOne({ id: dto.id })
+    const existing = await this.roleRepo.findOne({ where: { id: dto.id } })
     if (!existing) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.roleManager.transaction(async (transactionalEntityManager) => {
       if (dto.menuIds) {
         await transactionalEntityManager.delete(RoleMenuEntity, { roleId: dto.id })
         await transactionalEntityManager.save(
@@ -76,11 +79,11 @@ export class RoleService {
   }
 
   async delete(id: string): Promise<ResultData> {
-    const existing = await this.roleRepo.findOne({ id })
+    const existing = await this.roleRepo.findOne({ where: { id } })
     if (!existing) return ResultData.fail(AppHttpCode.ROLE_NOT_FOUND, '当前角色不存在或已被删除')
     const existingBindUser = await this.userRoleRepo.findOne({ where: { roleId: id } })
     if (existingBindUser) return ResultData.fail(AppHttpCode.ROLE_NOT_DEL, '当前角色还有绑定的用户，需要解除关联后删除')
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.roleManager.transaction(async (transactionalEntityManager) => {
       // 删除 role - menu 关系
       await transactionalEntityManager.delete(RoleMenuEntity, { roleId: id })
       // 删除 user - role 关系
@@ -102,7 +105,7 @@ export class RoleService {
     if (type === UserType.SUPER_ADMIN) {
       roleData = await this.roleRepo.find({ order: { id: 'DESC' } })
     } else {
-      roleData = await getConnection()
+      roleData = await this.dataSource
         .createQueryBuilder('sys_role', 'sr')
         .leftJoinAndSelect('sys_user_role', 'sur', 'sr.id = sur.role_id')
         .where('sur.user_id = :userId', { userId })
