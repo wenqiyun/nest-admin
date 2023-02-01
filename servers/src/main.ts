@@ -73,7 +73,7 @@ async function bootstrap() {
       transform: true,
       enableDebugMessages: true, // 开发环境
       disableErrorMessages: false,
-      forbidUnknownValues: true
+      forbidUnknownValues: false
     }),
   )
 
