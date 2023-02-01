@@ -72,7 +72,8 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       enableDebugMessages: true, // 开发环境
-      disableErrorMessages: false
+      disableErrorMessages: false,
+      forbidUnknownValues: true
     }),
   )
 
