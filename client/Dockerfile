@@ -5,9 +5,7 @@ WORKDIR /client
 
 COPY . .
 
-RUN npm i
-
-RUN npm run build
+RUN npm i && npm run build
 
 
 # 构建容器
