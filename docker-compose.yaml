@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: ./Dockerfile
+    restart: always
+    ports:
+      - 9540:9540
+    depends_on:
+      - servers
+
+  servers:
+    build:
+      context: ./servers
+      dockerfile: ./Dockerfile
+    command: npm run start:docker
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:5
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_DATABASE: 'kapok'
+    volumes:
+      - mysql:/var/lib/mysql
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+
+volumes:
+  mysql:
+  redis:
