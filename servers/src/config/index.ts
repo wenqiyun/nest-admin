@@ -5,7 +5,8 @@ import { join } from 'path'
 const configFileNameObj = {
   development :'dev',
   test: 'test',
-  production: 'prod'
+  production: 'prod',
+  docker: 'docker'
 }
 
 const env = process.env.NODE_ENV

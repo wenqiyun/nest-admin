@@ -1,0 +1,53 @@
+# 开发环境配置
+app:
+  prefix: '/api'
+  port: 8080
+  logger:
+    # 项目日志存储路径，相对路径（相对本项目根目录）或绝对路径
+    dir: '../logs'
+  # 文件相关, 开发环境
+  file:
+    # location 文件上传后存储目录，相对路径（相对本项目根目录）或绝对路径
+    location: '../upload'
+    # 文件服务器地址
+    domain: 'http://177.7.0.12:8081'
+    # 文件虚拟路径, 必须以 / 开头
+    serveRoot: '/static'
+# 数据库配置
+db:
+  mysql:
+    host: 'mysql'
+    username: 'root'
+    password: 'root'
+    database: 'kapok'
+    port: 3306
+    charset: 'utf8mb4'
+    logger: 'advanced-console'
+    logging: true
+    multipleStatements: true
+    dropSchema: false
+    synchronize: true
+    supportBigNumbers: true
+    bigNumberStrings: true
+
+# redis 配置
+redis:
+  host: 'redis'
+  port: 6379
+  db: 0
+  keyPrefix: 'nest:'
+
+# jwt 配置
+jwt:
+  secretkey: 'zANDwNQVFzxlfG9myPxVWAkq4iXJEPhI'
+  expiresin: '1h'
+  refreshExpiresIn: '2h'
+# 权限 白名单配置
+perm:
+  router:
+    whitelist: [{ path: '/api/register', method: 'POST'  }, { path: '/api/login', method: 'POST' }, { path: '/api/perm/{id}', method: 'GET' }, { path: '/api/oss/upload', method: 'POST' }]
+
+# 用户相关
+# 初始密码， 重置密码
+user:
+  initialPassword: 'Q123456'
