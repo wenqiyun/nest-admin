@@ -68,6 +68,8 @@ npm run start:dev
 
 启动好前、后端后，浏览器访问 http://localhost:9540 即可打开页面， swagger 文档地址 http://localhost:8081/api/docs
 
+在线预览：[http://nest-admin.shenyuan.xn--6qq986b3xl/](http://nest-admin.shenyuan.xn--6qq986b3xl/)
+
 测试帐号密码： admin/admin
 
 > 批量导入的用户默认密码： Q123456 ， 可在 ```servers/src/config``` 中配置 初始密码
