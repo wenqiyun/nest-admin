@@ -47,7 +47,6 @@ import { PostModule } from './system/post/post.module'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        console.log('数据库配置：', config.get('db.mysql'))
         return {
           type: 'mysql',
           // 可能不再支持这种方式，entities 将改成接收 实体类的引用
