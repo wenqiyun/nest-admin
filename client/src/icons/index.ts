@@ -1,13 +1,9 @@
-interface RequireContext {
-  keys(): string[];
-  (id: string): any;
-  <T>(id: string): T;
-  resolve(id: string): string;
-  /** The module id of the context module. This may be useful for module.hot.accept. */
-  id: string;
+import type { App } from 'vue'
+
+import SvgIcon from '@/components/SvgIcon/index.vue' // Svg Component
+
+import 'virtual:svg-icons-register'
+
+export function loadSvg(app: App) {
+  app.component('SvgIcon', SvgIcon)
 }
-
-const req = require.context('./svg', false, /\.svg$/)
-const requireAll = (requireContext: RequireContext) => requireContext.keys().map(requireContext)
-
-requireAll(req)

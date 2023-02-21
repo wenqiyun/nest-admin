@@ -1,29 +1,9 @@
-$textColor: rgba(0, 0, 0, .65);
-$bgColor: #f6f6f6;
+:root {
+  /** 全局背景色 */
+  --bg-color: #f2f2f2;
+  /** header 区域， - NavigationBar 组件 + TagsView 组件 */
+  --header-height: calc(var(--navigationbar-height) + var(--tagsview-height));
+   /** NavigationBar 组件 */
+  --navigationbar-height: 50px;
 
-$menuText: #bfcbd9;
-$menuActiveText: #409EFF;
-$subMenuActiveText: #f4f4f5;
-
-$menuBg: #304156;
-$menuHover: #263445;
-
-$subMenuBg: #1f2d3d;
-$subMenuHover: #001528;
-
-$sideBarWidth: 210px;
-
-:export {
-  textColor: $textColor;
-  bgColor: $bgColor;
-  menuText: $menuText;
-  menuActiveText: $menuActiveText;
-  subActiveText: $subMenuActiveText;
-  menuBg: $menuBg;
-  menuHover: $menuHover;
-  subMenuBg: $subMenuBg;
-  subMenuHover: $subMenuHover;
-  subMenuBg: $subMenuBg;
-  subMenuHover: $subMenuHover;
-  sideBarWidth: $sideBarWidth;
 }
