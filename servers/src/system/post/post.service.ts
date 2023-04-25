@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm';
-import { Repository, getManager, Like, EntityManager } from 'typeorm';
+import { Repository, Like, EntityManager } from 'typeorm';
 import { plainToInstance } from 'class-transformer'
 
 import { ResultData } from '../../common/utils/result'

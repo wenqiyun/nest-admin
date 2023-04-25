@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { getManager, Repository, In } from 'typeorm'
-import { InjectRepository } from '@nestjs/typeorm'
+import { Repository, In, EntityManager } from 'typeorm'
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { plainToInstance } from 'class-transformer'
 
 import { ResultData } from '../../common/utils/result'
@@ -19,6 +19,8 @@ export class MenuService {
     private readonly menuRepo: Repository<MenuEntity>,
     @InjectRepository(MenuPermEntity)
     private readonly menuPermRepo: Repository<MenuPermEntity>,
+    @InjectEntityManager()
+    private readonly menuManager: EntityManager
   ) {}
 
   async create(dto: CreateMenuDto): Promise<ResultData> {
@@ -27,17 +29,17 @@ export class MenuService {
       const parentMenu = await this.menuRepo.findOne({ where: { id: dto.parentId } })
       if (!parentMenu) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前父级菜单不存在，请调整后重新添加')
     }
-    const menu = await getManager().transaction(async (transactionalEntityManager) => {
-      const menu = await transactionalEntityManager.save<MenuEntity>(plainToInstance(MenuEntity, dto))
+    const menu = await this.menuManager.transaction(async (transactionalEntityManager) => {
+      const menuResult = await transactionalEntityManager.save<MenuEntity>(plainToInstance(MenuEntity, dto))
       await transactionalEntityManager.save<MenuPermEntity>(
         plainToInstance(
           MenuPermEntity,
           dto.menuPermList.map((perm) => {
-            return { menuId: menu.id, ...perm }
+            return { menuId: menuResult.id, ...perm }
           }),
         ),
       )
-      return menu
+      return menuResult
     })
     if (!menu) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单创建失败，请稍后重试')
     return ResultData.ok()
@@ -62,7 +64,7 @@ export class MenuService {
   async deleteMenu(id: string): Promise<ResultData> {
     const existing = await this.menuRepo.findOne({ where: { id } })
     if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.menuManager.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.delete(MenuPermEntity, { menuId: id })
       const result = await transactionalEntityManager.delete<MenuEntity>(MenuEntity, id)
       return result
@@ -74,7 +76,7 @@ export class MenuService {
   async updateMenu(dto: UpdateMenuDto): Promise<ResultData> {
     const existing = await this.menuRepo.findOne({ where: { id: dto.id } })
     if (!existing) return ResultData.fail(AppHttpCode.MENU_NOT_FOUND, '当前菜单不存在或已删除')
-    const { affected } = await getManager().transaction(async (transactionalEntityManager) => {
+    const { affected } = await this.menuManager.transaction(async (transactionalEntityManager) => {
       // 删除原有接口权限权限
       await this.menuPermRepo.delete({ menuId: dto.id })
       // 新的接口权限入库

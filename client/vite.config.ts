@@ -83,7 +83,6 @@ export default defineConfig({
       '@element-plus/icons-vue',
       'countup.js',
       'nprogress',
-      'intersection-observer',
       'jwt-decode',
       'path-to-regexp',
       'vue-cropper'

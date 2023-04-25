@@ -25,7 +25,7 @@ export class OssEntity {
   public size: number
 
   @ApiProperty({ description: '文件mimetype类型' })
-  @Column({ type: 'varchar', length: 20, comment: '文件mimetype类型' })
+  @Column({ type: 'varchar', comment: '文件mimetype类型' })
   public type: string
 
   @ApiProperty({ description: '业务描述字段，可以字符串，也可以是 JSON 字符串' })
