@@ -10,6 +10,7 @@ module.exports = {
     '@vue/prettier'
     // "prettier",
   ],
+  plugins: ['@typescript-eslint'],
   globals: {
     // script setup
     defineProps: 'readonly',
@@ -31,6 +32,8 @@ module.exports = {
   rules: {
     'space-before-function-paren': 0,
     'vue/multi-word-component-names': 0,
+    'no-unused-vars': 0,
+    '@typescript-eslint/no-unused-vars': 'error',
     // Prettier
     'prettier/prettier': [
       'error',

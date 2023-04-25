@@ -1,0 +1,54 @@
+/* 清除浮动 */
+@mixin clearfix {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+/* 垂直居中 */
+@mixin flex-center($direction: row) {
+  display: flex;
+  @if $direction != row {
+    flex-direction: $direction;
+  }
+  justify-content: center;
+  align-items: center;
+}
+
+/* 只显示 row 行，不够末尾显示 ... */
+@mixin ellipsis($row: 1) {
+  @if type-of($row) != 'number' {
+    @error '$row 必须是一个有效的数字';
+  }
+  @if $row == 1 {
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $row;
+    /* autoprefixer: ignore next */
+    -webkit-box-orient: vertical;
+  }
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 移除单位 */
+@function strip-unit($value) {
+  @return $value / ($value * 0 + 1);
+}
+
+/* 扩展点击区域 */
+@mixin extend-click($size: 5) {
+  $value: strip-unit($size) * -1px;
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: $value;
+    left: $value;
+    right: $value;
+    bottom: $value;
+  }
+}

@@ -6,7 +6,11 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "cm/*": ["./src/common/*"],
+      "_hooks": ["./src/hooks"],
+      "k-ui": ["./src/plugins/k-ui"]
+    },
+    "types": ["element-plus/global"],
   }
 }

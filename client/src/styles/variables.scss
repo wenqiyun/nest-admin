@@ -1,9 +1,46 @@
 :root {
-  /** 全局背景色 */
-  --bg-color: #f2f2f2;
   /** header 区域， - NavigationBar 组件 + TagsView 组件 */
   --header-height: calc(var(--navigationbar-height) + var(--tagsview-height));
    /** NavigationBar 组件 */
   --navigationbar-height: 50px;
 
+  /** Sidebar 组件 */
+  --sidebar-width: 200px;
+  --sidebar-hide-width: 58px;
+  --sidebar-menu-item-height: 60px;
+  --sidebar-menu-tip-line-bg-color: var(--el-color-primary);
+  // --sidebar-menu-bg-color: #304156;
+  // --sidebar-menu-hover-bg-color: #263445;
+  // --sidebar-submenu-bg-color: #1f2d3d;
+  // --sidebar-submenu-hover-bg-color: #001528;
+  // --sidebar-menu-text-color: #bfcbd9;
+  // --sidebar-menu-active-text-color: #409EFF;
+  // --sidebar-submenu-active-text-color: #f4f4f5;
+
+  --el-menu-text-color: #333;
+  --el-menu-hover-text-color: #409eff;
+  --el-menu-bg-color: #fff;
+  --el-menu-hover-bg-color: #e6f7ff;
+  --el-menu-active-color: #409eff;
+  --el-menu-active-bg-color: #e6f7ff;
+
+  /** SidebarLogo 组件 */
+  --sidebarlogo-bg-color: #fff;
+  --sidebarlogo-text-color: var(--el-menu-text-color);
+
+  /** TagsView 组件 */
+  --tagsview-height: 34px;
+  --tagsview-tag-text-color: #495060;
+  --tagsview-tag-active-text-color: #ffffff;
+  --tagsview-tag-bg-color: #ffffff;
+  --tagsview-tag-active-bg-color: var(--el-color-primary);
+  --tagsview-tag-border-radius: 2px;
+  --tagsview-tag-border-color: #d8dce5;
+  --tagsview-tag-active-border-color: var(--el-color-primary);
+  --tagsview-tag-active-before-color: #ffffff;
+  --tagsview-tag-icon-hover-bg-color: #00000030;
+  --tagsview-tag-icon-hover-color: #ffffff;
+
+  --line-color: #e8e8e8;
+  --el-color-primary-light-9: var(--el-menu-active-bg-color);
 }
