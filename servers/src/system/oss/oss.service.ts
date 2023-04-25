@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { InjectRepository } from '@nestjs/typeorm'
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { plainToInstance, instanceToPlain } from 'class-transformer'
-import { Between, getManager, Repository } from 'typeorm'
+import { Between, EntityManager, Repository } from 'typeorm'
 import * as fs from 'fs'
 import * as uuid from 'uuid'
 import path from 'path'
@@ -22,7 +22,9 @@ export class OssService {
   constructor(
     private readonly config: ConfigService,
     @InjectRepository(OssEntity)
-    private readonly ossRepo: Repository<OssEntity>
+    private readonly ossRepo: Repository<OssEntity>,
+    @InjectEntityManager()
+    private readonly ossManager: EntityManager
   ) {
     this.isAbsPath = path.isAbsolute(this.config.get<string>('app.file.location'))
   }
@@ -51,7 +53,7 @@ export class OssService {
       }
       return plainToInstance(OssEntity, ossFile)
     })
-    const result = await getManager().transaction(async (transactionalEntityManager) => {
+    const result = await this.ossManager.transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.save<OssEntity>(ossList)
     })
     if(!result) {

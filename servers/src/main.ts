@@ -18,12 +18,11 @@ import { TransformInterceptor } from './common/libs/log4js/transform.interceptor
 import { HttpExceptionsFilter } from './common/libs/log4js/http-exceptions-filter'
 import { ExceptionsFilter } from './common/libs/log4js/exceptions-filter'
 
-
 import Chalk from 'chalk'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    cors: true
+    cors: true,
   })
 
   // 设置访问频率
@@ -41,6 +40,8 @@ async function bootstrap() {
   app.setGlobalPrefix(prefix)
 
   // web 安全，防常见漏洞
+  // 注意： 开发环境如果开启 nest static module 需要将 crossOriginResourcePolicy 设置为 false 否则 静态资源 跨域不可访问
+  // { crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }, crossOriginResourcePolicy: false }
   app.use(helmet())
 
   const swaggerOptions = new DocumentBuilder()
@@ -54,11 +55,10 @@ async function bootstrap() {
   // 生产环境使用 nginx 可以将当前文档地址 屏蔽外部访问
   SwaggerModule.setup(`${prefix}/docs`, app, document, {
     swaggerOptions: {
-      persistAuthorization: true
+      persistAuthorization: true,
     },
-    customSiteTitle: 'Nest-Admin API Docs'
+    customSiteTitle: 'Nest-Admin API Docs',
   })
-
 
   // 防止跨站请求伪造
   // 设置 csrf 保存 csrfToken
@@ -73,7 +73,7 @@ async function bootstrap() {
       transform: true,
       enableDebugMessages: true, // 开发环境
       disableErrorMessages: false,
-      forbidUnknownValues: false
+      forbidUnknownValues: false,
     }),
   )
 
@@ -96,8 +96,8 @@ async function bootstrap() {
     `http://localhost:${port}${prefix}/`,
     '\n',
     Chalk.green('swagger 文档地址        '),
-    `http://localhost:${port}${prefix}/docs/`)
-
+    `http://localhost:${port}${prefix}/docs/`,
+  )
 }
 
 bootstrap()

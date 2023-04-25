@@ -34,10 +34,10 @@ function createService() {
       if (response?.status === 401) {
         if (getRTExp() <= Date.now()) {
           // 刷新token 过期了
-          clearLocalStorage()
           ElMessageBox.alert('您的登录已过期，点击跳转登录', '提示', {
             confirmButtonText: 'OK',
             callback: () => {
+              clearLocalStorage()
               window.location.reload()
             }
           })
