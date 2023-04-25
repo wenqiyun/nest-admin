@@ -1,19 +1,28 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+
 // load
 import { loadSvg } from './icons'
+import { loadDirectives } from './directive'
 
 import App from './App.vue'
+import store from './store'
 import router from './router'
 
 import 'normalize.css/normalize.css'
-import './assets/main.css'
+import './styles/index.scss'
+
+import './perm'
+
+// 自己封装的一些组件
+import KUI from './plugins/k-ui'
 
 const app = createApp(App)
 /** 加载全局 SVG */
 loadSvg(app)
+/** 挂载自定义指令 */
+loadDirectives(app)
 
-app.use(createPinia())
-app.use(router)
+// 封装的一些组件，扩展 element-plus 等
+app.use(KUI)
 
-app.mount('#app')
+app.use(store).use(router).mount('#app')

@@ -1,0 +1,124 @@
+@import "./variables.scss";
+@import "./transition.scss";
+@import "./mixins.scss";
+@import './nprogress.scss';
+// 注册多主题
+@import "./theme/register.scss";
+
+@font-face {
+  font-family: 'app-name-font';
+  src: url('../assets/fonts/app-name-font.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  background-color: var(--theme-bg-color, #f0f2f5);
+  color: rgba(0, 0, 0, .65);
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial,
+    sans-serif;
+}
+
+#app {
+  height: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+*,
+*:before,
+*:after {
+  // box-sizing: inherit;
+  box-sizing: border-box;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+a:focus,
+a:active {
+  outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: rgba(0, 0, 0, .65);
+  text-decoration: none;
+}
+
+div:focus {
+  outline: none;
+}
+
+.el-menu-item.is-active {
+  background-color: var(--el-menu-active-bg-color)
+}
+
+// 分页
+.el-pagination {
+  // 参考 Bootstrap 的响应式设计 WIDTH = 768
+  @media screen and (max-width: 768px) {
+    .el-pagination__total,
+    .el-pagination__sizes,
+    .el-pagination__jump,
+    .btn-prev,
+    .btn-next {
+      display: none !important;
+    }
+  }
+}
+
+/* 主体高度 */
+.main-content {
+  padding: 10px;
+  height: calc(100vh - var(--header-height) - 14px);
+  background: var(--theme-bg-color, #f0f2f5);
+}
+
+/* 块背景色 */
+.box-bg-color {
+  background-color: #fff;
+}
+.box-bg-active {
+  background-color: #fff;
+}
+
+
+/*  搜索条件 */
+.filter-container {
+  padding-bottom: 10px;
+  &:not(:last-child) {
+    padding-bottom: 0;
+  }
+
+  .filter-item {
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 10px;
+
+    &:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
+
+  .filter-action-wrapper {
+    @include clearfix;
+    float: right;
+  }
+}
+
+

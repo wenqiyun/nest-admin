@@ -1,0 +1,27 @@
+@import "./element-plus.scss";
+@import "./variables.scss";
+@import "../core/index.scss";
+
+html.dark {
+  // 主题背景颜色
+  --theme-bg-color: $theme-bg-color;
+  // 主题色
+  --theme-color: $theme-color;
+  // 默认文字颜色
+  --font-color: $font-color;
+  // active 状态下文字颜色
+  --active-font-color: $active-font-color;
+  // hover 状态下文字颜色
+  --hover-color: $hover-color;
+  // 边框颜色
+  --border-color: $border-color;
+  --line-color: #101010;
+
+  .box-bg-color {
+    background-color: lighten($theme-bg-color, 4%);
+  }
+
+  .box-bg-active {
+    background-color: lighten($theme-bg-color, 8%);
+  }
+}
