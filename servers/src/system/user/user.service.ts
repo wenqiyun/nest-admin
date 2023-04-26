@@ -206,20 +206,25 @@ export class UserService {
   }
 
   /** 更新用户信息 */
-  async update(dto: UpdateUserDto): Promise<ResultData> {
+  async update(dto: UpdateUserDto, currUser: UserEntity): Promise<ResultData> {
     const existing = await this.findOneById(dto.id)
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
     if (existing.status === 0) return ResultData.fail(AppHttpCode.USER_ACCOUNT_FORBIDDEN, '当前用户已被禁用，不可更新用户信息')
+    if (existing.type === UserType.SUPER_ADMIN && currUser.type === UserType.ORDINARY_USER) {
+      return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '您不可修改超管信息喔')
+    }
     const roleIds = dto.roleIds || []
     const userInfo = instanceToPlain(dto)
     delete userInfo.roleIds
     const { affected } = await this.userManager.transaction(async (transactionalEntityManager) => {
-      await this.createOrUpdateUserRole({ userId: dto.id, roleIds })
+      if (roleIds.length > 0) {
+        await this.createOrUpdateUserRole({ userId: dto.id, roleIds })
+      }
       return await transactionalEntityManager.update<UserEntity>(UserEntity, dto.id, userInfo)
     })
     if (!affected) ResultData.fail(AppHttpCode.SERVICE_ERROR, '更新失败，请稍后重试')
 
-    const num = await this.redisService.del(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id))
+    await this.redisService.del(getRedisKey(RedisKeyPrefix.USER_INFO, dto.id))
     // redis 更新用户信息
     return ResultData.ok()
   }
@@ -234,7 +239,7 @@ export class UserService {
     if (userId === currUserId) return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '当前登录用户状态不可更改')
     const existing = await this.findOneById(userId)
     if (!existing) ResultData.fail(AppHttpCode.USER_NOT_FOUND, '当前用户不存在或已删除')
-    if (existing.type === UserType.SUPER_ADMIN) return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '超管帐号状态禁止更改')
+    if (existing.type === UserType.SUPER_ADMIN) return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '您不可修改超管信息喔')
     const { affected } = await this.userManager.transaction(async (transactionalEntityManager) => {
       return await transactionalEntityManager.update<UserEntity>(UserEntity, userId, { id: userId, status })
     })
@@ -247,10 +252,13 @@ export class UserService {
    * 更新或重置用户密码
    * @reset 是否重置, false 则使用传入的 password 更新
    */
-  async updatePassword (userId: string, password: string, reset: boolean): Promise<ResultData> {
+  async updatePassword (userId: string, password: string, reset: boolean, currUser: UserEntity): Promise<ResultData> {
     const existing = await this.userRepo.findOne({ where: { id: userId } })
     if (!existing) return ResultData.fail(AppHttpCode.USER_NOT_FOUND, `用户不存在或已删除，${reset ? '重置' : '更新'}失败`)
     if (existing.status === 0) return ResultData.fail(AppHttpCode.USER_ACCOUNT_FORBIDDEN, '当前用户已被禁用，不可重置用户密码')
+    if (existing.type === UserType.SUPER_ADMIN && currUser.type === UserType.ORDINARY_USER) {
+      return ResultData.fail(AppHttpCode.USER_FORBIDDEN_UPDATE, '您不可修改超管信息喔')
+    }
     const newPassword = reset ? this.config.get<string>('user.initialPassword') : password
     const user = { id: userId, password: await hash(newPassword, existing.salt) }
     const { affected } = await this.userManager.transaction(async (transactionalEntityManager) => {

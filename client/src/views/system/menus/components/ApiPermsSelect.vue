@@ -1,11 +1,17 @@
 <template>
-  <el-select v-model="currApiPerms" multiple collapse-tags popper-class="menu-apiperms-select" style="width: 250px">
+  <el-select
+    v-model="currApiPerms"
+    multiple
+    collapse-tags
+    popper-class="menu-apiperms-select"
+    style="width: 250px"
+    @change="handleChange"
+  >
     <el-option
       v-for="api in userStore.allApiPerms"
       :label="`${api.method} + ${api.path}`"
       :value="`${api.method},${api.path}`"
       :key="`${api.path}_${api.method}`"
-      @change="handleChange"
       class="menu-apiperms-option"
     >
       <div>
@@ -55,7 +61,7 @@ const handleChange = (val: Array<string> = []) => {
 <style lang="scss" scoped>
 .menu-apiperms-select {
   .api-method-path {
-    color: #67c23a;
+    color: #666;
   }
   .menu-apiperms-option {
     height: auto;

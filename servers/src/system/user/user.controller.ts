@@ -56,8 +56,8 @@ export class UserController {
   @Put()
   @ApiOperation({ summary: '更新用户信息' })
   @ApiResult()
-  async update (@Body() dto: UpdateUserDto): Promise<ResultData> {
-    return await this.userService.update(dto)
+  async update (@Body() dto: UpdateUserDto, @Req() req): Promise<ResultData> {
+    return await this.userService.update(dto, req.user)
   }
 
   @Put('/status/change')
@@ -70,8 +70,8 @@ export class UserController {
   @Put('/password/reset/:userId')
   @ApiOperation({ summary: '重置用户密码' })
   @ApiResult()
-  async resetPassword (@Param('userId') userId: string): Promise<ResultData> {
-    return await this.userService.updatePassword(userId, '', true)
+  async resetPassword (@Param('userId') userId: string, @Req() req): Promise<ResultData> {
+    return await this.userService.updatePassword(userId, '', true, req.user)
   }
 
   @Post('/import')

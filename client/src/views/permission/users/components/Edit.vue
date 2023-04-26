@@ -22,7 +22,7 @@
       <el-form-item label="邮箱" prop="email">
         <el-input v-model="userForm.email" placeholder="请输入邮箱"></el-input>
       </el-form-item>
-      <el-form-item label="角色" prop="roleIds">
+      <el-form-item label="角色" prop="roleIds" v-if="userForm.type === 1">
         <el-select v-model="userForm.roleIds" v-if="visible" placeholder="请选择角色" multiple clearable>
           <el-option v-for="role in roleList" :key="role.id" :label="role.name" :value="role.id"></el-option>
         </el-select>
