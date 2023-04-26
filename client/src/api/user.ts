@@ -12,6 +12,8 @@ export interface UserApiResult extends BaseResult {
   phoneNum?: string
   /** 用户邮箱 */
   email?: string
+  /** 用户类型 0-超管 1-普通用户 */
+  type?: 0 | 1
   /** 用户状态 1-活动中 0-禁用 */
   status?: 0 | 1 | string
 }

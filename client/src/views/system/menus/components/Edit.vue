@@ -3,11 +3,25 @@
     <h3 class="menu__tip" v-if="!props.isButtonEdit">
       <span>菜单信息</span>
       <span>
-        <el-button type="primary" size="small" @click="addOrUpdate('edit')" v-perm="'system_menus:edit'">
+        <el-button
+          type="primary"
+          size="small"
+          v-perm="'system_menus:edit'"
+          :disabled="isEditStatus || !currMenu.id"
+          @click="addOrUpdate('edit')"
+        >
           编辑
         </el-button>
-        <el-button type="danger" size="small" v-perm="'system_menus:del'">删除</el-button>
-        <el-button size="small" v-perm="'system_menus:create'">添加</el-button>
+        <el-button
+          type="danger"
+          size="small"
+          v-perm="'system_menus:del'"
+          :disabled="isEditStatus || !currMenu.id"
+          @click="delEvent"
+        >
+          删除
+        </el-button>
+        <el-button size="small" v-perm="'system_menus:create'" @click="addOrUpdate('add')">添加</el-button>
       </span>
     </h3>
 
@@ -59,6 +73,7 @@
 
 <script lang="ts" setup>
 import { ref, type PropType, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 import ParentMenuTree from './ParentMenuTree.vue'
 import ApiPermsSelect from './ApiPermsSelect.vue'
@@ -69,9 +84,9 @@ import {
   type ICreateOrUpdateMenu,
   type MenuApiResult,
   type MenuPermApiResult,
-  createMenu
+  createMenu,
+  delMenu
 } from '@/api/menu'
-import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   currMenu: {
@@ -132,10 +147,12 @@ const getCurrMenuPermListApi = async (id: string) => {
 watch(
   () => props.currMenu,
   () => {
-    if (props.currMenu?.id) {
+    if (props.currMenu?.id || props.currMenu.parentId) {
       menuForm.value = JSON.parse(JSON.stringify(props.currMenu))
       menuFormRef.value?.clearValidate()
-      getCurrMenuPermListApi(props.currMenu?.id as string)
+      props.currMenu?.id && getCurrMenuPermListApi(props.currMenu?.id as string)
+    } else {
+      menuFormRef.value?.resetFields()
     }
     if (props.isButtonEdit) {
       isEditStatus.value = true
@@ -204,11 +221,28 @@ const createOrUpdateMenuApi = async () => {
     ElMessage({ message: res.msg, type: 'error' })
   }
 }
-
 const confirmEvent = () => {
   menuFormRef.value?.validate((valid: boolean) => {
     valid && createOrUpdateMenuApi()
   })
+}
+
+// 删除
+const delEvent = async () => {
+  try {
+    await ElMessageBox.confirm(`此操作将会永久删除【${props.currMenu.name}】菜单，是否继续`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    const res = await delMenu(props.currMenu.id as string)
+    if (res?.code === 200) {
+      ElMessage({ message: `菜单【${props.currMenu.name}】删除成功`, type: 'success' })
+      emit('change')
+    } else {
+      ElMessage({ message: res.msg, type: 'error' })
+    }
+  } catch (error) {}
 }
 
 defineExpose({

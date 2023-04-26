@@ -73,6 +73,7 @@ export class UserRoleService {
   /**
    * @param roleId 角色 id
    * @param isCorrelation 是否相关联， true 查询拥有当前 角色的用户， false 查询无当前角色的用户
+   * 由于超管自动拥有所有权限，所以查询都排除超管
    */
   async findUserByRoleId(roleId: string, page: number, size: number, isCorrelation: boolean): Promise<ResultData> {
     let res
@@ -80,7 +81,7 @@ export class UserRoleService {
       res = await this.dataSource
         .createQueryBuilder('sys_user', 'su')
         .leftJoinAndSelect('sys_user_role', 'ur', 'ur.user_id = su.id')
-        .where('su.status = 1 and ur.role_id = :roleId', { roleId })
+        .where('su.type != 0 and su.status = 1 and ur.role_id = :roleId', { roleId })
         .skip(size * (page - 1))
         .take(size)
         .getManyAndCount()
@@ -93,7 +94,7 @@ export class UserRoleService {
             .from('sys_user_role', 'sur')
             .where('sur.role_id = :roleId', { roleId })
             .getQuery()
-          return `su.status = 1 and su.id not in ${subQuery}`
+          return `su.type != 0 and su.status = 1 and su.id not in ${subQuery}`
         })
         .skip(size * (page - 1))
         .take(size)

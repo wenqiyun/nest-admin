@@ -39,7 +39,7 @@
       :close-on-press-escape="false"
       destroy-on-close
     >
-      <Edit ref="editRef" :curr-menu="currBtn" :is-button-edit="true" @change="addEditSuccess"></Edit>
+      <Edit ref="editRef" :curr-menu="currBtn" is-button-edit @change="addEditSuccess"></Edit>
 
       <template #footer>
         <el-button @click="showEdit = false">取消</el-button>
@@ -112,7 +112,7 @@ const currBtn = ref<ICreateOrUpdateMenu>({
   parentId: ''
 })
 const addOrEditEvent = (type: 'edit' | 'add', row?: MenuApiResult) => {
-  currBtn.value = row || { parentId: props.currMenu.id }
+  currBtn.value = row || { parentId: props.currMenu.id, orderNum: 0, type: 3 }
   showEdit.value = true
 }
 // 确认添加

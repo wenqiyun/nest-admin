@@ -11,7 +11,7 @@
 
     <!-- 拥有当前角色的用户 -->
     <div class="role-user-table">
-      <k-table ref="tableRef" v-bind="tableData" :loading="loading">
+      <k-table ref="tableRef" v-bind="tableData" :callback="getRoleUserListApi" :loading="loading">
         <template #account="{ row }">
           <div class="user-account-wrap">
             <el-avatar :src="row.avatar" shape="square" :size="40"></el-avatar>
@@ -29,7 +29,7 @@
         </template>
       </k-table>
     </div>
-    <BindUsers v-model="showBindUsers" :curr-id="props.currId"></BindUsers>
+    <BindUsers v-model="showBindUsers" :curr-id="props.currId" @success="bindUserSuccess"></BindUsers>
   </div>
 </template>
 
@@ -115,6 +115,10 @@ const delBindUserEvent = async (row: UserApiResult) => {
 
 // 绑定关联关系
 const showBindUsers = ref<boolean>(false)
+// 绑定成功回调
+const bindUserSuccess = () => {
+  tableRef.value.refreshData({ page: 1, size: 10 })
+}
 </script>
 
 <style lang="scss" scoped>

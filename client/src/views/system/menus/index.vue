@@ -28,7 +28,7 @@
     </div>
 
     <div class="menu-content">
-      <Edit :curr-menu="currMenu" :menu-list="menuList"></Edit>
+      <Edit :curr-menu="currMenu" :menu-list="menuList" @change="menuUpdateEvent"></Edit>
       <BtnList :curr-menu="currMenu"></BtnList>
     </div>
   </div>
@@ -53,6 +53,10 @@ const getMenuListApi = async () => {
   if (res?.code === 200) {
     menuList.value = res.data as MenuApiResult[]
     menuTree.value = listToTree(menuList.value, { root: '0', pidKey: 'parentId' })
+    // 判断是否是删除菜单更新，需要清空 当前
+    if (menuList.value.findIndex((v) => v.id === currMenu.value.id) === -1) {
+      currMenu.value = { parentId: '', name: '', code: '', type: '', orderNum: '' }
+    }
   }
 }
 getMenuListApi()
@@ -74,6 +78,10 @@ provide('menuTree', menuTree)
 const currMenu = ref<ICreateOrUpdateMenu>({ parentId: '', name: '', code: '', type: '', orderNum: '' })
 const menuClickEvent = (data: ICreateOrUpdateMenu) => {
   currMenu.value = data
+}
+
+const menuUpdateEvent = () => {
+  getMenuListApi()
 }
 </script>
 
