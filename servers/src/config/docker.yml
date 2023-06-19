@@ -10,7 +10,7 @@ app:
     # location 文件上传后存储目录，相对路径（相对本项目根目录）或绝对路径
     location: '../upload'
     # 文件服务器地址
-    domain: 'http://177.7.0.12:8081'
+    domain: ''
     # 文件虚拟路径, 必须以 / 开头
     serveRoot: '/static'
 # 数据库配置
