@@ -1,5 +1,7 @@
 FROM node:16.13.1
 
+CMD [ "mkdir", "/upload" ]
+
 WORKDIR /servers
 
 COPY . .

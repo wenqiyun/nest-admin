@@ -8,6 +8,8 @@ services:
     restart: always
     ports:
       - 9540:9540
+    volumes:
+      - upload:/usr/share/nginx/html/static
     depends_on:
       - servers
 
@@ -19,6 +21,8 @@ services:
     restart: always
     ports:
       - 8080:8080
+    volumes:
+      - upload:/upload
     depends_on:
       - mysql
       - redis
@@ -53,3 +57,4 @@ services:
 volumes:
   mysql:
   redis:
+  upload:
