@@ -19,7 +19,7 @@
           :data="menuTree"
           :props="{ label: 'name', children: 'children', disabled: 'disabled' }"
           node-key="id"
-          :filter-node-method="(val, data) => filterNode(val, data as MenuApiResult)"
+          :filter-node-method="(val: any, data: any) => filterNode(val, data as MenuApiResult)"
           highlight-current
           default-expand-all
           @node-click="menuClickEvent"
