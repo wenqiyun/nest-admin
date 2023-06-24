@@ -55,7 +55,14 @@
         <ApiPermsSelect v-model="currApiPerms"></ApiPermsSelect>
       </el-form-item>
       <el-form-item label="排序" prop="">
-        <el-input v-model.number="menuForm.orderNum" placeholder="排序"></el-input>
+        <el-input-number
+          v-model.number="menuForm.orderNum"
+          :min="0"
+          :max="3000"
+          :step="1"
+          :precision="0"
+          step-strictly
+        ></el-input-number>
       </el-form-item>
       <div class="menu-form-action" v-show="isEditStatus && !isButtonEdit">
         <el-button @click="cancelAddOrEdit">取消</el-button>
@@ -73,7 +80,7 @@
 
 <script lang="ts" setup>
 import { ref, type PropType, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 import ParentMenuTree from './ParentMenuTree.vue'
 import ApiPermsSelect from './ApiPermsSelect.vue'
@@ -87,10 +94,11 @@ import {
   createMenu,
   delMenu
 } from '@/api/menu'
+import { confirmElBox } from '@/utils'
 
 const props = defineProps({
   currMenu: {
-    type: Object as PropType<ICreateOrUpdateMenu>,
+    type: Object as PropType<ICreateOrUpdateMenu | MenuApiResult>,
     default: () => {
       return {}
     }
@@ -228,21 +236,16 @@ const confirmEvent = () => {
 }
 
 // 删除
-const delEvent = async () => {
-  try {
-    await ElMessageBox.confirm(`此操作将会永久删除【${props.currMenu.name}】菜单，是否继续`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+const delEvent = () => {
+  confirmElBox(`此操作将会永久删除【${props.currMenu.name}】菜单，是否继续`, async () => {
     const res = await delMenu(props.currMenu.id as string)
     if (res?.code === 200) {
       ElMessage({ message: `菜单【${props.currMenu.name}】删除成功`, type: 'success' })
       emit('change')
     } else {
-      ElMessage({ message: res.msg, type: 'error' })
+      ElMessage.error(res?.msg || '网络异常，请稍后重试')
     }
-  } catch (error) {}
+  })
 }
 
 defineExpose({

@@ -1,21 +1,23 @@
 <template>
   <div class="tags-view-container">
     <ScrollPane ref="scrollbarRef" class="tags-view-wrapper">
-      <div ref="scrollbarContentRef" class="scrollbar-content">
-        <router-link
-          v-for="tag in tagsViewStore.visitedViews"
-          :class="isActive(tag) ? 'active' : ''"
-          :key="(tag.path as string)"
-          :to="{ path: tag.path as string, query: tag.query }"
-          @contextmenu.prevent="openMenu(tag, $event)"
-          class="tags-view-item"
+      <router-link
+        v-for="tag in tagsViewStore.visitedViews"
+        :class="isActive(tag) ? 'active' : ''"
+        :key="(tag.path as string)"
+        :to="{ path: tag.path as string, query: tag.query }"
+        @contextmenu.prevent="openMenu(tag, $event)"
+        class="tags-view-item"
+      >
+        {{ tag.meta?.title }}
+        <el-icon
+          v-if="tagsViewStore.visitedViews.length > 1 && !isAffix(tag)"
+          :size="12"
+          @click.prevent.stop="closeSelectedTag(tag)"
         >
-          {{ tag.meta?.title }}
-          <el-icon v-if="tagsViewStore.visitedViews.length > 1 && !isAffix(tag)" :size="12" @click.prevent.stop="closeSelectedTag(tag)">
-            <Close />
-          </el-icon>
-        </router-link>
-      </div>
+          <Close />
+        </el-icon>
+      </router-link>
     </ScrollPane>
     <ul v-show="visible" :style="{ left: left + 'px', top: top + 'px' }" class="contextmenu">
       <li @click="refreshSelectedTag(selectedTag)">刷新</li>
@@ -174,6 +176,7 @@ onMounted(() => {
   width: 100%;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+
   .tags-view-wrapper {
     .tags-view-item {
       display: inline-block;
@@ -189,16 +192,20 @@ onMounted(() => {
       font-size: 12px;
       margin-left: 5px;
       margin-top: 4px;
+
       &:first-of-type {
         margin-left: 15px;
       }
+
       &:last-of-type {
         margin-right: 15px;
       }
+
       &.active {
         background-color: var(--tagsview-tag-active-bg-color);
         color: var(--tagsview-tag-active-text-color);
         border-color: var(--tagsview-tag-active-border-color);
+
         &::before {
           content: '';
           background-color: var(--tagsview-tag-active-before-color);
@@ -210,6 +217,7 @@ onMounted(() => {
           margin-right: 2px;
         }
       }
+
       .el-icon {
         width: 16px;
         height: 16px;
@@ -220,11 +228,13 @@ onMounted(() => {
         transform-origin: 100% 50%;
         margin: 0 2px;
         vertical-align: middle;
+
         &:before {
           transform: scale(0.6);
           display: inline-block;
           vertical-align: -3px;
         }
+
         &:hover {
           background-color: var(--tagsview-tag-icon-hover-bg-color);
           color: var(--tagsview-tag-icon-hover-color);
@@ -232,6 +242,7 @@ onMounted(() => {
       }
     }
   }
+
   .contextmenu {
     margin: 0;
     background: #fff;
@@ -244,10 +255,12 @@ onMounted(() => {
     font-weight: 400;
     color: #333;
     box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
+
     li {
       margin: 0;
       padding: 7px 16px;
       cursor: pointer;
+
       &:hover {
         background: #eee;
       }

@@ -7,9 +7,8 @@
     :before-close="handleClose"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    v-loading="loading"
   >
-    <el-form ref="roleFormRef" :model="roleForm" :rules="roleFormRule" label-width="90px">
+    <el-form ref="roleFormRef" :model="roleForm" :rules="roleFormRule" label-width="90px" v-loading="loading">
       <el-form-item label="角色名称" prop="name">
         <el-input v-model.trim="roleForm.name" :maxlength="30" show-word-limit placeholder="请输入角色名称"></el-input>
       </el-form-item>
@@ -105,7 +104,7 @@ const createOrUpdateFn = async () => {
     emit('change')
     handleClose()
   } else {
-    ElMessage({ message: res?.msg || '网络异常，请稍后重试', type: 'error' })
+    ElMessage.error(res?.msg || '网络异常，请稍后重试')
   }
 }
 const confirmEvent = () => {

@@ -19,7 +19,7 @@
           :data="menuTree"
           :props="{ label: 'name', children: 'children', disabled: 'disabled' }"
           node-key="id"
-          :filter-node-method="(val: any, data: any) => filterNode(val, data as MenuApiResult)"
+          :filter-node-method="(val: any, data: any) => filterNode(val as string, data as MenuApiResult)"
           highlight-current
           default-expand-all
           @node-click="menuClickEvent"
@@ -55,7 +55,7 @@ const getMenuListApi = async () => {
     menuTree.value = listToTree(menuList.value, { root: '0', pidKey: 'parentId' })
     // 判断是否是删除菜单更新，需要清空 当前
     if (menuList.value.findIndex((v) => v.id === currMenu.value.id) === -1) {
-      currMenu.value = { parentId: '', name: '', code: '', type: '', orderNum: '' }
+      currMenu.value = { parentId: '', name: '', code: '', type: '', orderNum: 0 }
     }
   }
 }
@@ -75,7 +75,7 @@ watch(
   }
 )
 provide('menuTree', menuTree)
-const currMenu = ref<ICreateOrUpdateMenu>({ parentId: '', name: '', code: '', type: '', orderNum: '' })
+const currMenu = ref<ICreateOrUpdateMenu>({ parentId: '', name: '', code: '', type: '', orderNum: 0 })
 const menuClickEvent = (data: ICreateOrUpdateMenu) => {
   currMenu.value = data
 }
@@ -96,6 +96,7 @@ const menuUpdateEvent = () => {
     overflow: hidden;
   }
 }
+
 :deep(.menu__tip) {
   display: flex;
   align-items: center;

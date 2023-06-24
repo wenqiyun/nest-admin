@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { ElMessageBox } from 'element-plus'
 
 /** 将全局 CSS 变量导入 JS 中使用 */
 export const getCssVariableValue = (cssVariableName: string) => {
@@ -78,4 +79,20 @@ export function tranFileSize(fileSize: number) {
   if (fileSize < Math.pow(num, 3)) return (fileSize / Math.pow(num, 2)).toFixed(2) + 'MB' // M
   if (fileSize < Math.pow(num, 4)) return (fileSize / Math.pow(num, 3)).toFixed(2) + 'G' // G
   return (fileSize / Math.pow(num, 4)).toFixed(2) + 'T' // T
+}
+
+/**
+ * 用户删除等 二次确认消息弹窗
+ * @param msg 消息
+ * @param fn
+ */
+export async function confirmElBox(msg: string, fn: () => void) {
+  try {
+    await ElMessageBox.confirm(msg, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await fn?.()
+  } catch (error) {}
 }

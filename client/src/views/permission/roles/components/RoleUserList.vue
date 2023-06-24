@@ -35,13 +35,13 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 import BindUsers from './BindUsers.vue'
 
 import type { IKTableProps } from 'k-ui'
 
-import { dateStrFormat } from '@/utils'
+import { confirmElBox, dateStrFormat } from '@/utils'
 
 import { getUserList, type BindUserData, type UserApiResult, bindRoleUser } from '@/api/user'
 import type { ListResultData } from '@/api/base'
@@ -96,21 +96,18 @@ watch(
 
 // 解除关联关系
 const delBindUserEvent = async (row: UserApiResult) => {
-  await ElMessageBox.confirm(`是否确认取消用户【${row.account}】与当前角色关联`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning'
+  confirmElBox(`是否确认取消用户【${row.account}】与当前角色关联`, async () => {
+    loading.value = true
+    const req: BindUserData = { roleId: props.currId, userIds: [row.id as string], type: 'cancel' }
+    const res = await bindRoleUser(req)
+    loading.value = false
+    if (res?.code === 200) {
+      ElMessage({ type: 'success', message: `用户【${row.account}】已取消与当前角色关联` })
+      tableRef.value.refreshData()
+    } else {
+      ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试!' })
+    }
   })
-  loading.value = true
-  const req: BindUserData = { roleId: props.currId, userIds: [row.id as string], type: 'cancel' }
-  const res = await bindRoleUser(req)
-  loading.value = false
-  if (res?.code === 200) {
-    ElMessage({ type: 'success', message: `用户【${row.account}】已取消与当前角色关联` })
-    tableRef.value.refreshData()
-  } else {
-    ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试!' })
-  }
 }
 
 // 绑定关联关系

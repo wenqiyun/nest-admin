@@ -41,6 +41,7 @@ const isCollapse = computed(() => !appStore.sidebar.opened)
 <style lang="scss" scoped>
 .has-logo {
   box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
+
   .el-scrollbar {
     height: calc(100% - var(--navigationbar-height));
   }
@@ -48,8 +49,10 @@ const isCollapse = computed(() => !appStore.sidebar.opened)
 
 .el-scrollbar {
   height: 100%;
+
   :deep(.scrollbar-wrapper) {
     overflow-x: hidden !important;
+
     .el-scrollbar__view {
       height: 100%;
     }
@@ -57,6 +60,7 @@ const isCollapse = computed(() => !appStore.sidebar.opened)
     .el-scrollbar__bar.is-vertical {
       right: 0px;
     }
+
     .el-menu {
       border: none;
       height: 100%;
@@ -69,6 +73,7 @@ const isCollapse = computed(() => !appStore.sidebar.opened)
       font-size: 18px;
     }
   }
+
   // 滚动条
   :deep(.el-scrollbar__bar) {
     &.is-horizontal {

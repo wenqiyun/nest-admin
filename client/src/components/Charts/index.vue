@@ -28,10 +28,10 @@ const props = defineProps({
 
 const id = 'echarts_' + +Date.now() + Math.floor(Math.random() * 10000)
 
-const styles = computed<string>(() => {
+const styles = computed(() => {
   const width = typeof props.width === 'number' ? `${props.width}px` : props.width
   const height = typeof props.height === 'number' ? `${props.height}px` : props.height
-  return `width: ${width};height: ${height}`
+  return { height, width }
 })
 // echarts 实例接收只能使用 普通变量
 // 不能使用 vue 实例属性 如
@@ -42,7 +42,10 @@ let chart: echarts.ECharts
 const initChart = () => {
   if (!props.options) return
   if (!chart) {
-    chart = echarts.init(document.getElementById(id) as HTMLElement, undefined, { renderer: 'svg' })
+    chart = echarts.init(document.getElementById(id) as HTMLElement, undefined, {
+      renderer: 'svg',
+      useDirtyRect: true
+    })
   }
   chart.clear()
   chart.setOption(props.options, false, true)
@@ -62,8 +65,12 @@ const resize = useDebounceFn(() => {
 }, 500)
 
 onMounted(() => {
-  initChart()
-  window.addEventListener('resize', resize)
+  // 增加延时器，解决切换页面时 echarts 图 width 没有占满的 bug
+  const timeout = setTimeout(() => {
+    initChart()
+    window.addEventListener('resize', resize)
+    clearTimeout(timeout)
+  }, 500)
 })
 
 onBeforeUnmount(() => {

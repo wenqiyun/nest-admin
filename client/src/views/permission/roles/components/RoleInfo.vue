@@ -30,11 +30,11 @@
 
 <script lang="ts" setup>
 import { ref, provide, type PropType } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 import Edit from './Edit.vue'
 
-import { dateStrFormat } from '@/utils/index'
+import { confirmElBox, dateStrFormat } from '@/utils/index'
 
 import { delRoleInfo, type ICreateOrUpdateRole, type RoleApiResult } from '@/api/role'
 import type { MenuApiResult } from '@/api/menu'
@@ -55,17 +55,14 @@ const props = defineProps({
 
 // 删除
 const delRoleEvent = async () => {
-  await ElMessageBox.confirm(`是否确认删除【${props.currRole.name}】角色？`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning'
+  await confirmElBox(`是否确认删除【${props.currRole.name}】角色？`, async () => {
+    const res = await delRoleInfo(props.currRole.id)
+    if (res?.code === 200) {
+      ElMessage({ type: 'success', message: '删除角色成功' })
+    } else {
+      ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试' })
+    }
   })
-  const res = await delRoleInfo(props.currRole.id)
-  if (res?.code === 200) {
-    ElMessage({ type: 'success', message: '删除角色成功' })
-  } else {
-    ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试' })
-  }
 }
 
 // 编辑
@@ -103,8 +100,10 @@ defineExpose({
 .role-info-wrap {
   width: 100%;
   height: 220px;
+
   .role-info-content {
     padding: 10px;
+
     .role-info-item {
       padding: 5px 10px;
       line-height: 1.5;
@@ -117,6 +116,7 @@ defineExpose({
         font-size: 14px;
         white-space: nowrap;
       }
+
       &__content {
         line-height: 1.5;
       }

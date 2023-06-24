@@ -9,6 +9,20 @@ export const constantRoutes: RouteRecordRaw[] = [
     name: 'login',
     component: () => import('@/views/login/index.vue'),
     meta: { title: '登录', hidden: true }
+  },
+  {
+    path: '/redirect',
+    name: 'redirect',
+    component: Layout,
+    meta: {
+      hidden: true
+    },
+    children: [
+      {
+        path: '/redirect/:path(.*)',
+        component: () => import('@/views/redirect/index.vue')
+      }
+    ]
   }
 ]
 
@@ -41,12 +55,6 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: { title: '用户管理' }
       },
       {
-        path: 'roles',
-        component: () => import('@/views/permission/roles/index.vue'),
-        name: 'perm_roles',
-        meta: { title: '角色管理' }
-      },
-      {
         path: 'depts',
         component: () => import('@/views/permission/depts/index.vue'),
         name: 'perm_depts',
@@ -57,6 +65,12 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/permission/posts/index.vue'),
         name: 'perm_posts',
         meta: { title: '岗位管理' }
+      },
+      {
+        path: 'roles',
+        component: () => import('@/views/permission/roles/index.vue'),
+        name: 'perm_roles',
+        meta: { title: '角色管理' }
       }
     ]
   },

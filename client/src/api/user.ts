@@ -53,7 +53,7 @@ export interface BindUserData {
 /** 登录 */
 export function login(loginData: UserLogin): Promise<ResultData<LoginResult>> {
   return request<ResultData<LoginResult>>({
-    url: `${config.api.baseUrl}/login`,
+    url: '/login',
     method: ApiMethodContants.POST,
     data: loginData
   })
@@ -61,7 +61,7 @@ export function login(loginData: UserLogin): Promise<ResultData<LoginResult>> {
 
 export function updateToken(): Promise<ResultData<LoginResult>> {
   return request({
-    url: `${config.api.baseUrl}/update/token`,
+    url: '/update/token',
     method: ApiMethodContants.POST,
     headers: { Authorization: 'Bearer ' + getRefreshToken() }
   })
@@ -69,7 +69,7 @@ export function updateToken(): Promise<ResultData<LoginResult>> {
 
 export function getUserInfo(id?: string): Promise<ResultData<UserApiResult>> {
   return request<ResultData<UserApiResult>>({
-    url: `${config.api.baseUrl}/user/one/info`,
+    url: '/user/one/info',
     method: ApiMethodContants.GET,
     params: { id }
   })
@@ -77,7 +77,7 @@ export function getUserInfo(id?: string): Promise<ResultData<UserApiResult>> {
 
 export function getUserList(params: QueryUserList): Promise<ResultData<ListResultData<UserApiResult>>> {
   return request<ResultData<ListResultData<UserApiResult>>>({
-    url: `${config.api.baseUrl}/user/list`,
+    url: '/user/list',
     method: ApiMethodContants.GET,
     params
   })
@@ -85,7 +85,7 @@ export function getUserList(params: QueryUserList): Promise<ResultData<ListResul
 
 export function updateUser(data: ICreateOrUpdateUser): Promise<ResultData<null>> {
   return request<ResultData<null>>({
-    url: `${config.api.baseUrl}/user`,
+    url: '/user',
     method: ApiMethodContants.PUT,
     data
   })
@@ -93,14 +93,14 @@ export function updateUser(data: ICreateOrUpdateUser): Promise<ResultData<null>>
 
 export function resetPassword(userId: string): Promise<ResultData<null>> {
   return request<ResultData<null>>({
-    url: `${config.api.baseUrl}/user/password/reset/${userId}`,
+    url: `/user/password/reset/${userId}`,
     method: ApiMethodContants.PUT
   })
 }
 
 export function updateStatus(data: ICreateOrUpdateUser): Promise<ResultData<null>> {
   return request<ResultData<null>>({
-    url: `${config.api.baseUrl}/user/status/change`,
+    url: '/user/status/change',
     method: ApiMethodContants.PUT,
     data
   })
@@ -108,14 +108,14 @@ export function updateStatus(data: ICreateOrUpdateUser): Promise<ResultData<null
 
 export function getUserRoleIds(id: string): Promise<ResultData<number[]>> {
   return request<ResultData<number[]>>({
-    url: `${config.api.baseUrl}/user/${id}/role`,
+    url: `/user/${id}/role`,
     method: ApiMethodContants.GET
   })
 }
 
 export function bindRoleUser(data: BindUserData): Promise<ResultData<null>> {
   return request<ResultData<null>>({
-    url: `${config.api.baseUrl}/user/role/update`,
+    url: '/user/role/update',
     method: ApiMethodContants.POST,
     data
   })

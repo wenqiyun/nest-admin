@@ -42,6 +42,7 @@ export interface IKTableColumn {
   filteredValue?: Array<any>
   slot?: boolean
   default?: string
+  [prop: string]: any
 }
 
 export interface IKTableColumnSlot {
@@ -67,4 +68,5 @@ export interface IKTableProps<T> {
   index?: boolean
   indexMethod?: IIndexMethod
   indexLabel?: string
+  [prop: string]: any
 }

@@ -65,8 +65,6 @@ const fileType = computed(() => {
 
   return 'other'
 })
-
-console.log(fileType)
 </script>
 
 <style lang="scss" scoped>

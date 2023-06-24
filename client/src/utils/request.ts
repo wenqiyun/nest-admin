@@ -89,7 +89,8 @@ function createService() {
 
 async function request<T>(config: AxiosRequestConfig): Promise<T> {
   const defaultConfig = {
-    timeout: Number(appConfig.request.timeout || '0')
+    timeout: Number(appConfig.request.timeout || '0'),
+    baseURL: appConfig.api.baseUrl
   }
   const service = createService()
   const res = await service({ ...defaultConfig, ...config })

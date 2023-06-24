@@ -3,12 +3,15 @@
     v-model="currApiPerms"
     multiple
     collapse-tags
+    clearable
+    filterable
+    :filter-method="filterEvent"
     popper-class="menu-apiperms-select"
     style="width: 250px"
     @change="handleChange"
   >
     <el-option
-      v-for="api in userStore.allApiPerms"
+      v-for="api in apiPermList"
       :label="`${api.method} + ${api.path}`"
       :value="`${api.method},${api.path}`"
       :key="`${api.path}_${api.method}`"
@@ -38,13 +41,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits([UPDATE_MODEL_EVENT])
-
-const userStore = useUserStore()
 const apiPermList = ref<PermApiResult[]>([])
+const filterEvent = (val: string) => {
+  apiPermList.value = userStore.allApiPerms.filter((api) => {
+    if (!val?.trim()) return true
+    return `${api.path}_${api.method}_${api.desc}`.indexOf(val.trim()) > -1
+  })
+}
+const userStore = useUserStore()
 const getApiPermList = async () => {
   apiPermList.value = await userStore.getAllApiPerms()
 }
 getApiPermList()
+
 const currApiPerms = ref<string[]>([])
 watch(
   () => props.modelValue,
@@ -52,7 +61,6 @@ watch(
     currApiPerms.value = JSON.parse(JSON.stringify(props.modelValue))
   }
 )
-
 const handleChange = (val: Array<string> = []) => {
   emit(UPDATE_MODEL_EVENT, val)
 }
@@ -63,12 +71,15 @@ const handleChange = (val: Array<string> = []) => {
   .api-method-path {
     color: #666;
   }
+
   .menu-apiperms-option {
     height: auto;
+
     &.selected .api-method-path {
       color: var(--el-color-primary);
     }
   }
+
   .api-desc-content {
     color: #999;
   }

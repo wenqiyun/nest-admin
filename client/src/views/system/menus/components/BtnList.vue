@@ -51,10 +51,11 @@
 
 <script lang="ts" setup>
 import { ref, type PropType, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 import Edit from './Edit.vue'
 
+import { confirmElBox } from '@/utils'
 import { getOneMenuBtns, type MenuApiResult, type ICreateOrUpdateMenu, delMenu } from '@/api/menu'
 import { hasPerms } from '@/utils/perm'
 
@@ -89,26 +90,23 @@ watch(
 
 // 删除
 const delBtnEvent = async (row: MenuApiResult) => {
-  await ElMessageBox.confirm(`此操作将会永久删除【${row.name}】按钮，是否继续`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
+  confirmElBox(`此操作将会永久删除【${row.name}】按钮，是否继续`, async () => {
+    loading.value = true
+    const res = await delMenu(row.id as string)
+    loading.value = false
+    if (res?.code === 200) {
+      ElMessage({ message: `按钮【${row.name}】删除成功`, type: 'success' })
+      getCurrMenuBtnList(props.currMenu.id as string)
+    } else {
+      ElMessage({ message: res.msg, type: 'error' })
+    }
   })
-  loading.value = true
-  const res = await delMenu(row.id as string)
-  loading.value = false
-  if (res?.code === 200) {
-    ElMessage({ message: `按钮【${row.name}】删除成功`, type: 'success' })
-    getCurrMenuBtnList(props.currMenu.id as string)
-  } else {
-    ElMessage({ message: res.msg, type: 'error' })
-  }
 }
 
 // 编辑 ，添加
 const showEdit = ref<boolean>(false)
 const editRef = ref()
-const currBtn = ref<ICreateOrUpdateMenu>({
+const currBtn = ref<ICreateOrUpdateMenu | MenuApiResult>({
   parentId: ''
 })
 const addOrEditEvent = (type: 'edit' | 'add', row?: MenuApiResult) => {

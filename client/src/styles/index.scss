@@ -87,6 +87,8 @@ div:focus {
   padding: 10px;
   height: calc(100vh - var(--header-height) - 14px);
   background: var(--theme-bg-color, #f0f2f5);
+  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* 块背景色 */
@@ -121,4 +123,35 @@ div:focus {
   }
 }
 
-
+::-webkit-scrollbar {
+  width: 8px;
+  height: 10px;
+}
+::-webkit-scrollbar-track-piece {
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb {
+  height: 50px;
+  background-image: linear-gradient(
+    rgba(173, 15, 15, 0),
+    rgb(119, 153, 250),
+    rgba(173, 15, 15, 0)
+  );
+  border-radius: 6px;
+  filter: alpha(opacity = 10);
+  -moz-opacity: 0.1;
+  -khtml-opacity: 0.1;
+  opacity: 0.1;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-image: linear-gradient(
+    rgba(255, 255, 255, 0),
+    rgb(72, 120, 253),
+    rgba(255, 255, 255, 0)
+  );
+}
+* {
+  scrollbar-color: #c8d2e0 #f3f4f9;
+  scrollbar-width: thin;
+}

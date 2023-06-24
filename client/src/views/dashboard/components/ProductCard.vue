@@ -12,7 +12,12 @@
         <span>{{ `${props.percent}%` }}</span>
       </div>
       <div class="product__progress">
-        <el-progress :stroke-width="8" :show-text="false" :color="customColors" :percentage="props.percent"></el-progress>
+        <el-progress
+          :stroke-width="8"
+          :show-text="false"
+          :color="customColors"
+          :percentage="props.percent"
+        ></el-progress>
       </div>
     </div>
     <div class="product-card__footer">
@@ -21,9 +26,11 @@
           更新日期：
           <span>{{ props.updateDate }}</span>
         </div>
-        <div>
+        <div class="product__user-avatar-wrap">
           <el-avatar class="product__user-avatar" size="small" v-for="(user, i) in avatars" :src="user" :key="i" />
-          <el-avatar class="product__user-avatar" size="small" v-if="userAvatar.length > 2">{{ `+${userAvatar.length - 2}` }}</el-avatar>
+          <el-avatar class="product__user-avatar" size="small" v-if="userAvatar.length > 2">{{
+            `+${userAvatar.length - 2}`
+          }}</el-avatar>
         </div>
       </div>
     </div>
@@ -76,38 +83,47 @@ const avatars = computed(() => {
   border-radius: 12px;
   height: 199px;
 }
+
 .product-card__header {
   width: 100%;
 }
+
 .product__title {
   font-size: 16px;
   line-height: 24px;
 }
+
 .product__desc {
   font-size: 12px;
   line-height: 21px;
   color: #8181a5;
 }
+
 .product-card__body {
   margin-top: 20px;
 }
+
 .product-card__footer {
   width: 100%;
   margin-top: 16px;
 }
+
 .product-update {
   font-size: 14px;
   line-height: 21px;
+
   span {
     font-size: 12px;
     color: #7c8087;
   }
 }
+
 .product__user {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .product__info-progress {
   display: flex;
   align-items: center;
@@ -116,6 +132,12 @@ const avatars = computed(() => {
   line-height: 21px;
   color: #8181a5;
 }
+
+.product__user-avatar-wrap {
+  display: flex;
+  align-items: center;
+}
+
 .product__user-avatar:not(:last-child) {
   margin-right: 5px;
 }

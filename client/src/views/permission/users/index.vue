@@ -83,12 +83,12 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { ElMessage, ElMessageBox, type UploadRawFile } from 'element-plus'
+import { ElMessage, type UploadRawFile } from 'element-plus'
 import type { IKTableProps } from 'k-ui'
 
 import appConfig from '@/config/index'
 import { getToken } from '@/utils/cache'
-import { dateStrFormat, downLoad } from '@/utils'
+import { confirmElBox, dateStrFormat, downLoad } from '@/utils'
 
 import {
   dowmloadUserTemplate,
@@ -184,16 +184,7 @@ const clickEditEvent = (id: string) => {
 
 // 禁用 or 启用 逻辑
 const forbiddenEvent = async (row: UserApiResult) => {
-  try {
-    await ElMessageBox.confirm(
-      `是否确认将用户【${row.account}】${row.status === 1 ? '禁用' : '恢复正常使用'}吗？`,
-      '提示',
-      {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
+  confirmElBox(`是否确认将用户【${row.account}】${row.status === 1 ? '禁用' : '恢复正常使用'}吗？`, async () => {
     loading.value = true
     const res = await updateStatus({ id: row.id, status: row.status === 1 ? 0 : 1 })
     loading.value = false
@@ -203,24 +194,19 @@ const forbiddenEvent = async (row: UserApiResult) => {
     } else {
       ElMessage({ type: 'error', message: res?.msg || '网络异常，请稍后重试！' })
     }
-  } catch (error) {}
+  })
 }
 
 // 重置密码
 const resetPasswordEvent = async (row: UserApiResult) => {
-  try {
-    await ElMessageBox.confirm(`是否确认重置用户【${row.account}】密码？`, '提示', {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+  confirmElBox(`是否确认重置用户【${row.account}】密码？`, async () => {
     const res = await resetPassword(row.id as string)
     if (res?.code === 200) {
       ElMessage({ type: 'success', message: `重置用户【${row.account}】密码成功` })
     } else {
       ElMessage({ type: 'error', message: res?.msg || '重置密码失败，请稍后尝试！' })
     }
-  } catch (error) {}
+  })
 }
 
 // 导入用户

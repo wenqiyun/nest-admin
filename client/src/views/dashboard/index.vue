@@ -9,7 +9,13 @@
           <grow-card title="总产品数" icon="product" :count="2000" :increase="3" comparison-type="同比"></grow-card>
         </el-col>
         <el-col :span="6" :sm="12" :xs="24" :lg="6">
-          <grow-card title="总营收额" icon="chart-line" :count="3200000" :increase="-2" comparison-type="环比"></grow-card>
+          <grow-card
+            title="总营收额"
+            icon="chart-line"
+            :count="3200000"
+            :increase="-2"
+            comparison-type="环比"
+          ></grow-card>
         </el-col>
         <el-col :span="6" :sm="12" :xs="24" :lg="6">
           <grow-card title="总任务数" icon="time" :count="10000" :increase="-1" comparison-type="同比"></grow-card>
@@ -57,7 +63,10 @@ const productionDemoData = [
     desc: '开发任务一简介',
     percent: 25,
     updateDate: '2020.06.12',
-    userAvatar: ['https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png']
+    userAvatar: [
+      'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
+      'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
+    ]
   },
   {
     guid: 2,
@@ -210,6 +219,7 @@ const barOptions = {
     margin-top: 12px;
   }
 }
+
 @media only screen and (min-width: 1200px) {
   .dashboard-container .product-demo {
     margin-top: 0;

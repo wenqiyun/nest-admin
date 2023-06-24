@@ -7,9 +7,15 @@
     :before-close="handleClose"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    v-loading="loading"
   >
-    <el-form ref="userFormRef" :model="userForm" :rules="userFormRules" label-position="left" label-width="80px">
+    <el-form
+      ref="userFormRef"
+      :model="userForm"
+      :rules="userFormRules"
+      label-position="left"
+      label-width="80px"
+      v-loading="loading"
+    >
       <el-form-item label="帐号" prop="account">
         <el-input v-model="userForm.account" disabled></el-input>
       </el-form-item>
