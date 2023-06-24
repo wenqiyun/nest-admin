@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager } from 'typeorm';
+import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm'
+import { Repository, DataSource, EntityManager } from 'typeorm'
 import { plainToInstance, instanceToPlain } from 'class-transformer'
 
 import { ResultData } from '../../../common/utils/result'
@@ -8,6 +8,8 @@ import { RedisService } from '../../../common/libs/redis/redis.service'
 import { getRedisKey } from '../../../common/utils/utils'
 import { AppHttpCode } from '../../../common/enums/code.enum'
 import { RedisKeyPrefix } from '../../../common/enums/redis-key-prefix.enum'
+
+import { PermService } from '../../perm/perm.service'
 
 import { UserRoleEntity } from './user-role.entity'
 
@@ -43,7 +45,16 @@ export class UserRoleService {
   }
 
   /** 生成用户角色关系, 单个角色， 多个用户 */
-  async createOrCancelUserRole(userIds: string[], roleId: string, createOrCancel: 'create' | 'cancel'): Promise<ResultData> {
+  async createOrCancelUserRole(
+    userIds: string[],
+    roleId: string,
+    createOrCancel: 'create' | 'cancel',
+    currActionUserId: string,
+  ): Promise<ResultData> {
+    if (userIds.includes(currActionUserId)) {
+      // 绑定取消关系中，包含自身，一般自己不可操作自己的权限
+      return ResultData.fail(AppHttpCode.ROLE_NO_FORBIDDEN, '当前登录用户不可改变自己的角色')
+    }
     const res = await this.userManager.transaction(async (transactionalEntityManager) => {
       if (createOrCancel === 'create') {
         const dto = plainToInstance(
@@ -58,10 +69,21 @@ export class UserRoleService {
       }
     })
     if (res) {
-      await this.redisService.del(userIds.map(userId => getRedisKey(RedisKeyPrefix.USER_ROLE, userId)))
+      // 清除角色更新的用户缓存
+      const keys = []
+      userIds.forEach((userId) => {
+        keys.push(
+          ...[
+            getRedisKey(RedisKeyPrefix.USER_MENU, userId),
+            getRedisKey(RedisKeyPrefix.USER_PERM, userId),
+            getRedisKey(RedisKeyPrefix.USER_ROLE, userId),
+          ],
+        )
+      })
+      await this.redisService.getClient().unlink(keys)
       return ResultData.ok()
-    }
-    else return ResultData.fail(AppHttpCode.SERVICE_ERROR, `${createOrCancel === 'create' ? '添加' : '取消'}用户关联失败`)
+    } else
+      return ResultData.fail(AppHttpCode.SERVICE_ERROR, `${createOrCancel === 'create' ? '添加' : '取消'}用户关联失败`)
   }
 
   /** 查询单个用户所拥有的角色 id */
@@ -89,7 +111,8 @@ export class UserRoleService {
       res = await this.dataSource
         .createQueryBuilder('sys_user', 'su')
         .where((qb: any) => {
-          const subQuery = qb.subQuery()
+          const subQuery = qb
+            .subQuery()
             .select(['sur.user_id'])
             .from('sys_user_role', 'sur')
             .where('sur.role_id = :roleId', { roleId })

@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsNumber, Min, IsOptional, IsNumberString, IsIn } from 'class-validator';
+import { IsString, IsNumber, Min, IsOptional, IsNumberString, IsIn, MinLength, MaxLength } from 'class-validator'
 import { $enum } from 'ts-enum-util'
 
 import { StatusValue } from '../../../common/enums/common.enum'
 
 export class UpdateDeptDto {
-
   @ApiProperty({ description: 'id' })
   @IsNumberString({}, { message: 'id 类型错误，正确类型 string' })
   id: string
@@ -17,6 +16,8 @@ export class UpdateDeptDto {
 
   @ApiProperty({ description: '部门名称', required: false })
   @IsString({ message: 'name 类型错误, 正确类型 string' })
+  @MinLength(2, { message: '账号至少2个字符' })
+  @MaxLength(50, { message: '账号最多50个字符' })
   @IsOptional()
   name?: string
 
@@ -30,15 +31,14 @@ export class UpdateDeptDto {
   @IsOptional()
   readonly remark?: string
 
-
-  @ApiProperty({ description: '状态', enum: $enum(StatusValue).getValues(), required: false})
-  @IsNumber({}, { message: 'status 类型错误， 正确类型 number '})
+  @ApiProperty({ description: '状态', enum: $enum(StatusValue).getValues(), required: false })
+  @IsNumber({}, { message: 'status 类型错误， 正确类型 number ' })
   @IsIn($enum(StatusValue).getValues())
   @IsOptional()
   status?: StatusValue
 
   @ApiProperty({ description: '排序', required: false })
-  @IsNumber({}, { message: 'orderNum 类型错误， 正确类型 number '})
+  @IsNumber({}, { message: 'orderNum 类型错误， 正确类型 number ' })
   @Min(0)
   @IsOptional()
   orderNum?: number

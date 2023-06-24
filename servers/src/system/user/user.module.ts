@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
 import { AuthModule } from '../auth/auth.module'
+import { PermModule } from '../perm/perm.module'
 
 import { UserEntity } from './user.entity'
 import { UserRoleEntity } from './role/user-role.entity'
@@ -29,6 +30,7 @@ import { UserController } from './user.controller'
       }),
       inject: [ConfigService],
     }),
+    PermModule,
   ],
   providers: [UserService, UserRoleService],
   controllers: [BaseController, UserController],

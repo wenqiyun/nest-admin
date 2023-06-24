@@ -6,6 +6,8 @@ import { plainToInstance } from 'class-transformer'
 import { ResultData } from '../../common/utils/result'
 import { AppHttpCode } from '../../common/enums/code.enum'
 
+import { PermService } from '../perm/perm.service'
+
 import { MenuEntity } from './menu.entity'
 import { MenuPermEntity } from './menu-perm.entity'
 import { CreateMenuDto } from './dto/create-menu.dto'
@@ -20,7 +22,8 @@ export class MenuService {
     @InjectRepository(MenuPermEntity)
     private readonly menuPermRepo: Repository<MenuPermEntity>,
     @InjectEntityManager()
-    private readonly menuManager: EntityManager
+    private readonly menuManager: EntityManager,
+    private readonly permService: PermService,
   ) {}
 
   async create(dto: CreateMenuDto): Promise<ResultData> {
@@ -47,7 +50,7 @@ export class MenuService {
 
   async findAllMenu(hasBtn: boolean): Promise<ResultData> {
     const where = { ...(!hasBtn ? { type: In([1, 2]) } : null) }
-    const menuList = await this.menuRepo.find({ where, order: { orderNum: 'DESC', id: 'DESC' } })
+    const menuList = await this.menuRepo.find({ where, order: { orderNum: 'DESC', id: 'ASC' } })
     return ResultData.ok(menuList)
   }
 
@@ -70,6 +73,7 @@ export class MenuService {
       return result
     })
     if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '菜单删除失败，请稍后重试')
+    await this.permService.clearUserInfoCache()
     return ResultData.ok()
   }
 
@@ -80,13 +84,18 @@ export class MenuService {
       // 删除原有接口权限权限
       await this.menuPermRepo.delete({ menuId: dto.id })
       // 新的接口权限入库
-      const menuPermDto = plainToInstance(MenuPermEntity, dto.menuPermList.map(v => ({ menuId: dto.id, ...v })))
+      const menuPermDto = plainToInstance(
+        MenuPermEntity,
+        dto.menuPermList.map((v) => ({ menuId: dto.id, ...v })),
+      )
       await transactionalEntityManager.save<MenuPermEntity>(menuPermDto)
       delete dto.menuPermList
       // excludeExtraneousValues true  排除无关属性。 但需要在实体类中 将属性使用 @Expose()
       return await transactionalEntityManager.update<MenuEntity>(MenuEntity, dto.id, plainToInstance(MenuEntity, dto))
     })
     if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前菜单更新失败，请稍后重试')
+    // 清除用户权限缓存
+    await this.permService.clearUserInfoCache()
     return ResultData.ok()
   }
 }

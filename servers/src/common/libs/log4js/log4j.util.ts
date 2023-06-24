@@ -10,7 +10,7 @@ import config from '../../../config/index'
 const appLogDirConfig = config().app.logger.dir
 
 const baseLogPath = Path.normalize(
-  Path.isAbsolute(appLogDirConfig) ? appLogDirConfig : Path.join(process.cwd(), appLogDirConfig)
+  Path.isAbsolute(appLogDirConfig) ? appLogDirConfig : Path.join(process.cwd(), appLogDirConfig),
 )
 
 // 日志级别
@@ -23,7 +23,7 @@ export enum LoggerLevel {
   WARN = 'WARN',
   ERROR = 'ERROR',
   FATAL = 'FATAL',
-  OFF = 'OFF'
+  OFF = 'OFF',
 }
 
 // 内容跟踪类
@@ -32,7 +32,7 @@ export class ContextTrace {
     public readonly context: string,
     public readonly path?: string,
     public readonly lineNumber?: number,
-    public readonly columnNumber?: number
+    public readonly columnNumber?: number,
   ) {}
 }
 
@@ -99,7 +99,7 @@ Log4js.configure({
   appenders: {
     console: {
       type: 'console',
-      layout: { type: 'Nest-Admin' }
+      layout: { type: 'Nest-Admin' },
     },
     access: {
       type: 'dateFile',
@@ -109,7 +109,7 @@ Log4js.configure({
       daysToKeep: 60,
       numBackups: 3,
       category: 'http',
-      keepFileExt: true
+      keepFileExt: true,
     },
     app: {
       type: 'dateFile',
@@ -117,14 +117,14 @@ Log4js.configure({
       alwaysIncludePattern: true,
       layout: {
         type: 'pattern',
-        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}'
+        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}',
       },
       // 日志文件按日期（天）切割
       pattern: 'yyyyMMdd',
       daysToKeep: 60,
       // maxLogSize: 10485760,
       numBackups: 3,
-      keepFileExt: true
+      keepFileExt: true,
     },
     errorFile: {
       type: 'dateFile',
@@ -132,32 +132,32 @@ Log4js.configure({
       alwaysIncludePattern: true,
       layout: {
         type: 'pattern',
-        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}'
+        pattern: '{"date":"%d","level":"%p","category":"%c","host":"%h","pid":"%z","data":\'%m\'}',
       },
       // 日志文件按日期（天）切割
       pattern: 'yyyyMMdd',
       daysToKeep: 60,
       // maxLogSize: 10485760,
       numBackups: 3,
-      keepFileExt: true
+      keepFileExt: true,
     },
     errors: {
       type: 'logLevelFilter',
       level: 'ERROR',
-      appender: 'errorFile'
-    }
+      appender: 'errorFile',
+    },
   },
   categories: {
     default: {
       appenders: ['console', 'app', 'errors'],
-      level: 'DEBUG'
+      level: 'DEBUG',
     },
     info: { appenders: ['console', 'app', 'errors'], level: 'info' },
     access: { appenders: ['console', 'app', 'errors'], level: 'info' },
-    http: { appenders: ['access'], level: 'DEBUG' }
+    http: { appenders: ['access'], level: 'DEBUG' },
   },
   pm2: true, // 使用 pm2 来管理项目时，打开
-  pm2InstanceVar: 'INSTANCE_ID' // 会根据 pm2 分配的 id 进行区分，以免各进程在写日志时造成冲突
+  pm2InstanceVar: 'INSTANCE_ID', // 会根据 pm2 分配的 id 进行区分，以免各进程在写日志时造成冲突
 })
 
 // 实例化

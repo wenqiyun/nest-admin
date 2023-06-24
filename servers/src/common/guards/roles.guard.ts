@@ -28,7 +28,7 @@ export class RolesGuard implements CanActivate {
     // 全局配置，
     const req = ctx.switchToHttp().getRequest()
 
-    const i = this.globalWhiteList.findIndex(route => {
+    const i = this.globalWhiteList.findIndex((route) => {
       // 请求方法类型相同
       if (req.method.toUpperCase() === route.method.toUpperCase()) {
         // 对比 url
@@ -50,7 +50,7 @@ export class RolesGuard implements CanActivate {
     if (user.type === UserType.SUPER_ADMIN) return true
 
     const userPermApi = await this.permService.findUserPerms(user.id)
-    const index = userPermApi.findIndex(route => {
+    const index = userPermApi.findIndex((route) => {
       // 请求方法类型相同
       if (req.method.toUpperCase() === route.method.toUpperCase()) {
         // 对比 url

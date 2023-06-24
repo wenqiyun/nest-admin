@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm';
-import { Repository, EntityManager, DataSource } from 'typeorm';
+import { InjectRepository, InjectEntityManager } from '@nestjs/typeorm'
+import { Repository, EntityManager, DataSource } from 'typeorm'
 import { plainToInstance } from 'class-transformer'
 
 import { AppHttpCode } from '../../common/enums/code.enum'
@@ -14,7 +14,7 @@ import { RoleMenuEntity } from './role-menu.entity'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { UserEntity } from '../user/user.entity'
-
+import { PermService } from '../perm/perm.service'
 
 @Injectable()
 export class RoleService {
@@ -27,7 +27,8 @@ export class RoleService {
     private readonly userRoleRepo: Repository<UserRoleEntity>,
     @InjectEntityManager()
     private readonly roleManager: EntityManager,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    private readonly permService: PermService,
   ) {}
 
   async create(dto: CreateRoleDto, user: UserEntity): Promise<ResultData> {
@@ -70,11 +71,21 @@ export class RoleService {
           ),
         )
       }
-      const updateRole = { id: dto.id, ...(dto.name ? { name: dto.name } : null), ...(dto.remark ? { remark: dto.remark } : null) }
-      const result = await transactionalEntityManager.update<RoleEntity>(RoleEntity, dto.id, plainToInstance(RoleEntity, updateRole))
+      const updateRole = {
+        id: dto.id,
+        ...(dto.name ? { name: dto.name } : null),
+        ...(dto.remark ? { remark: dto.remark } : null),
+      }
+      const result = await transactionalEntityManager.update<RoleEntity>(
+        RoleEntity,
+        dto.id,
+        plainToInstance(RoleEntity, updateRole),
+      )
       return result
     })
     if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '当前角色更新失败，请稍后尝试')
+    // 更新角色，redis 因为角色还在，只需要更新用户菜单，用户接口权
+    await this.permService.clearUserInfoCache('nest:user:[menu|perm]*')
     return ResultData.ok()
   }
 
@@ -92,6 +103,8 @@ export class RoleService {
       return result
     })
     if (!affected) return ResultData.fail(AppHttpCode.SERVICE_ERROR, '删除失败，请稍后重试')
+    // 删除角色后，角色不存在 影响用户权限，和用户绑定角色，所以需要全删
+    await this.permService.clearUserInfoCache()
     return ResultData.ok()
   }
 

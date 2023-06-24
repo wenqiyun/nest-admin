@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsNotEmpty, IsNumber, Min, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, Min, IsOptional, MinLength, MaxLength } from 'class-validator'
 
 export class CreateDeptDto {
   @ApiProperty({ description: '上级部门 id' })
@@ -10,6 +10,8 @@ export class CreateDeptDto {
   @ApiProperty({ description: '部门名称' })
   @IsString({ message: 'name 类型错误, 正确类型 string' })
   @IsNotEmpty({ message: 'name 不能为空' })
+  @MinLength(2, { message: '部门名称至少2个字符' })
+  @MaxLength(50, { message: '部门名称最多50个字符' })
   readonly name: string
 
   @ApiProperty({ description: '部门负责人' })
@@ -23,7 +25,7 @@ export class CreateDeptDto {
   remark?: string
 
   @ApiProperty({ description: '排序' })
-  @IsNumber({}, { message: 'orderNum 类型错误， 正确类型 number '})
+  @IsNumber({}, { message: 'orderNum 类型错误， 正确类型 number ' })
   @Min(0)
   readonly orderNum: number
 }

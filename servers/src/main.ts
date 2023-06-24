@@ -1,9 +1,9 @@
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
-
 import { mw as requestIpMw } from 'request-ip'
 
 import express from 'express'
+import path from 'path'
 
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
@@ -21,6 +21,7 @@ import { ExceptionsFilter } from './common/libs/log4js/exceptions-filter'
 import Chalk from 'chalk'
 
 async function bootstrap() {
+  // 创建 app
   const app = await NestFactory.create(AppModule, {
     cors: true,
   })
@@ -60,10 +61,6 @@ async function bootstrap() {
     customSiteTitle: 'Nest-Admin API Docs',
   })
 
-  // 防止跨站请求伪造
-  // 设置 csrf 保存 csrfToken
-  // app.use(csurf())
-
   // 获取真实 ip
   app.use(requestIpMw({ attributeName: 'ip' }))
 
@@ -88,12 +85,22 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionsFilter())
   // 获取配置端口
   const port = config.get<number>('app.port') || 8080
-
   await app.listen(port)
 
+  const fileUploadLocationConfig = config.get<string>('app.file.location') || '../upload'
+  const fileUploadBastPath = path.normalize(
+    path.isAbsolute(fileUploadLocationConfig)
+      ? `${fileUploadLocationConfig}`
+      : path.join(process.cwd(), `${fileUploadLocationConfig}`),
+  )
   Logger.log(
     Chalk.green(`Nest-Admin 服务启动成功 `),
-    `http://localhost:${port}${prefix}/`,
+    '\n',
+    Chalk.green('上传文件存储路径'),
+    `        ${fileUploadBastPath}`,
+    '\n',
+    Chalk.green('服务地址'),
+    `                http://localhost:${port}${prefix}/`,
     '\n',
     Chalk.green('swagger 文档地址        '),
     `http://localhost:${port}${prefix}/docs/`,

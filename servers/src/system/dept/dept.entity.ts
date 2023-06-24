@@ -19,7 +19,7 @@ export class DeptEntity {
   name: string
 
   @ApiProperty({ description: '状态', enum: $enum(StatusValue).getValues() })
-  @Column({ type:  'tinyint', default: StatusValue.NORMAL, comment: '部门状态，1-有效，0-禁用' })
+  @Column({ type: 'tinyint', default: StatusValue.NORMAL, comment: '部门状态，1-有效，0-禁用' })
   status: StatusValue
 
   @ApiProperty({ description: '排序' })
