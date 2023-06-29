@@ -1,4 +1,4 @@
-FROM node:16.13.1
+FROM node:16
 
 CMD [ "mkdir", "/upload" ]
 
@@ -8,6 +8,6 @@ COPY . .
 
 ENV TZ=Asia/Shanghai
 
-RUN npm i --registry=https://registry.npm.taobao.org && npm run build
+RUN npm i --registry=https://registry.npmmirror.com -g pnpm && pnpm i && pnpm run build
 
 EXPOSE 8080
