@@ -11,16 +11,7 @@ import {
   HttpCode,
   Req,
 } from '@nestjs/common'
-import {
-  ApiTags,
-  ApiOperation,
-  ApiOkResponse,
-  ApiBody,
-  ApiConsumes,
-  ApiQuery,
-  ApiExtraModels,
-  ApiBearerAuth,
-} from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBody, ApiConsumes, ApiQuery, ApiBearerAuth } from '@nestjs/swagger'
 import { FileInterceptor } from '@nestjs/platform-express'
 
 import { UserService } from './user.service'
@@ -37,7 +28,6 @@ import { UpdateStatusDto } from './dto/update-status.dto'
 
 @ApiTags('用户账号')
 @ApiBearerAuth()
-@ApiExtraModels(ResultData, UserEntity)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService, private readonly userRoleService: UserRoleService) {}

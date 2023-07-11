@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common'
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels } from '@nestjs/swagger'
+import { Body, Controller, Post, Req } from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
 import { AllowAnon } from '../../common/decorators/allow-anon.decorator'
@@ -13,7 +13,6 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { CreateTokenDto } from './dto/create-token.dto'
 
 @ApiTags('登录注册')
-@ApiExtraModels(ResultData, UserEntity, CreateTokenDto)
 @Controller()
 export class BaseController {
   constructor(private readonly userService: UserService) {}
@@ -35,10 +34,10 @@ export class BaseController {
   }
 
   @Post('/update/token')
-  @ApiOperation({ summary: '刷新token'})
+  @ApiOperation({ summary: '刷新token' })
   @ApiResult(CreateTokenDto)
   @ApiBearerAuth()
-  async updateToken (@Req() req): Promise<ResultData> {
+  async updateToken(@Req() req): Promise<ResultData> {
     return await this.userService.updateToken(req.user.id)
   }
 }

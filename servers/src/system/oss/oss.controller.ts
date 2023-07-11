@@ -1,17 +1,16 @@
 import { Controller, Get, Post, UploadedFile, UseInterceptors, Query, HttpCode, Body, Req } from '@nestjs/common'
-import { FileInterceptor } from "@nestjs/platform-express"
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiExtraModels, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger'
 
 import { ResultData } from '../../common/utils/result'
 
-import { OssService } from "./oss.service"
+import { OssService } from './oss.service'
 import { FindOssDto } from './dto/find-oss.dto'
 import { ApiResult } from '../../common/decorators/api-result.decorator'
 import { OssEntity } from './oss.entity'
 
 @ApiTags('文件存储')
 @ApiBearerAuth()
-@ApiExtraModels(ResultData, OssEntity)
 @Controller('oss')
 export class OssController {
   constructor(private readonly ossService: OssService) {}
@@ -32,22 +31,25 @@ export class OssController {
           description: '上传文件描述，可以是纯字符串，也可以是JSON字符串',
           type: 'string',
           format: 'text',
-        }
+        },
       },
     },
   })
   @HttpCode(200)
   @UseInterceptors(FileInterceptor('file'))
   @ApiResult(OssEntity)
-  async uploadFile (@UploadedFile() file: Express.Multer.File, @Body() params: { business: string }, @Req() req): Promise<ResultData> {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() params: { business: string },
+    @Req() req,
+  ): Promise<ResultData> {
     return await this.ossService.create([file], params.business || '', req.user)
   }
 
   @Get('list')
   @ApiOperation({ summary: '查询文件上传列表' })
   @ApiResult(OssEntity, true, true)
-  async findList (@Query() search: FindOssDto): Promise<ResultData> {
+  async findList(@Query() search: FindOssDto): Promise<ResultData> {
     return await this.ossService.findList(search)
   }
-
 }

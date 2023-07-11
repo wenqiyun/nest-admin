@@ -1,7 +1,6 @@
 import { Type, applyDecorators } from '@nestjs/common'
-import { ApiOkResponse, getSchemaPath } from '@nestjs/swagger'
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger'
 import { ResultData } from '../utils/result'
-
 
 const baseTypeNames = ['String', 'Number', 'Boolean']
 /**
@@ -13,7 +12,8 @@ const baseTypeNames = ['String', 'Number', 'Boolean']
  */
 export const ApiResult = <TModel extends Type<any>>(model?: TModel, isArray?: boolean, isPager?: boolean) => {
   let items = null
-  if (model && baseTypeNames.includes(model.name)) {
+  const modelIsBaseType = model && baseTypeNames.includes(model.name)
+  if (modelIsBaseType) {
     items = { type: model.name.toLocaleLowerCase() }
   } else {
     items = { $ref: getSchemaPath(model) }
@@ -25,34 +25,37 @@ export const ApiResult = <TModel extends Type<any>>(model?: TModel, isArray?: bo
       properties: {
         list: {
           type: 'array',
-          items
+          items,
         },
         total: {
           type: 'number',
-          default: 0
-        }
-      }
+          default: 0,
+        },
+      },
     }
   } else if (isArray) {
     prop = {
       type: 'array',
-      items
+      items,
     }
   } else if (model) {
     prop = items
   } else {
     prop = { type: 'null', default: null }
   }
-  return applyDecorators(ApiOkResponse({
-    schema: {
-      allOf: [
-        { $ref: getSchemaPath(ResultData) },
-        {
-          properties: {
-            data: prop
-          }
-        }
-      ]
-    }
-  }))
+  return applyDecorators(
+    ApiExtraModels(...(model && !modelIsBaseType ? [ResultData, model] : [ResultData])),
+    ApiOkResponse({
+      schema: {
+        allOf: [
+          { $ref: getSchemaPath(ResultData) },
+          {
+            properties: {
+              data: prop,
+            },
+          },
+        ],
+      },
+    }),
+  )
 }
