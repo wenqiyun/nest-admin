@@ -13,6 +13,7 @@ const baseLogPath = Path.normalize(
   Path.isAbsolute(appLogDirConfig) ? appLogDirConfig : Path.join(process.cwd(), appLogDirConfig),
 )
 
+const env = process.env.NODE_ENV
 // 日志级别
 export enum LoggerLevel {
   ALL = 'ALL',
@@ -94,13 +95,8 @@ Log4js.addLayout('Nest-Admin', (logConfig: any) => {
   }
 })
 
-// 注入配置
-Log4js.configure({
+const log4jsConfigure = {
   appenders: {
-    console: {
-      type: 'console',
-      layout: { type: 'Nest-Admin' },
-    },
     access: {
       type: 'dateFile',
       filename: `${baseLogPath}/access/access.log`,
@@ -149,16 +145,32 @@ Log4js.configure({
   },
   categories: {
     default: {
-      appenders: ['console', 'app', 'errors'],
+      appenders: ['app', 'errors'],
       level: 'DEBUG',
     },
-    info: { appenders: ['console', 'app', 'errors'], level: 'info' },
-    access: { appenders: ['console', 'app', 'errors'], level: 'info' },
+    info: { appenders: ['app', 'errors'], level: 'info' },
+    access: { appenders: ['app', 'errors'], level: 'info' },
     http: { appenders: ['access'], level: 'DEBUG' },
   },
   pm2: true, // 使用 pm2 来管理项目时，打开
   pm2InstanceVar: 'INSTANCE_ID', // 会根据 pm2 分配的 id 进行区分，以免各进程在写日志时造成冲突
-})
+}
+
+const getConfigure = () => {
+  if (env === 'development') {
+    log4jsConfigure.appenders['console'] = {
+      type: 'console',
+      layout: { type: 'Nest-Admin' },
+    }
+    log4jsConfigure.categories.default.appenders.unshift('console')
+    log4jsConfigure.categories.info.appenders.unshift('console')
+    log4jsConfigure.categories.access.appenders.unshift('console')
+  }
+  return log4jsConfigure
+}
+
+// 注入配置
+Log4js.configure(getConfigure())
 
 // 实例化
 const logger = Log4js.getLogger()
