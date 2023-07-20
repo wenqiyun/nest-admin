@@ -59,7 +59,7 @@ export class RolesGuard implements CanActivate {
       }
       return false
     })
-    if (index === -1) new ForbiddenException('您无权限访问该接口')
+    if (index === -1) throw new ForbiddenException('您无权限访问该接口')
     return true
   }
 }
