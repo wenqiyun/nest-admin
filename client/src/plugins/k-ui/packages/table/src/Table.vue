@@ -28,7 +28,9 @@
         </el-table-column>
       </template>
       <template #empty>
-        <el-empty description="暂无数据"></el-empty>
+        <slot name="empty">
+          <el-empty description="暂无数据"></el-empty>
+        </slot>
       </template>
     </el-table>
 
